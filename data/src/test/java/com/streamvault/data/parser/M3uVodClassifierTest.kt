@@ -51,6 +51,15 @@ class M3uVodClassifierTest {
     }
 
     @Test
+    fun `movie pipe group prefix fast-path classifies as vod`() {
+        val result = classifier.classify(
+            entry(url = "https://cdn.example.com/stream/123", group = "Movies | Bangla")
+        )
+        assertThat(result.kind).isEqualTo(M3uMediaKind.VOD)
+        assertThat(result.evidence).isEqualTo(M3uVodEvidence.GROUP_KEYWORD)
+    }
+
+    @Test
     fun `name keyword classifies an otherwise ambiguous extensionless entry`() {
         val result = classifier.classify(
             entry(

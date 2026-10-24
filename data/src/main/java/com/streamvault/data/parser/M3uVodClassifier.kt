@@ -67,6 +67,14 @@ internal class M3uVodClassifier(
             return M3uVodClassification(it, M3uVodEvidence.EXPLICIT_OVERRIDE, 1.0f)
         }
 
+        // Fast-path: Check group prefix first (avoids URI parsing, path splitting & regex)
+        val trimmedGroup = entry.groupTitle.trim()
+        if (trimmedGroup.startsWith("Movies | ", ignoreCase = true) ||
+            trimmedGroup.startsWith("Movie | ", ignoreCase = true)
+        ) {
+            return M3uVodClassification(M3uMediaKind.VOD, M3uVodEvidence.GROUP_KEYWORD, 1.0f)
+        }
+
         val path = decodedPath(entry.url)
         val segments = path.split('/').filter(String::isNotBlank)
         val extension = segments.lastOrNull()?.substringAfterLast('.', missingDelimiterValue = "")

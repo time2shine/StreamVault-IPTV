@@ -79,6 +79,7 @@ internal class SyncManagerPlanDelegate(
             request.snapshot.toLegacyProvider(),
             request.force,
             request.onProgress,
+            request.bootstrap,
             request.afterCatalogApply
         )
 

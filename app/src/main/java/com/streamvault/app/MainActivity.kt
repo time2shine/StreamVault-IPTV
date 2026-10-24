@@ -189,7 +189,9 @@ class MainActivity : ComponentActivity(), CatalogPlatformHost {
         if (isTelevisionDevice()) {
             // Lock TVs to landscape — the manifest uses "unspecified" so phones/tablets
             // can freely rotate, but TV UI is designed for landscape only.
-            requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+            runCatching {
+                requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+            }
         }
         setContent {
             val appLanguage by preferencesRepository.appLanguage.collectAsState(initial = "system")

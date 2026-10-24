@@ -68,6 +68,7 @@ internal class M3uCatalogSyncExecutor(
         provider: Provider,
         force: Boolean,
         onProgress: ((String) -> Unit)?,
+        bootstrap: Boolean = false,
         afterCatalogApply: suspend () -> Unit = {}
     ): SyncOutcome {
         val warnings = mutableListOf<String>()
@@ -77,8 +78,19 @@ internal class M3uCatalogSyncExecutor(
         val now = System.currentTimeMillis()
 
         if (force || ContentCachePolicy.shouldRefresh(metadata.lastLiveSuccess, ContentCachePolicy.CATALOG_TTL_MILLIS, now)) {
+            val isBootstrapWithVod = bootstrap && provider.m3uVodClassificationEnabled
             val stats = withContext(Dispatchers.IO) {
-                importer.importPlaylist(provider, onProgress, afterCatalogApply = afterCatalogApply)
+                if (isBootstrapWithVod) {
+                    importer.importPlaylist(
+                        provider,
+                        onProgress,
+                        includeLive = true,
+                        includeMovies = false,
+                        afterCatalogApply = afterCatalogApply
+                    )
+                } else {
+                    importer.importPlaylist(provider, onProgress, afterCatalogApply = afterCatalogApply)
+                }
             }
             if (stats.liveCount == 0 && stats.movieCount == 0) {
                 throw IllegalStateException("Playlist is empty or contains no supported entries")
@@ -91,19 +103,27 @@ internal class M3uCatalogSyncExecutor(
             metadata = metadata.copy(
                 lastLiveSync = now,
                 lastLiveSuccess = now,
-                lastMovieSync = now,
+                lastMovieSync = if (isBootstrapWithVod) metadata.lastMovieSync else now,
                 lastSeriesSync = now,
                 lastSeriesSuccess = now,
-                lastMovieAttempt = now,
-                lastMovieSuccess = now,
+                lastMovieAttempt = if (isBootstrapWithVod) metadata.lastMovieAttempt else now,
+                lastMovieSuccess = if (isBootstrapWithVod) metadata.lastMovieSuccess else now,
                 liveCount = stats.liveCount,
-                movieCount = stats.movieCount,
+                movieCount = if (isBootstrapWithVod) metadata.movieCount else stats.movieCount,
                 movieSyncMode = VodSyncMode.FULL,
                 movieWarningsCount = stats.warnings.size,
                 movieCatalogStale = false,
                 movieHealthySyncStreak = 0
             )
             syncMetadataRepository.updateMetadata(metadata)
+
+            if (isBootstrapWithVod) {
+                continuationWork += SyncContinuation(
+                    operation = SyncContinuationOperation.FULL_CATALOG,
+                    reason = "playlist bootstrap completed live channels; resuming full catalog in background",
+                    force = true
+                )
+            }
         }
 
         if (shouldSyncEpgUpfront(provider)) {

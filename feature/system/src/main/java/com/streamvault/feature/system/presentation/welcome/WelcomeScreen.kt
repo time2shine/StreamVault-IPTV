@@ -152,7 +152,8 @@ class WelcomeViewModel @Inject constructor(
             validateAndAddProvider.addM3u(
                 M3uProviderSetupCommand(
                     url = m3uUrl,
-                    name = devConfig.m3uName.ifBlank { "Dev M3U (seeded)" }
+                    name = devConfig.m3uName.ifBlank { "Dev M3U (seeded)" },
+                    m3uVodClassificationEnabled = devConfig.m3uVodClassificationEnabled
                 )
             )
         }

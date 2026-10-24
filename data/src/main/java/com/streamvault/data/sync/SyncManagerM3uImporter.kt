@@ -146,6 +146,22 @@ internal class SyncManagerM3uImporter(
                             throw CatalogAdmissionExceeded("M3U entry limit exceeded")
                         }
                         enforceInvalidEntryRatio()
+                        if (!includeMovies && provider.m3uVodClassificationEnabled) {
+                            val isMovie = entry.groupTitle.startsWith("Movies | ", ignoreCase = true) ||
+                                entry.groupTitle.equals("Movies", ignoreCase = true) ||
+                                vodClassifier.classify(entry).isVod
+                            if (isMovie) {
+                                return@parseStreaming
+                            }
+                        }
+                        if (!includeLive && provider.m3uVodClassificationEnabled) {
+                            val isLive = !entry.groupTitle.startsWith("Movies | ", ignoreCase = true) &&
+                                !entry.groupTitle.equals("Movies", ignoreCase = true) &&
+                                !vodClassifier.classify(entry).isVod
+                            if (isLive) {
+                                return@parseStreaming
+                            }
+                        }
                         requireM3uFieldBounds(
                             listOf(
                                 entry.name,
@@ -166,18 +182,16 @@ internal class SyncManagerM3uImporter(
                                 entry.playbackMetadata?.let(M3uPlaybackMetadataCodec::encode)
                             )
                         )
-                        if (parsedCount >= nextMilestone) {
-                            progress(provider.id, onProgress, "Imported $parsedCount playlist entries...")
-                            // D14 — emission M3U etape Imported : current = nombre d'entrees
-                            // parsees jusqu'ici (palier de M3U_PROGRESS_INTERVAL), `itemsIndexed`
-                            // refletera la meme valeur (compteur cumulatif local).
+                        val currentIndexedCount = liveCount + channelBatch.size + movieCount + movieBatch.size
+                        if (currentIndexedCount >= nextMilestone) {
+                            progress(provider.id, onProgress, "Imported $currentIndexedCount playlist entries...")
                             emitProgress(provider.id,
                                 SyncProgress(
                                     section = Section.LIVE,
-                                    current = parsedCount,
+                                    current = currentIndexedCount,
                                     total = 0,
                                     currentLabel = "",
-                                    itemsIndexed = parsedCount
+                                    itemsIndexed = currentIndexedCount
                                 )
                             )
                             nextMilestone += M3U_PROGRESS_INTERVAL
@@ -242,11 +256,18 @@ internal class SyncManagerM3uImporter(
                         )
                         if (mediaClassification.isVod) {
                             if (!includeMovies) return@parseStreaming
-                            val groupTitle = if (manualTarget == M3uClassificationTarget.MOVIE) {
+                            val rawGroup = if (manualTarget == M3uClassificationTarget.MOVIE) {
                                 "Movies"
                             } else {
                                 entry.groupTitle.ifBlank { "Uncategorized" }
                             }
+                            val groupTitle = rawGroup
+                                .removePrefix("Movies | ")
+                                .removePrefix("Movie | ")
+                                .removePrefix("movies | ")
+                                .removePrefix("movie | ")
+                                .trim()
+                                .ifBlank { "Uncategorized" }
                             val stableStreamId = override?.streamId
                                 ?: sourceStableId
                             val categoryId = if (manualTarget == M3uClassificationTarget.MOVIE) {

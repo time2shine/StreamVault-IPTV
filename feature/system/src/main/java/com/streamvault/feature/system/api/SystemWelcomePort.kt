@@ -11,6 +11,7 @@ data class WelcomeDevProviderConfig(
     val xtreamName: String = "",
     val m3uUrl: String = "",
     val m3uName: String = "",
+    val m3uVodClassificationEnabled: Boolean = true,
 )
 
 data class WelcomeSyncProgress(
