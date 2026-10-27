@@ -20,6 +20,7 @@ import com.streamvault.data.preferences.PreferencesRepository
 import com.streamvault.data.provider.ProviderCapabilityResolver
 import com.streamvault.data.provider.TypedProviderClientFactory
 import com.streamvault.data.provider.toLegacyProvider
+import com.streamvault.data.remote.tmdb.TmdbMetadataScraper
 import com.streamvault.data.remote.stalker.StalkerProvider
 import com.streamvault.data.remote.stalker.StalkerRequestCoordinator
 import com.streamvault.data.remote.stalker.StalkerRequestDescriptor
@@ -103,7 +104,8 @@ class MovieRepositoryImpl @Inject constructor(
     private val transactionRunner: DatabaseTransactionRunner,
     private val stalkerRequestCoordinator: StalkerRequestCoordinator,
     private val providerCapabilityResolver: ProviderCapabilityResolver,
-    private val typedProviderClientFactory: TypedProviderClientFactory
+    private val typedProviderClientFactory: TypedProviderClientFactory,
+    private val tmdbMetadataScraper: TmdbMetadataScraper? = null
 ) : MovieRepository {
     private companion object {
         const val MAX_BACKGROUND_CATEGORY_REFRESHES = 256
@@ -572,7 +574,7 @@ class MovieRepositoryImpl @Inject constructor(
         val provider = loadCompatibilityProvider(providerId)
             ?: return Result.error("Provider not found")
 
-        if (provider.type == ProviderType.XTREAM_CODES && movieEntity.hasFreshXtreamDetails()) {
+        if (movieEntity.hasFreshXtreamDetails()) {
             return Result.success(attachMoviePresentation(movieEntity.toDomain(), knownPresentation))
         }
 
@@ -614,29 +616,61 @@ class MovieRepositoryImpl @Inject constructor(
                     errorState = "DETAIL_FAILED_RETRYABLE"
                 )
             }
+            val fallbackMovie = try {
+                tmdbMetadataScraper?.enrichMovie(movieEntity.toDomain()) ?: movieEntity.toDomain()
+            } catch (ignored: Exception) {
+                movieEntity.toDomain()
+            }
+            if (fallbackMovie != movieEntity.toDomain()) {
+                val updatedMovie = movieEntity.copy(
+                    plot = fallbackMovie.plot ?: movieEntity.plot,
+                    backdropUrl = fallbackMovie.backdropUrl ?: movieEntity.backdropUrl,
+                    posterUrl = fallbackMovie.posterUrl ?: movieEntity.posterUrl,
+                    tmdbId = fallbackMovie.tmdbId ?: movieEntity.tmdbId,
+                    genre = fallbackMovie.genre ?: movieEntity.genre,
+                    cast = fallbackMovie.cast ?: movieEntity.cast,
+                    director = fallbackMovie.director ?: movieEntity.director,
+                    rating = if (fallbackMovie.rating > 0f) fallbackMovie.rating else movieEntity.rating,
+                    year = fallbackMovie.year ?: movieEntity.year,
+                    cacheState = CACHE_STATE_DETAIL_HYDRATED,
+                    detailHydratedAt = System.currentTimeMillis()
+                )
+                movieDao.update(updatedMovie)
+                return Result.success(attachMoviePresentation((movieDao.getById(movieEntity.id) ?: updatedMovie).toDomain(), knownPresentation))
+            }
             return Result.success(attachMoviePresentation(movieEntity.toDomain(), knownPresentation))
         }
 
         return when (val remoteResult = remoteMovieResult) {
             is Result.Success -> {
                 val remoteMovie = remoteResult.data
+                val enrichedMovie = if (remoteMovie.plot.isNullOrBlank() || remoteMovie.backdropUrl.isNullOrBlank()) {
+                    try {
+                        tmdbMetadataScraper?.enrichMovie(remoteMovie) ?: remoteMovie
+                    } catch (e: Exception) {
+                        remoteMovie
+                    }
+                } else {
+                    remoteMovie
+                }
+
                 val updatedMovie = movieEntity.copy(
-                    name = remoteMovie.name.ifBlank { movieEntity.name },
-                    posterUrl = remoteMovie.posterUrl ?: movieEntity.posterUrl,
-                    backdropUrl = remoteMovie.backdropUrl ?: movieEntity.backdropUrl,
-                    categoryId = remoteMovie.categoryId ?: movieEntity.categoryId,
-                    categoryName = remoteMovie.categoryName ?: movieEntity.categoryName,
-                    plot = remoteMovie.plot ?: movieEntity.plot,
-                    cast = remoteMovie.cast ?: movieEntity.cast,
-                    director = remoteMovie.director ?: movieEntity.director,
-                    genre = remoteMovie.genre ?: movieEntity.genre,
-                    releaseDate = remoteMovie.releaseDate ?: movieEntity.releaseDate,
-                    duration = remoteMovie.duration ?: movieEntity.duration,
-                    durationSeconds = remoteMovie.durationSeconds.takeIf { it > 0 } ?: movieEntity.durationSeconds,
-                    rating = if (remoteMovie.rating > 0f) remoteMovie.rating else movieEntity.rating,
-                    year = remoteMovie.year ?: movieEntity.year,
-                    tmdbId = remoteMovie.tmdbId ?: movieEntity.tmdbId,
-                    youtubeTrailer = remoteMovie.youtubeTrailer ?: movieEntity.youtubeTrailer,
+                    name = enrichedMovie.name.ifBlank { movieEntity.name },
+                    posterUrl = enrichedMovie.posterUrl ?: movieEntity.posterUrl,
+                    backdropUrl = enrichedMovie.backdropUrl ?: movieEntity.backdropUrl,
+                    categoryId = enrichedMovie.categoryId ?: movieEntity.categoryId,
+                    categoryName = enrichedMovie.categoryName ?: movieEntity.categoryName,
+                    plot = enrichedMovie.plot ?: movieEntity.plot,
+                    cast = enrichedMovie.cast ?: movieEntity.cast,
+                    director = enrichedMovie.director ?: movieEntity.director,
+                    genre = enrichedMovie.genre ?: movieEntity.genre,
+                    releaseDate = enrichedMovie.releaseDate ?: movieEntity.releaseDate,
+                    duration = enrichedMovie.duration ?: movieEntity.duration,
+                    durationSeconds = enrichedMovie.durationSeconds.takeIf { it > 0 } ?: movieEntity.durationSeconds,
+                    rating = if (enrichedMovie.rating > 0f) enrichedMovie.rating else movieEntity.rating,
+                    year = enrichedMovie.year ?: movieEntity.year,
+                    tmdbId = enrichedMovie.tmdbId ?: movieEntity.tmdbId,
+                    youtubeTrailer = enrichedMovie.youtubeTrailer ?: movieEntity.youtubeTrailer,
                     cacheState = CACHE_STATE_DETAIL_HYDRATED,
                     detailHydratedAt = System.currentTimeMillis()
                 )
@@ -659,6 +693,28 @@ class MovieRepositoryImpl @Inject constructor(
                         remoteId = movieEntity.streamId.toString(),
                         errorState = "DETAIL_FAILED_RETRYABLE"
                     )
+                }
+                val fallbackMovie = try {
+                    tmdbMetadataScraper?.enrichMovie(movieEntity.toDomain()) ?: movieEntity.toDomain()
+                } catch (ignored: Exception) {
+                    movieEntity.toDomain()
+                }
+                if (fallbackMovie != movieEntity.toDomain()) {
+                    val updatedMovie = movieEntity.copy(
+                        plot = fallbackMovie.plot ?: movieEntity.plot,
+                        backdropUrl = fallbackMovie.backdropUrl ?: movieEntity.backdropUrl,
+                        posterUrl = fallbackMovie.posterUrl ?: movieEntity.posterUrl,
+                        tmdbId = fallbackMovie.tmdbId ?: movieEntity.tmdbId,
+                        genre = fallbackMovie.genre ?: movieEntity.genre,
+                        cast = fallbackMovie.cast ?: movieEntity.cast,
+                        director = fallbackMovie.director ?: movieEntity.director,
+                        rating = if (fallbackMovie.rating > 0f) fallbackMovie.rating else movieEntity.rating,
+                        year = fallbackMovie.year ?: movieEntity.year,
+                        cacheState = CACHE_STATE_DETAIL_HYDRATED,
+                        detailHydratedAt = System.currentTimeMillis()
+                    )
+                    movieDao.update(updatedMovie)
+                    return Result.success(attachMoviePresentation((movieDao.getById(movieEntity.id) ?: updatedMovie).toDomain(), knownPresentation))
                 }
                 Result.success(attachMoviePresentation(movieEntity.toDomain(), knownPresentation))
             }

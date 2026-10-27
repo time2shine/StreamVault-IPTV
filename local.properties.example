@@ -16,6 +16,10 @@
 # See `docs/DEV_SEEDING.md` for the full opt-in onboarding flow.
 # -----------------------------------------------------------------------------
 
+# --- TMDB API application key (movie plot & backdrop scraper) ----------------
+# Get a free key from https://www.themoviedb.org/settings/api
+# tmdb.api.key=your-tmdb-api-key
+
 # --- OpenSubtitles API application key (local debug builds) -------------------
 # Get a key from OpenSubtitles, then add it to your ignored `local.properties`:
 # opensubtitles.api.key=your-opensubtitles-api-key

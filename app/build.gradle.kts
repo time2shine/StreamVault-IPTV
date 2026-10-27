@@ -48,6 +48,9 @@ fun localProp(key: String): String =
 val traktClientId = providers.environmentVariable("TRAKT_CLIENT_ID").orNull ?: localProp("trakt.client.id")
 val traktRedirectUri = providers.environmentVariable("TRAKT_REDIRECT_URI").orNull ?: localProp("trakt.redirect.uri")
 val opensubtitlesApiKey = providers.environmentVariable("OPENSUBTITLES_API_KEY").orNull
+val tmdbApiKey = providers.environmentVariable("TMDB_API_KEY").orNull
+    ?: localProp("tmdb.api.key").takeIf(String::isNotBlank)
+    ?: "998f255a9e7003eee3615497c46268fd"
 val traktCallback = runCatching { URI(traktRedirectUri) }.getOrNull()
 fun buildStringLiteral(value: String): String = "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 
@@ -94,6 +97,7 @@ android {
         buildConfigField("String", "OFFICIAL_APPLICATION_ID", "\"com.streamvault.app\"")
         buildConfigField("String", "OFFICIAL_SIGNING_CERT_SHA256", "\"$officialSigningCertSha256\"")
         buildConfigField("String", "OPENSUBTITLES_API_KEY", buildStringLiteral(opensubtitlesApiKey.orEmpty()))
+        buildConfigField("String", "TMDB_API_KEY", buildStringLiteral(tmdbApiKey))
         buildConfigField("String", "APP_UPDATE_CHANNEL", "\"stable\"")
         buildConfigField("long", "BUILD_TIMESTAMP_UTC", "0L")
         ndk {

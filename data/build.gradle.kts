@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -8,6 +11,15 @@ plugins {
     alias(libs.plugins.kover)
 }
 
+val localPropertiesFile = rootProject.file("local.properties")
+val localProperties = Properties()
+if (localPropertiesFile.exists()) {
+    FileInputStream(localPropertiesFile).use(localProperties::load)
+}
+val tmdbApiKey = providers.environmentVariable("TMDB_API_KEY").orNull
+    ?: localProperties.getProperty("tmdb.api.key", "").takeIf(String::isNotBlank)
+    ?: "998f255a9e7003eee3615497c46268fd"
+
 android {
     namespace = "com.streamvault.data"
     compileSdk = 36
@@ -15,6 +27,7 @@ android {
     defaultConfig {
         minSdk = 25
         buildConfigField("boolean", "STALKER_ADAPTIVE_INDEXING", "true")
+        buildConfigField("String", "TMDB_API_KEY", "\"$tmdbApiKey\"")
         val requestedStalkerPageConcurrency = providers.gradleProperty("stalkerIndexPageConcurrency")
             .orNull
             ?.toIntOrNull()

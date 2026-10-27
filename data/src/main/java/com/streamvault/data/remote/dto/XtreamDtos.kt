@@ -157,7 +157,7 @@ data class XtreamEpisodeInfo(
     @SerialName("bitrate") @Serializable(with = LenientIntSerializer::class) val bitrate: Int = 0
 )
 
-@Serializable
+@Serializable(with = LenientVodInfoResponseSerializer::class)
 data class XtreamVodInfoResponse(
     @SerialName("info") val info: XtreamVodInfo? = null,
     @SerialName("movie_data") val movieData: XtreamVodMovieData? = null
@@ -168,6 +168,9 @@ data class XtreamVodInfo(
     @SerialName("movie_image") @Serializable(with = LenientNullableStringSerializer::class) val movieImage: String? = null,
     @SerialName("tmdb_id") @Serializable(with = LenientNullableLongSerializer::class) val tmdbId: Long? = null,
     @SerialName("plot") @Serializable(with = LenientNullableStringSerializer::class) val plot: String? = null,
+    @SerialName("description") @Serializable(with = LenientNullableStringSerializer::class) val description: String? = null,
+    @SerialName("overview") @Serializable(with = LenientNullableStringSerializer::class) val overview: String? = null,
+    @SerialName("storyline") @Serializable(with = LenientNullableStringSerializer::class) val storyline: String? = null,
     @SerialName("cast") @Serializable(with = LenientNullableStringSerializer::class) val cast: String? = null,
     @SerialName("director") @Serializable(with = LenientNullableStringSerializer::class) val director: String? = null,
     @SerialName("genre") @Serializable(with = LenientNullableStringSerializer::class) val genre: String? = null,
@@ -190,6 +193,8 @@ data class XtreamVodMovieData(
     @SerialName("container_extension") @Serializable(with = LenientNullableStringSerializer::class) val containerExtension: String? = null,
     @SerialName("custom_sid") @Serializable(with = LenientNullableStringSerializer::class) val customSid: String? = null,
     @SerialName("direct_source") @Serializable(with = LenientNullableStringSerializer::class) val directSource: String? = null,
+    @SerialName("plot") @Serializable(with = LenientNullableStringSerializer::class) val plot: String? = null,
+    @SerialName("description") @Serializable(with = LenientNullableStringSerializer::class) val description: String? = null,
     @SerialName("tmdb") @Serializable(with = LenientNullableStringSerializer::class) val tmdb: String? = null,
     @SerialName("trailer") @Serializable(with = LenientNullableStringSerializer::class) val trailer: String? = null,
     @SerialName("youtube_trailer") @Serializable(with = LenientNullableStringSerializer::class) val youtubeTrailer: String? = null,

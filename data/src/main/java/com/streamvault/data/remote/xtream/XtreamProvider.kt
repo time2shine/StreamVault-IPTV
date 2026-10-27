@@ -304,7 +304,15 @@ class XtreamProvider(
                     categoryId = category.id,
                     categoryName = category.name,
                     containerExtension = normalizedContainerExtension,
-                    plot = decodeXtreamNullableText(info?.plot, XtreamTextDecodeMode.METADATA),
+                    plot = decodeXtreamNullableText(
+                        info?.plot?.takeIf { it.isNotBlank() }
+                            ?: info?.description?.takeIf { it.isNotBlank() }
+                            ?: info?.overview?.takeIf { it.isNotBlank() }
+                            ?: info?.storyline?.takeIf { it.isNotBlank() }
+                            ?: movieData.plot?.takeIf { it.isNotBlank() }
+                            ?: movieData.description?.takeIf { it.isNotBlank() },
+                        XtreamTextDecodeMode.METADATA
+                    ),
                     cast = decodeXtreamNullableText(info?.cast, XtreamTextDecodeMode.METADATA),
                     director = decodeXtreamNullableText(info?.director, XtreamTextDecodeMode.METADATA),
                     genre = decodeXtreamNullableText(info?.genre, XtreamTextDecodeMode.METADATA),

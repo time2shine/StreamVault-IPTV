@@ -402,3 +402,36 @@ private fun JsonObject.looksLikeSeasonObject(): Boolean =
         containsKey("episode_count") ||
         containsKey("air_date") ||
         containsKey("cover")
+
+@OptIn(ExperimentalSerializationApi::class)
+object LenientVodInfoResponseSerializer : KSerializer<XtreamVodInfoResponse> {
+    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("LenientVodInfoResponse") {
+        element<JsonElement?>("info", isOptional = true)
+        element<JsonElement?>("movie_data", isOptional = true)
+    }
+
+    override fun deserialize(decoder: Decoder): XtreamVodInfoResponse {
+        val jsonDecoder = decoder as? JsonDecoder ?: return XtreamVodInfoResponse()
+        val root = runCatching { jsonDecoder.decodeJsonElement() }.getOrNull() ?: return XtreamVodInfoResponse()
+        if (root !is JsonObject) return XtreamVodInfoResponse()
+
+        val json = jsonDecoder.json
+        val infoObj = root["info"]?.takeIf { it is JsonObject }
+        val info = infoObj?.let { runCatching { json.decodeFromJsonElement<XtreamVodInfo>(it) }.getOrNull() }
+
+        val movieDataObj = root["movie_data"]?.takeIf { it is JsonObject }
+        val movieData = movieDataObj?.let { runCatching { json.decodeFromJsonElement<XtreamVodMovieData>(it) }.getOrNull() }
+
+        return XtreamVodInfoResponse(info = info, movieData = movieData)
+    }
+
+    override fun serialize(encoder: Encoder, value: XtreamVodInfoResponse) {
+        val jsonEncoder = encoder as? JsonEncoder ?: return
+        val json = jsonEncoder.json
+        val map = buildJsonObject {
+            value.info?.let { put("info", json.encodeToJsonElement(it)) }
+            value.movieData?.let { put("movie_data", json.encodeToJsonElement(it)) }
+        }
+        jsonEncoder.encodeJsonElement(map)
+    }
+}

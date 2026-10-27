@@ -56,6 +56,10 @@ object NetworkModule {
     fun provideOpenSubtitlesApiKey(): String = BuildConfig.OPENSUBTITLES_API_KEY
 
     @Provides
+    @Named("tmdbApiKey")
+    fun provideTmdbApiKey(): String = BuildConfig.TMDB_API_KEY
+
+    @Provides
     @Named("opensubtitlesUserAgent")
     fun provideOpenSubtitlesUserAgent(): String = buildOpenSubtitlesUserAgent(BuildConfig.VERSION_NAME)
 
