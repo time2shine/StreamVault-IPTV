@@ -64,3 +64,17 @@ A passing validation needs:
 Validate more than one live channel when the bug is reported as affecting live
 TV generally. Record the channel names, screenshot count, interval, unique hash
 count, media-session result, and log findings in the final report.
+
+## Interaction & Decision-Making Workflow
+
+- **Research First**: Whenever requested to implement, modify, or investigate
+  anything, always research the relevant codebase, architecture, and performance
+  constraints first before making assumptions or modifying code.
+- **Multiple Choices with a Recommended Pick**: Present well-reasoned options or
+  architectural choices with trade-offs, and always select and recommend the best
+  one upfront.
+- **Constructive Challenge**: If the user's proposed direction or idea is suboptimal,
+  performance-heavy (especially on low-end TV hardware), prone to regressions, or
+  wrong, directly and transparently explain why it is flawed and demonstrate the
+  better, idiomatic way to achieve the goal.
+
