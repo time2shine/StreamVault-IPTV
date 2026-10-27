@@ -205,6 +205,7 @@ class AppNavigationCoordinator @Inject constructor(
                 }
             }
         }
+        val rootDestination = state.value.startupTarget?.destination ?: AppDestination.Home
         submit(
             NavigationCommand.Navigate(
                 destination = destination,
@@ -212,7 +213,7 @@ class AppNavigationCoordinator @Inject constructor(
                     launchSingleTop = true,
                     restoreState = true,
                     saveState = true,
-                    popUpTo = AppDestination.Welcome
+                    popUpTo = rootDestination
                 )
             )
         )
