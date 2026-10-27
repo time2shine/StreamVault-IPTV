@@ -34,21 +34,26 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.streamvault.core.ui.design.requestFocusSafely
+import kotlinx.coroutines.delay
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
@@ -260,7 +265,7 @@ fun AppScreenHeader(
     }
 }
 
-@OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun TopNavigationBar(
     currentDestinationId: String,
@@ -271,11 +276,22 @@ private fun TopNavigationBar(
 ) {
     val scrollState = rememberScrollState()
     val focusRequesters = remember { mutableMapOf<String, FocusRequester>() }
+    val activeItem = remember(destinations, currentDestinationId) {
+        findActiveDestination(destinations, currentDestinationId)
+    }
+
+    LaunchedEffect(activeItem?.id) {
+        val active = activeItem ?: return@LaunchedEffect
+        delay(60)
+        focusRequesters[active.id]?.requestFocusSafely(
+            tag = "TopNavigationBar",
+            target = "Active destination ${active.id}"
+        )
+    }
 
     Surface(
         modifier = modifier.focusProperties {
             onEnter = {
-                val activeItem = findActiveDestination(destinations, currentDestinationId)
                 focusRequesters[activeItem?.id] ?: FocusRequester.Default
             }
         },
@@ -302,7 +318,8 @@ private fun TopNavigationBar(
                 modifier = Modifier
                     .weight(1f)
                     .horizontalScroll(scrollState)
-                    .padding(horizontal = 12.dp),
+                    .padding(horizontal = 12.dp)
+                    .focusRestorer(focusRequesters[activeItem?.id] ?: FocusRequester.Default),
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 destinations.forEach { destination ->
@@ -659,7 +676,7 @@ fun ContentMetadataStrip(
     }
 }
 
-@OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun DestinationRail(
     currentDestinationId: String,
@@ -669,6 +686,18 @@ private fun DestinationRail(
 ) {
     val spacing = LocalAppSpacing.current
     val focusRequesters = remember { mutableMapOf<String, FocusRequester>() }
+    val activeItem = remember(destinations, currentDestinationId) {
+        findActiveDestination(destinations, currentDestinationId)
+    }
+
+    LaunchedEffect(activeItem?.id) {
+        val active = activeItem ?: return@LaunchedEffect
+        delay(60)
+        focusRequesters[active.id]?.requestFocusSafely(
+            tag = "DestinationRail",
+            target = "Active destination ${active.id}"
+        )
+    }
 
     Box(
         modifier = modifier
@@ -676,7 +705,6 @@ private fun DestinationRail(
             .browsePanel(BrowseShapes.Panel)
             .focusProperties {
                 onEnter = {
-                    val activeItem = findActiveDestination(destinations, currentDestinationId)
                     focusRequesters[activeItem?.id] ?: FocusRequester.Default
                 }
             }
@@ -684,7 +712,8 @@ private fun DestinationRail(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 12.dp, vertical = 20.dp),
+                .padding(horizontal = 12.dp, vertical = 20.dp)
+                .focusRestorer(focusRequesters[activeItem?.id] ?: FocusRequester.Default),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Text(text = "StreamVault", style = MaterialTheme.typography.titleMedium, color = BrowseColors.TextPrimary)
