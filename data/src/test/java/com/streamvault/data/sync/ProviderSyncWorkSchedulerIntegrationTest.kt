@@ -2,6 +2,7 @@ package com.streamvault.data.sync
 
 import androidx.work.Configuration
 import androidx.work.WorkManager
+import androidx.work.testing.WorkManagerTestInitHelper
 import com.google.common.truth.Truth.assertThat
 import com.streamvault.domain.sync.AutomaticSyncSettings
 import kotlinx.coroutines.asContextElement
@@ -19,7 +20,7 @@ class ProviderSyncWorkSchedulerIntegrationTest {
     private fun workManager(): WorkManager {
         val context = RuntimeEnvironment.getApplication()
         return runCatching { WorkManager.getInstance(context) }.getOrElse {
-            WorkManager.initialize(context, Configuration.Builder().build())
+            WorkManagerTestInitHelper.initializeTestWorkManager(context)
             WorkManager.getInstance(context)
         }
     }
@@ -68,10 +69,7 @@ class ProviderSyncWorkSchedulerIntegrationTest {
 
     @Test fun `relaxing charging replaces the pending automatic Stalker request`() = runTest {
         val context = RuntimeEnvironment.getApplication()
-        val manager = runCatching { WorkManager.getInstance(context) }.getOrElse {
-            WorkManager.initialize(context, Configuration.Builder().build())
-            WorkManager.getInstance(context)
-        }
+        val manager = workManager()
         val scheduler = ProviderSyncWorkScheduler(context)
         withContext(AutomaticSyncExecution.policy.asContextElement(AutomaticSyncSettings(chargingOnly = true))) {
             scheduler.scheduleStalkerIndex(987955L, automatic = true, initialDelaySeconds = 3600L)

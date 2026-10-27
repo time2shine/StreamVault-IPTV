@@ -130,6 +130,7 @@ class WelcomeViewModelTest {
             M3uProviderSetupCommand(
                 url = "https://m3u.example/list.m3u",
                 name = "Seeded M3U",
+                m3uVodClassificationEnabled = true,
             )
         )
         verifyBlocking(validateAndAddProvider, never()) { loginXtream(any(), anyOrNull()) }

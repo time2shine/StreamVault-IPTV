@@ -402,4 +402,17 @@
   <string name="vod_sync_needed_title">Sync needed</string>
   <string name="vod_unavailable_subtitle">This provider exposes separate Movies and Series catalogs.</string>
   <string name="vod_unavailable_title">VOD is unavailable</string>
+  <string name="movies_sync_needed_title">Movies Library</string>
+  <string name="movies_sync_needed_subtitle">Sync this provider to import movies into the library.</string>
+  <string name="movies_sync_action">Sync Movies</string>
+  <string name="movies_syncing_title">Syncing Movies...</string>
+  <string name="movies_sync_progress_format">%1$d / %2$d items indexed</string>
+    <string name="home_categories_title">Live Categories</string>
+    <string name="home_back_to_categories">Back to categories</string>
+    <string name="home_live_categories_subtitle">Select a category to browse channels</string>
+    <string name="home_category_channel_count">%1$d channels</string>
+    <string name="home_category_summary">%1$d Channels • %2$d Categories</string>
+    <string name="home_no_channels_in_category">No channels available in this category</string>
+    <string name="home_all_channels">All Channels</string>
+    <string name="movies_watch_history_title">Watch History</string>
 </resources>

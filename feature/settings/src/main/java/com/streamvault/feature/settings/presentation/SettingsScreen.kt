@@ -61,6 +61,7 @@ public fun SettingsScreen(
     initialBackupImportUri: String? = null,
     openOpenSubtitlesSignIn: Boolean = false,
     onCloseApp: () -> Unit = {},
+    onQuickRefresh: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -689,6 +690,7 @@ public fun SettingsScreen(
                     restorePageRequestId = restorePageRequestId,
                     onPageChanged = { currentSettingsPage = it },
                     categorySelectionId = categorySelectionId,
+                    onQuickRefresh = onQuickRefresh,
                 )
             }
         }

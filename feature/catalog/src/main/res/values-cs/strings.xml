@@ -367,4 +367,17 @@
 <string name="trakt_rating_saved">Hodnocení bylo uloženo do Traktu.</string>
 <string name="trakt_rating_failed">Hodnocení se nepodařilo uložit do Traktu.</string>
 <string name="trakt_favorite_sync_failed">StreamVault změnu uložil, ale nepodařilo se aktualizovat Oblíbené na Traktu. Zkuste to znovu.</string>
+  <string name="movies_sync_needed_title">Knihovna filmů</string>
+  <string name="movies_sync_needed_subtitle">Synchronizujte tohoto poskytovatele pro import filmů do knihovny.</string>
+  <string name="movies_sync_action">Synchronizovat filmy</string>
+  <string name="movies_syncing_title">Synchronizace filmů...</string>
+  <string name="movies_sync_progress_format">Indexováno %1$d z %2$d položek</string>
+    <string name="home_categories_title">Živé kategorie</string>
+    <string name="home_back_to_categories">Zpět na kategorie</string>
+    <string name="home_live_categories_subtitle">Vyberte kategorii pro procházení kanálů</string>
+    <string name="home_category_channel_count">%1$d kanálů</string>
+    <string name="home_category_summary">%1$d kanálů • %2$d kategorií</string>
+    <string name="home_no_channels_in_category">V této kategorii nejsou k dispozici žádné kanály</string>
+    <string name="home_all_channels">Všechny kanály</string>
+    <string name="movies_watch_history_title">Historie sledování</string>
 </resources>

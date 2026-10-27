@@ -1,4 +1,4 @@
-﻿package com.streamvault.feature.catalog.presentation.movies
+package com.streamvault.feature.catalog.presentation.movies
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
@@ -62,6 +62,11 @@ import androidx.compose.foundation.border
 import com.streamvault.feature.catalog.presentation.components.ReorderTopBar
 import com.streamvault.feature.catalog.presentation.components.dialogs.DeleteGroupDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
+import com.streamvault.core.ui.design.browsePrimaryButtonColors
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import com.streamvault.feature.catalog.presentation.components.BrowseSearchLaunchCard
@@ -108,6 +113,7 @@ fun MoviesScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val initialContentFocusRequester = remember { FocusRequester() }
+    var lastInteractedMovieId by rememberSaveable { mutableStateOf<Long?>(null) }
     var showPinDialog by remember { mutableStateOf(false) }
     var pinError by remember { mutableStateOf<String?>(null) }
     var pendingMovie by remember { mutableStateOf<Movie?>(null) }
@@ -136,7 +142,10 @@ fun MoviesScreen(
         onVerified = {
             showPinDialog = false
             pinError = null
-            pendingMovie?.let(onMovieClick)
+            pendingMovie?.let {
+                lastInteractedMovieId = it.id
+                onMovieClick(it)
+            }
             pendingCategory?.let(viewModel::unlockCategory)
             pendingMovie = null
             pendingCategory = null
@@ -198,11 +207,60 @@ fun MoviesScreen(
                     subtitle = stringResource(R.string.home_add_first_provider_subtitle)
                 )
             }
+        } else if (uiState.isSyncing && uiState.libraryCount == 0) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.padding(32.dp)
+                ) {
+                    CircularProgressIndicator(color = Color.White)
+                    Text(
+                        text = stringResource(R.string.movies_syncing_title),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.White
+                    )
+                    val progressText = when {
+                        uiState.syncTotal > 0 -> stringResource(
+                            R.string.movies_sync_progress_format,
+                            uiState.syncCurrent,
+                            uiState.syncTotal
+                        )
+                        !uiState.syncPhase.isNullOrBlank() -> uiState.syncPhase
+                        else -> stringResource(R.string.movies_loading)
+                    }
+                    Text(
+                        text = progressText.orEmpty(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.7f),
+                        textAlign = TextAlign.Center
+                    )
+                    if (uiState.syncTotal > 0) {
+                        LinearProgressIndicator(
+                            progress = { (uiState.syncCurrent.toFloat() / uiState.syncTotal.toFloat()).coerceIn(0f, 1f) },
+                            modifier = Modifier
+                                .width(240.dp)
+                                .height(6.dp)
+                                .clip(RoundedCornerShape(3.dp)),
+                            color = MaterialTheme.colorScheme.primary,
+                            trackColor = Color.White.copy(alpha = 0.2f)
+                        )
+                    }
+                }
+            }
         } else if (!uiState.hasActiveProvider || (uiState.selectedCategory == null && uiState.moviesByCategory.isEmpty() && uiState.libraryCount == 0 && uiState.searchQuery.isBlank() && !uiState.isLoadingPreviewRows)) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 AppMessageState(
-                    title = stringResource(R.string.vod_sync_needed_title),
-                    subtitle = stringResource(R.string.vod_sync_needed_subtitle)
+                    title = stringResource(R.string.movies_sync_needed_title),
+                    subtitle = stringResource(R.string.movies_sync_needed_subtitle),
+                    action = {
+                        Button(
+                            onClick = viewModel::syncMovies,
+                            colors = browsePrimaryButtonColors()
+                        ) {
+                            Text(text = stringResource(R.string.movies_sync_action))
+                        }
+                    }
                 )
             }
         } else if (uiState.selectedCategory == null && uiState.searchQuery.isBlank() && uiState.moviesByCategory.isEmpty() && !uiState.isLoadingPreviewRows) {
@@ -221,8 +279,15 @@ fun MoviesScreen(
                 onSelectedSortByChange = viewModel::setSelectedLibrarySortBy,
                 searchQuery = uiState.searchQuery,
                 onSearchQueryChange = viewModel::setSearchQuery,
-                onMovieClick = onMovieClick,
-                onContinueWatchingPlay = onContinueWatchingPlay,
+                onMovieClick = { movie ->
+                    lastInteractedMovieId = movie.id
+                    onMovieClick(movie)
+                },
+                onContinueWatchingPlay = { history ->
+                    lastInteractedMovieId = history.contentId
+                    onContinueWatchingPlay(history)
+                },
+                lastInteractedMovieId = lastInteractedMovieId,
                 onProtectedMovieClick = { movie ->
                     pendingCategory = null
                     pendingMovie = movie
@@ -361,7 +426,8 @@ private fun MoviesVodContent(
     onMoveReorderItemUp: (Movie) -> Unit,
     onMoveReorderItemDown: (Movie) -> Unit,
     onToggleCategoryPinned: (Category) -> Unit,
-    initialFocusRequester: FocusRequester
+    initialFocusRequester: FocusRequester,
+    lastInteractedMovieId: Long? = null
 ) {
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val isTelevisionDevice = rememberIsTelevisionDevice()
@@ -381,10 +447,11 @@ private fun MoviesVodContent(
     val traktTrendingLabel = stringResource(R.string.trakt_discovery_trending_movies)
     val traktPopularLabel = stringResource(R.string.trakt_discovery_popular_movies)
     val favoriteMovies = uiState.moviesByCategory[uiState.favoriteCategoryName].orEmpty()
-    val freshMovies = uiState.libraryLensRows[MovieLibraryLens.FRESH].orEmpty()
-    val topRatedMovies = uiState.libraryLensRows[MovieLibraryLens.TOP_RATED].orEmpty()
     val continueWatching = uiState.continueWatching
-    val heroMovie = freshMovies.firstOrNull() ?: topRatedMovies.firstOrNull() ?: favoriteMovies.firstOrNull()
+    val watchHistory = remember(uiState.watchHistory, continueWatching) {
+        val continueIds = continueWatching.mapTo(HashSet()) { it.contentId }
+        uiState.watchHistory.filter { it.contentId !in continueIds }
+    }
     val categoryByName = remember(uiState.providerCategories, uiState.categories, uiState.favoriteCategoryName) {
         buildMap<String, Category> {
             uiState.providerCategories.forEach { put(it.name, it) }
@@ -461,12 +528,11 @@ private fun MoviesVodContent(
             category == null || category.id !in uiState.pinnedCategoryIds
         }
     }
-    val fallbackMovieId = if (heroMovie == null) {
-        favoriteMovies.firstOrNull()?.id
-            ?: freshMovies.firstOrNull()?.id
-            ?: topRatedMovies.firstOrNull()?.id
-            ?: catEntries.firstOrNull()?.value?.firstOrNull()?.id
-    } else null
+    val firstItemMovieId = continueWatching.firstOrNull()?.contentId
+        ?: watchHistory.firstOrNull()?.contentId
+        ?: favoriteMovies.firstOrNull()?.id
+        ?: catEntries.firstOrNull()?.value?.firstOrNull()?.id
+    val targetFocusedMovieId = lastInteractedMovieId ?: firstItemMovieId
     val categoryOptions = remember(
         visibleCategoryNames,
         uiState.categoryCounts,
@@ -562,7 +628,8 @@ private fun MoviesVodContent(
             onDismissReorder = onDismissReorder,
             onMoveReorderItemUp = onMoveReorderItemUp,
             onMoveReorderItemDown = onMoveReorderItemDown,
-            initialFocusRequester = initialFocusRequester
+            initialFocusRequester = initialFocusRequester,
+            lastInteractedMovieId = lastInteractedMovieId
         )
         return
     }
@@ -579,125 +646,29 @@ private fun MoviesVodContent(
         LazyColumn(
             state = previewListState,
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 28.dp)
+            contentPadding = PaddingValues(top = 12.dp, bottom = 28.dp)
         ) {
-            item(key = "hero") {
-            if (heroMovie != null) {
-                VodHeroStrip(
-                        title = heroMovie.name,
-                        subtitle = heroMovie.plot?.takeIf { it.isNotBlank() }
-                            ?: heroMovie.year
-                            ?: stringResource(R.string.movies_library_lens_subtitle),
-                        actionLabel = stringResource(R.string.player_resume).substringBefore(" "),
-                        onClick = {
-                            val isLocked = isMovieLocked(heroMovie)
-                            if (isLocked) onProtectedMovieClick(heroMovie) else onMovieClick(heroMovie)
-                        },
-                        modifier = Modifier
-                            .padding(top = 8.dp, bottom = 6.dp)
-                            .focusRequester(initialFocusRequester)
-                    )
-            }
-            }
-            item(key = "actions") {
-            VodActionChipRow(
-                    actions = buildList {
-                        add(
-                            VodActionChip(
-                                key = "browse_all",
-                                label = stringResource(R.string.library_full_browse_title_movies),
-                                detail = stringResource(R.string.library_full_browse_subtitle, uiState.libraryCount),
-                                onClick = onSelectFullLibraryBrowse
-                            )
-                        )
-                        add(
-                            VodActionChip(
-                                key = "categories",
-                                label = stringResource(R.string.movies_categories_title),
-                                detail = "${visibleCategoryNames.count { name -> categoryByName[name]?.id != VodBrowseDefaults.FAVORITES_SENTINEL_ID }} groups",
-                                onClick = { showCategoryPicker = true }
-                            )
-                        )
-                        if (uiState.traktWatchlistConnected) {
-                            add(
-                                VodActionChip(
-                                    key = VodBrowseDefaults.TRAKT_WATCHLIST_CATEGORY,
-                                    label = traktWatchlistLabel,
-                                    onClick = { onSelectCategory(VodBrowseDefaults.TRAKT_WATCHLIST_CATEGORY) }
-                                )
-                            )
-                        }
-                        if (uiState.showTraktTrendingMovies) {
-                            add(
-                                VodActionChip(
-                                    key = VodBrowseDefaults.TRAKT_TRENDING_MOVIES_CATEGORY,
-                                    label = traktTrendingLabel,
-                                    detail = uiState.traktTrendingCount.takeIf { it > 0 }?.toString(),
-                                    onClick = { onSelectCategory(VodBrowseDefaults.TRAKT_TRENDING_MOVIES_CATEGORY) }
-                                )
-                            )
-                        }
-                        if (uiState.showTraktPopularMovies) {
-                            add(
-                                VodActionChip(
-                                    key = VodBrowseDefaults.TRAKT_POPULAR_MOVIES_CATEGORY,
-                                    label = traktPopularLabel,
-                                    detail = uiState.traktPopularCount.takeIf { it > 0 }?.toString(),
-                                    onClick = { onSelectCategory(VodBrowseDefaults.TRAKT_POPULAR_MOVIES_CATEGORY) }
-                                )
-                            )
-                        }
-                        if (favoriteMovies.isNotEmpty()) {
-                            add(
-                                VodActionChip(
-                                    key = "favorites",
-                                    label = stringResource(R.string.favorites_title),
-                                    detail = stringResource(R.string.library_saved_items_count, favoriteMovies.size),
-                                    onClick = { onSelectCategory(uiState.favoriteCategoryName) }
-                                )
-                            )
-                        }
-                        if (continueWatching.isNotEmpty()) {
-                            add(
-                                VodActionChip(
-                                    key = "resume",
-                                    label = stringResource(R.string.library_lens_continue),
-                                    detail = "${continueWatching.size} items",
-                                    onClick = onOpenContinueWatching
-                                )
-                            )
-                        }
-                        if (topRatedMovies.isNotEmpty()) {
-                            add(
-                                VodActionChip(
-                                    key = MovieLibraryLens.TOP_RATED.name,
-                                    label = stringResource(R.string.library_lens_top_rated),
-                                    detail = "${topRatedMovies.size} picks",
-                                    onClick = onOpenTopRated
-                                )
-                            )
-                        }
-                        if (freshMovies.isNotEmpty()) {
-                            add(
-                                VodActionChip(
-                                    key = MovieLibraryLens.FRESH.name,
-                                    label = stringResource(R.string.library_lens_fresh_movies),
-                                    detail = "${freshMovies.size} picks",
-                                    onClick = onOpenFresh
-                                )
-                            )
-                        }
-                    },
-                    modifier = Modifier.padding(top = 2.dp, bottom = 6.dp)
-                )
-            }
             if (continueWatching.isNotEmpty()) {
-            item(key = "continue_watching") {
-                ContinueWatchingRow(
+                item(key = "continue_watching") {
+                    ContinueWatchingRow(
+                        title = stringResource(R.string.continue_watching_title),
                         items = continueWatching,
-                        onItemClick = onContinueWatchingPlay
+                        onItemClick = onContinueWatchingPlay,
+                        initialFocusContentId = targetFocusedMovieId,
+                        initialFocusRequester = initialFocusRequester
                     )
+                }
             }
+            if (watchHistory.isNotEmpty()) {
+                item(key = "watch_history") {
+                    ContinueWatchingRow(
+                        title = stringResource(R.string.movies_watch_history_title),
+                        items = watchHistory,
+                        onItemClick = onContinueWatchingPlay,
+                        initialFocusContentId = targetFocusedMovieId,
+                        initialFocusRequester = initialFocusRequester
+                    )
+                }
             }
             if (favoriteMovies.isNotEmpty()) {
             item(key = "favorites_row") {
@@ -715,7 +686,9 @@ private fun MoviesVodContent(
                                 if (isLocked) onProtectedMovieClick(movie) else onMovieClick(movie)
                             },
                             onLongClick = { onShowDialog(movie) },
-                            modifier = Modifier.width(favoriteCardWidth)
+                            modifier = Modifier
+                                .width(favoriteCardWidth)
+                                .then(if (movie.id == targetFocusedMovieId) Modifier.focusRequester(initialFocusRequester) else Modifier)
                         )
                 }
             }
@@ -741,46 +714,9 @@ private fun MoviesVodContent(
                         movie = movie,
                         isLocked = isLocked,
                         onClick = { if (isLocked) onProtectedMovieClick(movie) else onMovieClick(movie) },
-                        onLongClick = { onShowDialog(movie) }
-                        ,
-                        modifier = if (movie.id == fallbackMovieId) Modifier.focusRequester(initialFocusRequester) else Modifier
+                        onLongClick = { onShowDialog(movie) },
+                        modifier = if (movie.id == targetFocusedMovieId) Modifier.focusRequester(initialFocusRequester) else Modifier
                     )
-                }
-            }
-            }
-            if (freshMovies.isNotEmpty()) {
-            item(key = "fresh_row") {
-                CategoryRow(
-                    title = stringResource(R.string.library_lens_fresh_movies),
-                    items = freshMovies,
-                    onSeeAll = null,
-                    keySelector = { it.id }
-                ) { movie ->
-                        val isLocked = isMovieLocked(movie)
-                        MovieCard(
-                            movie = movie,
-                            isLocked = isLocked,
-                            onClick = { if (isLocked) onProtectedMovieClick(movie) else onMovieClick(movie) },
-                            onLongClick = { onShowDialog(movie) }
-                        )
-                }
-            }
-            }
-            if (topRatedMovies.isNotEmpty()) {
-            item(key = "top_rated_row") {
-                CategoryRow(
-                    title = stringResource(R.string.library_lens_top_rated),
-                    items = topRatedMovies,
-                    onSeeAll = null,
-                    keySelector = { it.id }
-                ) { movie ->
-                        val isLocked = isMovieLocked(movie)
-                        MovieCard(
-                            movie = movie,
-                            isLocked = isLocked,
-                            onClick = { if (isLocked) onProtectedMovieClick(movie) else onMovieClick(movie) },
-                            onLongClick = { onShowDialog(movie) }
-                        )
                 }
             }
             }
@@ -804,9 +740,8 @@ private fun MoviesVodContent(
                         movie = movie,
                         isLocked = isLocked,
                         onClick = { if (isLocked) onProtectedMovieClick(movie) else onMovieClick(movie) },
-                        onLongClick = { onShowDialog(movie) }
-                        ,
-                        modifier = if (movie.id == fallbackMovieId) Modifier.focusRequester(initialFocusRequester) else Modifier
+                        onLongClick = { onShowDialog(movie) },
+                        modifier = if (movie.id == targetFocusedMovieId) Modifier.focusRequester(initialFocusRequester) else Modifier
                     )
                 }
             }
@@ -846,7 +781,7 @@ private fun MoviesVodContent(
     var draggingMovie by remember { mutableStateOf<Movie?>(null) }
     var showBrowseOptions by rememberSaveable(uiState.selectedCategory) { mutableStateOf(false) }
     var showSearchBar by rememberSaveable(uiState.selectedCategory) { mutableStateOf(searchQuery.isNotBlank()) }
-    val initialGridMovieId = filteredGridMovies.firstOrNull()?.id
+    val initialGridMovieId = lastInteractedMovieId ?: filteredGridMovies.firstOrNull()?.id
 
     if (showBrowseOptions) {
         VodBrowseOptionsDialog(
@@ -1105,7 +1040,8 @@ private fun MoviesVodClassicContent(
     onDismissReorder: () -> Unit,
     onMoveReorderItemUp: (Movie) -> Unit,
     onMoveReorderItemDown: (Movie) -> Unit,
-    initialFocusRequester: FocusRequester
+    initialFocusRequester: FocusRequester,
+    lastInteractedMovieId: Long? = null
 ) {
     val allLabel = stringResource(R.string.vod_classic_all)
     val continueLabel = stringResource(R.string.vod_classic_continue_watching)
@@ -1175,7 +1111,7 @@ private fun MoviesVodClassicContent(
         if (uiState.isReorderMode) uiState.filteredMovies else baseMovies
     }
     var draggingMovie by remember { mutableStateOf<Movie?>(null) }
-    val initialGridMovieId = filteredGridMovies.firstOrNull()?.id
+    val initialGridMovieId = lastInteractedMovieId ?: filteredGridMovies.firstOrNull()?.id
 
     LaunchedEffect(uiState.vodViewMode, uiState.selectedCategory, uiState.isReorderMode) {
         if (uiState.vodViewMode == VodViewMode.CLASSIC && uiState.selectedCategory == null && !uiState.isReorderMode) {

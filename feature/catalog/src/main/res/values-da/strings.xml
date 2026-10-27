@@ -367,4 +367,17 @@
 <string name="trakt_rating_saved">Din bedømmelse blev gemt på Trakt.</string>
 <string name="trakt_rating_failed">Kunne ikke gemme din bedømmelse på Trakt.</string>
 <string name="trakt_favorite_sync_failed">StreamVault gemte ændringen, men kunne ikke opdatere Trakt-favoritter. Prøv igen.</string>
+  <string name="movies_sync_needed_title">Filmbibliotek</string>
+  <string name="movies_sync_needed_subtitle">Synkroniser denne udbyder for at importere film til biblioteket.</string>
+  <string name="movies_sync_action">Synkroniser film</string>
+  <string name="movies_syncing_title">Synkroniserer film...</string>
+  <string name="movies_sync_progress_format">%1$d / %2$d elementer indekseret</string>
+    <string name="home_categories_title">Live-kategorier</string>
+    <string name="home_back_to_categories">Tilbage til kategorier</string>
+    <string name="home_live_categories_subtitle">Vælg en kategori for at gennemse kanaler</string>
+    <string name="home_category_channel_count">%1$d kanaler</string>
+    <string name="home_category_summary">%1$d kanaler • %2$d kategorier</string>
+    <string name="home_no_channels_in_category">Ingen tilgængelige kanaler i denne kategori</string>
+    <string name="home_all_channels">Alle kanaler</string>
+    <string name="movies_watch_history_title">Afspilningshistorik</string>
 </resources>

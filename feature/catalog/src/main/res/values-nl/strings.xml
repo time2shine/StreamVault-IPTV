@@ -367,4 +367,17 @@
 <string name="trakt_rating_saved">Je beoordeling is opgeslagen op Trakt.</string>
 <string name="trakt_rating_failed">Je beoordeling kon niet op Trakt worden opgeslagen.</string>
 <string name="trakt_favorite_sync_failed">StreamVault heeft de wijziging opgeslagen, maar kon de Trakt-favorieten niet bijwerken. Probeer het opnieuw.</string>
+  <string name="movies_sync_needed_title">Filmbibliotheek</string>
+  <string name="movies_sync_needed_subtitle">Synchroniseer deze provider om films in de bibliotheek te importeren.</string>
+  <string name="movies_sync_action">Films synchroniseren</string>
+  <string name="movies_syncing_title">Films synchroniseren...</string>
+  <string name="movies_sync_progress_format">%1$d / %2$d items geïndiceerd</string>
+    <string name="home_categories_title">Live-categorieën</string>
+    <string name="home_back_to_categories">Terug naar categorieën</string>
+    <string name="home_live_categories_subtitle">Selecteer een categorie om kanalen te bekijken</string>
+    <string name="home_category_channel_count">%1$d kanalen</string>
+    <string name="home_category_summary">%1$d kanalen • %2$d categorieën</string>
+    <string name="home_no_channels_in_category">Geen kanalen beschikbaar in deze categorie</string>
+    <string name="home_all_channels">Alle kanalen</string>
+    <string name="movies_watch_history_title">Kijkgeschiedenis</string>
 </resources>

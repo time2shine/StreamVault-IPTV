@@ -353,4 +353,17 @@
   <string name="vod_sync_needed_title">सिंक आवश्यक</string>
   <string name="vod_unavailable_subtitle">यह प्रदाता अलग फ़िल्म और सीरीज़ कैटलॉग प्रदान करता है।</string>
   <string name="vod_unavailable_title">VOD उपलब्ध नहीं है</string>
+  <string name="movies_sync_needed_title">फ़िल्म लाइब्रेरी</string>
+  <string name="movies_sync_needed_subtitle">लाइब्रेरी में फ़िल्में आयात करने के लिए इस प्रदाता को सिंक करें।</string>
+  <string name="movies_sync_action">फ़िल्में सिंक करें</string>
+  <string name="movies_syncing_title">फ़िल्में सिंक हो रही हैं...</string>
+  <string name="movies_sync_progress_format">%1$d / %2$d आइटम इंडेक्स किए गए</string>
+    <string name="home_categories_title">लाइव श्रेणियां</string>
+    <string name="home_back_to_categories">श्रेणियों पर वापस जाएं</string>
+    <string name="home_live_categories_subtitle">चैनल देखने के लिए एक श्रेणी चुनें</string>
+    <string name="home_category_channel_count">%1$d चैनल</string>
+    <string name="home_category_summary">%1$d चैनल • %2$d श्रेणियां</string>
+    <string name="home_no_channels_in_category">इस श्रेणी में कोई चैनल उपलब्ध नहीं है</string>
+    <string name="home_all_channels">सभी चैनल</string>
+    <string name="movies_watch_history_title">देखने का इतिहास</string>
 </resources>

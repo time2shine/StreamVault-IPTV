@@ -127,6 +127,7 @@ interface PlayerEngine {
     fun resumeTimeshift()
     fun setPreferredAudioLanguage(languageTag: String?)
     fun setPinnedSubtitleLanguages(languages: List<String>) {}
+    fun setLooping(enabled: Boolean) {}
     fun setVodTrackPreferences(preferences: VodTrackPreferences?)
     fun setSubtitleStyle(style: PlayerSubtitleStyle)
     fun setNetworkQualityPreferences(wifiMaxHeight: Int?, ethernetMaxHeight: Int?)

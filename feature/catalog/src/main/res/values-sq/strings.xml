@@ -353,4 +353,17 @@
   <string name="vod_sync_needed_title">Kërkohet sinkronizim</string>
   <string name="vod_unavailable_subtitle">Ky ofrues ekspozon katalogë të veçantë për Filmat dhe Serialet.</string>
   <string name="vod_unavailable_title">VOD nuk disponohet</string>
+  <string name="movies_sync_needed_title">Biblioteka e filmave</string>
+  <string name="movies_sync_needed_subtitle">Sinkronizoni këtë ofrues për të importuar filma në bibliotekë.</string>
+  <string name="movies_sync_action">Sinkronizo filmat</string>
+  <string name="movies_syncing_title">Po sinkronizohen filmat...</string>
+  <string name="movies_sync_progress_format">Janë indeksuar %1$d / %2$d artikuj</string>
+    <string name="home_categories_title">Kategoritë drejtpërdrejt</string>
+    <string name="home_back_to_categories">Kthehu te kategoritë</string>
+    <string name="home_live_categories_subtitle">Zgjidhni një kategori për të shfletuar kanalet</string>
+    <string name="home_category_channel_count">%1$d kanale</string>
+    <string name="home_category_summary">%1$d Kanale • %2$d Kategori</string>
+    <string name="home_no_channels_in_category">Nuk ka kanale të disponueshme në këtë kategori</string>
+    <string name="home_all_channels">Të gjitha kanalet</string>
+    <string name="movies_watch_history_title">Historiku i shikimit</string>
 </resources>

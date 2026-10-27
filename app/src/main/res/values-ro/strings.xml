@@ -291,4 +291,10 @@
     <string name="torrent_storage_check_failed">Spațiul disponibil nu a putut fi verificat. Redarea torrentului nu poate continua în siguranță.</string>
     <string name="nav_extensions">Extensii</string>
     <string name="nav_sports">Sport</string>
+    <string name="fork_catalog_sync_success">Bibliotecă actualizată: Canalele și filmele sunt gata</string>
+    <string name="fork_catalog_sync_started">Se reîmprospătează lista în fundal…</string>
+    <string name="fork_catalog_sync_up_to_date">Lista este deja actualizată</string>
+    <string name="fork_catalog_sync_completed_added">Sincronizare finalizată! S-au adăugat %1$d canale noi și %2$d filme noi.</string>
+    <string name="fork_catalog_sync_failed">Reîmprospătarea listei a eșuat</string>
+    <string name="fork_catalog_sync_in_progress">Sincronizarea listei este deja în curs…</string>
 </resources>

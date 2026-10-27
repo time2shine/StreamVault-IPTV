@@ -367,4 +367,17 @@
 <string name="trakt_rating_saved">评分已保存到 Trakt。</string>
 <string name="trakt_rating_failed">无法将评分保存到 Trakt。</string>
 <string name="trakt_favorite_sync_failed">StreamVault 已保存更改，但无法更新 Trakt 收藏夹。请重试。</string>
+  <string name="movies_sync_needed_title">电影库</string>
+  <string name="movies_sync_needed_subtitle">同步此提供商以将电影导入媒体库。</string>
+  <string name="movies_sync_action">同步电影</string>
+  <string name="movies_syncing_title">正在同步电影...</string>
+  <string name="movies_sync_progress_format">已编目 %1$d / %2$d 个项目</string>
+    <string name="home_categories_title">直播分类</string>
+    <string name="home_back_to_categories">返回分类</string>
+    <string name="home_live_categories_subtitle">选择分类以浏览频道</string>
+    <string name="home_category_channel_count">%1$d 个频道</string>
+    <string name="home_category_summary">%1$d 个频道 • %2$d 个分类</string>
+    <string name="home_no_channels_in_category">此分类下没有可用频道</string>
+    <string name="home_all_channels">所有频道</string>
+    <string name="movies_watch_history_title">观看记录</string>
 </resources>

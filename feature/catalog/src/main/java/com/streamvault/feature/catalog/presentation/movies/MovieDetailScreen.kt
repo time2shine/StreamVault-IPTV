@@ -47,6 +47,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.remember
@@ -113,6 +114,11 @@ fun MovieDetailScreen(
                 ).show()
             }
         }
+    }
+
+    LifecycleResumeEffect(viewModel) {
+        viewModel.refreshResumeProgress()
+        onPauseOrDispose { }
     }
 
     when {

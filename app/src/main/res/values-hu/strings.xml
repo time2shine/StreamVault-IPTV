@@ -291,4 +291,10 @@
     <string name="torrent_storage_check_failed">A szabad tárhely nem ellenőrizhető. A torrent lejátszása nem folytatható biztonságosan.</string>
     <string name="nav_extensions">Kiterjesztések</string>
     <string name="nav_sports">Sport</string>
+    <string name="fork_catalog_sync_success">Médiatár frissítve: A csatornák és filmek készen állnak</string>
+    <string name="fork_catalog_sync_started">Lejátszási lista frissítése a háttérben…</string>
+    <string name="fork_catalog_sync_up_to_date">A lejátszási lista már naprakész</string>
+    <string name="fork_catalog_sync_completed_added">Szinkronizálás befejezve! %1$d új csatorna és %2$d új film hozzáadva.</string>
+    <string name="fork_catalog_sync_failed">A lejátszási lista frissítése nem sikerült</string>
+    <string name="fork_catalog_sync_in_progress">A lejátszási lista szinkronizálása már folyamatban van…</string>
 </resources>

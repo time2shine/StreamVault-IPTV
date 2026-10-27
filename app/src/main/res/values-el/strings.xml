@@ -291,4 +291,10 @@
     <string name="torrent_storage_check_failed">Δεν ήταν δυνατός ο έλεγχος του διαθέσιμου χώρου. Η αναπαραγωγή torrent δεν μπορεί να συνεχιστεί με ασφάλεια.</string>
     <string name="nav_extensions">Επεκτάσεις</string>
     <string name="nav_sports">Αθλητικά</string>
+    <string name="fork_catalog_sync_success">Η βιβλιοθήκη ενημερώθηκε: Τα κανάλια και οι ταινίες είναι έτοιμα</string>
+    <string name="fork_catalog_sync_started">Ανανέωση λίστας αναπαραγωγής στο παρασκήνιο…</string>
+    <string name="fork_catalog_sync_up_to_date">Η λίστα αναπαραγωγής είναι ήδη ενημερωμένη</string>
+    <string name="fork_catalog_sync_completed_added">Ο συγχρονισμός ολοκληρώθηκε! Προστέθηκαν %1$d νέα κανάλια και %2$d νέες ταινίες.</string>
+    <string name="fork_catalog_sync_failed">Η ανανέωση της λίστας αναπαραγωγής απέτυχε</string>
+    <string name="fork_catalog_sync_in_progress">Ο συγχρονισμός της λίστας εκτελείται ήδη…</string>
 </resources>

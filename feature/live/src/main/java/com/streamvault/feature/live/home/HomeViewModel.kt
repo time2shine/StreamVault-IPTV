@@ -561,15 +561,13 @@ class HomeViewModel @Inject constructor(
                     }
 
                     if (currentSelected == null && categories.isNotEmpty()) {
-                        val defaultCat = defaultId?.let { id -> categories.find { it.id == id } }
-                        val favoritesCat = categories.find { it.id == VirtualCategoryIds.FAVORITES }
-
-                        if (defaultCat != null) {
-                            _uiState.update { it.copy(shouldAutoFocusFirstChannelOnEntry = true) }
-                            selectCategory(defaultCat)
+                        val targetCat = resolveInitialOrFallbackCategory(categories, defaultId)
+                        if (targetCat != null) {
+                            if (targetCat.id == defaultId) {
+                                _uiState.update { it.copy(shouldAutoFocusFirstChannelOnEntry = true) }
+                            }
+                            selectCategory(targetCat)
                         }
-                        else if (favoritesCat != null) selectCategory(favoritesCat)
-                        else selectCategory(categories.first())
                     } else if (currentSelected != null) {
                         val reselectedCat = categories.find { it.id == currentSelected.id }
 
@@ -578,15 +576,13 @@ class HomeViewModel @Inject constructor(
                                 _uiState.update { it.copy(selectedCategory = reselectedCat) }
                             }
                         } else {
-                            val defaultCat = defaultId?.let { id -> categories.find { it.id == id } }
-                            val favoritesCat = categories.find { it.id == VirtualCategoryIds.FAVORITES }
-
-                            if (defaultCat != null) {
-                                _uiState.update { it.copy(shouldAutoFocusFirstChannelOnEntry = true) }
-                                selectCategory(defaultCat)
+                            val targetCat = resolveInitialOrFallbackCategory(categories, defaultId)
+                            if (targetCat != null) {
+                                if (targetCat.id == defaultId) {
+                                    _uiState.update { it.copy(shouldAutoFocusFirstChannelOnEntry = true) }
+                                }
+                                selectCategory(targetCat)
                             }
-                            else if (favoritesCat != null) selectCategory(favoritesCat)
-                            else if (categories.isNotEmpty()) selectCategory(categories.first())
                         }
                     }
                 }
@@ -660,11 +656,11 @@ class HomeViewModel @Inject constructor(
 
                     val currentSelected = _uiState.value.selectedCategory
                     if (currentSelected == null && categories.isNotEmpty()) {
-                        val favoritesCat = categories.find { it.id == VirtualCategoryIds.FAVORITES }
-                        if (favoritesCat != null) selectCategory(favoritesCat) else selectCategory(categories.first())
+                        val targetCat = resolveInitialOrFallbackCategory(categories)
+                        if (targetCat != null) selectCategory(targetCat)
                     } else if (currentSelected != null && categories.none { it.id == currentSelected.id }) {
-                        val favoritesCat = categories.find { it.id == VirtualCategoryIds.FAVORITES }
-                        if (favoritesCat != null) selectCategory(favoritesCat) else if (categories.isNotEmpty()) selectCategory(categories.first())
+                        val targetCat = resolveInitialOrFallbackCategory(categories)
+                        if (targetCat != null) selectCategory(targetCat)
                     }
                 }
             } catch (e: CancellationException) {
@@ -678,6 +674,28 @@ class HomeViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun resolveInitialOrFallbackCategory(
+        categories: List<Category>,
+        defaultId: Long? = null
+    ): Category? {
+        if (categories.isEmpty()) return null
+
+        val defaultCat = defaultId?.let { id -> categories.find { it.id == id } }
+        if (defaultCat != null) return defaultCat
+
+        val favoritesCat = categories.find { it.id == VirtualCategoryIds.FAVORITES }
+        if (favoritesCat != null && favoritesCat.count > 0) return favoritesCat
+
+        val allChannelsCat = categories.find { it.id == ChannelRepository.ALL_CHANNELS_ID }
+        if (allChannelsCat != null && allChannelsCat.count > 0) return allChannelsCat
+
+        return categories.firstOrNull { !it.isVirtual && it.count > 0 }
+            ?: categories.firstOrNull { it.id == ChannelRepository.ALL_CHANNELS_ID }
+            ?: categories.firstOrNull { !it.isVirtual }
+            ?: categories.firstOrNull { it.id != VirtualCategoryIds.FAVORITES && it.id != VirtualCategoryIds.RECENT }
+            ?: categories.first()
     }
 
     fun selectCategory(category: Category) {

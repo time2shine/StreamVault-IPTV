@@ -367,4 +367,17 @@
 <string name="trakt_rating_saved">Arvosanasi tallennettiin Traktiin.</string>
 <string name="trakt_rating_failed">Arvosanan tallentaminen Traktiin epäonnistui.</string>
 <string name="trakt_favorite_sync_failed">StreamVault tallensi muutoksen, mutta Trakt-suosikkeja ei voitu päivittää. Yritä uudelleen.</string>
+  <string name="movies_sync_needed_title">Elokuvakirjasto</string>
+  <string name="movies_sync_needed_subtitle">Synkronoi tämä palveluntarjoaja tuodaksesi elokuvat kirjastoon.</string>
+  <string name="movies_sync_action">Synkronoi elokuvat</string>
+  <string name="movies_syncing_title">Synkronoidaan elokuvia...</string>
+  <string name="movies_sync_progress_format">%1$d / %2$d kohdetta indeksoitu</string>
+    <string name="home_categories_title">Live-kategoriat</string>
+    <string name="home_back_to_categories">Takaisin kategorioihin</string>
+    <string name="home_live_categories_subtitle">Valitse kategoria selataksesi kanavia</string>
+    <string name="home_category_channel_count">%1$d kanavaa</string>
+    <string name="home_category_summary">%1$d kanavaa • %2$d kategoriaa</string>
+    <string name="home_no_channels_in_category">Ei kanavia saatavilla tässä kategoriassa</string>
+    <string name="home_all_channels">Kaikki kanavat</string>
+    <string name="movies_watch_history_title">Katseluhistoria</string>
 </resources>

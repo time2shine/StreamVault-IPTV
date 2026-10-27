@@ -1,6 +1,6 @@
 package com.streamvault.data.parser
 
-import java.net.URI
+import java.net.URLDecoder
 import java.util.Locale
 
 internal enum class M3uMediaKind {
@@ -59,6 +59,21 @@ internal data class M3uVodRules(
 internal class M3uVodClassifier(
     private val rules: M3uVodRules = M3uVodRules()
 ) {
+    companion object {
+        private val NON_ALPHANUMERIC_REGEX = Regex("[^\\p{L}\\p{N}]+")
+
+        private fun normalizeStatic(value: String): String = value
+            .lowercase(Locale.ROOT)
+            .replace(NON_ALPHANUMERIC_REGEX, " ")
+            .trim()
+    }
+
+    // Pre-normalize keywords once at instantiation rather than inside the per-entry loop
+    private val preNormalizedVodKeywords: Set<String> =
+        rules.vodKeywords.map(::normalizeStatic).filter(String::isNotEmpty).toSet()
+    private val preNormalizedLiveKeywords: Set<String> =
+        rules.liveKeywords.map(::normalizeStatic).filter(String::isNotEmpty).toSet()
+
     fun classify(
         entry: M3uParser.M3uEntry,
         override: M3uMediaKind? = null
@@ -67,10 +82,12 @@ internal class M3uVodClassifier(
             return M3uVodClassification(it, M3uVodEvidence.EXPLICIT_OVERRIDE, 1.0f)
         }
 
-        // Fast-path: Check group prefix first (avoids URI parsing, path splitting & regex)
+        // Fast-path: Check explicit VOD groups first (avoids URI parsing, path splitting & regex)
         val trimmedGroup = entry.groupTitle.trim()
         if (trimmedGroup.startsWith("Movies | ", ignoreCase = true) ||
-            trimmedGroup.startsWith("Movie | ", ignoreCase = true)
+            trimmedGroup.startsWith("Movie | ", ignoreCase = true) ||
+            trimmedGroup.contains("kids songs", ignoreCase = true) ||
+            trimmedGroup.contains("kids song", ignoreCase = true)
         ) {
             return M3uVodClassification(M3uMediaKind.VOD, M3uVodEvidence.GROUP_KEYWORD, 1.0f)
         }
@@ -91,39 +108,37 @@ internal class M3uVodClassifier(
 
         val group = normalize(entry.groupTitle)
         val name = normalize(entry.name)
-        if (matchesAny(group, rules.liveKeywords) || matchesAny(name, rules.liveKeywords)) {
+        if (matchesAny(group, preNormalizedLiveKeywords) || matchesAny(name, preNormalizedLiveKeywords)) {
             return M3uVodClassification(M3uMediaKind.LIVE, M3uVodEvidence.LIVE_TEXT_HINT, 0.8f)
         }
-        if (matchesAny(group, rules.vodKeywords)) {
+        if (matchesAny(group, preNormalizedVodKeywords)) {
             return M3uVodClassification(M3uMediaKind.VOD, M3uVodEvidence.GROUP_KEYWORD, 0.7f)
         }
-        if (matchesAny(name, rules.vodKeywords)) {
+        if (matchesAny(name, preNormalizedVodKeywords)) {
             return M3uVodClassification(M3uMediaKind.VOD, M3uVodEvidence.NAME_KEYWORD, 0.55f)
         }
         return M3uVodClassification(M3uMediaKind.LIVE, M3uVodEvidence.DEFAULT_LIVE, 1.0f)
     }
 
-    private fun decodedPath(url: String): String = runCatching { URI(url).path }
-        .getOrNull()
-        ?.lowercase(Locale.ROOT)
-        ?: url.substringBefore('#').substringBefore('?').lowercase(Locale.ROOT)
+    private fun decodedPath(url: String): String {
+        val simple = url.substringBefore('#').substringBefore('?')
+        if (simple.contains('%')) {
+            val decoded = runCatching { URLDecoder.decode(simple, "UTF-8") }.getOrNull()
+            if (decoded != null) return decoded.lowercase(Locale.ROOT)
+        }
+        return simple.lowercase(Locale.ROOT)
+    }
 
-    private fun normalize(value: String): String = value
-        .lowercase(Locale.ROOT)
-        .replace(Regex("[^\\p{L}\\p{N}]+"), " ")
-        .trim()
+    private fun normalize(value: String): String = normalizeStatic(value)
 
-    private fun matchesAny(value: String, keywords: Set<String>): Boolean {
+    private fun matchesAny(value: String, preNormalizedKeywords: Set<String>): Boolean {
         if (value.isEmpty()) return false
         val paddedValue = " $value "
-        return keywords.any { keyword ->
-            val normalizedKeyword = normalize(keyword)
-            normalizedKeyword.isNotEmpty() && (
-                paddedValue.contains(" $normalizedKeyword ") ||
-                    (normalizedKeyword.none(Char::isWhitespace) &&
-                        normalizedKeyword.any { it.code > 127 } &&
-                        value.contains(normalizedKeyword))
-                )
+        return preNormalizedKeywords.any { normalizedKeyword ->
+            paddedValue.contains(" $normalizedKeyword ") ||
+                (normalizedKeyword.none(Char::isWhitespace) &&
+                    normalizedKeyword.any { it.code > 127 } &&
+                    value.contains(normalizedKeyword))
         }
     }
 }

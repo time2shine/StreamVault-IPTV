@@ -367,4 +367,17 @@
 <string name="trakt_rating_saved">Ditt betyg har sparats på Trakt.</string>
 <string name="trakt_rating_failed">Det gick inte att spara ditt betyg på Trakt.</string>
 <string name="trakt_favorite_sync_failed">StreamVault sparade ändringen men kunde inte uppdatera dina Trakt-favoriter. Försök igen.</string>
+  <string name="movies_sync_needed_title">Filmbibliotek</string>
+  <string name="movies_sync_needed_subtitle">Synkronisera denna leverantör för att importera filmer till biblioteket.</string>
+  <string name="movies_sync_action">Synkronisera filmer</string>
+  <string name="movies_syncing_title">Synkroniserar filmer...</string>
+  <string name="movies_sync_progress_format">%1$d / %2$d objekt indexerade</string>
+    <string name="home_categories_title">Live-kategorier</string>
+    <string name="home_back_to_categories">Tillbaka till kategorier</string>
+    <string name="home_live_categories_subtitle">Välj en kategori för att bläddra bland kanaler</string>
+    <string name="home_category_channel_count">%1$d kanaler</string>
+    <string name="home_category_summary">%1$d kanaler • %2$d kategorier</string>
+    <string name="home_no_channels_in_category">Inga tillgängliga kanaler i denna kategori</string>
+    <string name="home_all_channels">Alla kanaler</string>
+    <string name="movies_watch_history_title">Visningshistorik</string>
 </resources>

@@ -291,4 +291,10 @@
     <string name="torrent_storage_check_failed">Не удалось проверить доступное место. Воспроизведение торрента нельзя безопасно продолжить.</string>
     <string name="nav_extensions">Расширения</string>
     <string name="nav_sports">Спорт</string>
+    <string name="fork_catalog_sync_success">Медиатека обновлена: Каналы и фильмы готовы</string>
+    <string name="fork_catalog_sync_started">Обновление плейлиста в фоновом режиме…</string>
+    <string name="fork_catalog_sync_up_to_date">Плейлист уже актуален</string>
+    <string name="fork_catalog_sync_completed_added">Синхронизация завершена! Добавлено новых каналов: %1$d, фильмов: %2$d.</string>
+    <string name="fork_catalog_sync_failed">Не удалось обновить плейлист</string>
+    <string name="fork_catalog_sync_in_progress">Синхронизация плейлиста уже выполняется…</string>
 </resources>

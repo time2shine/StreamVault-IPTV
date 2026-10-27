@@ -367,4 +367,17 @@
 <string name="trakt_rating_saved">Đã lưu điểm của bạn vào Trakt.</string>
 <string name="trakt_rating_failed">Không thể lưu điểm của bạn vào Trakt.</string>
 <string name="trakt_favorite_sync_failed">StreamVault đã lưu thay đổi nhưng không thể cập nhật Mục yêu thích Trakt. Hãy thử lại.</string>
+  <string name="movies_sync_needed_title">Thư viện phim</string>
+  <string name="movies_sync_needed_subtitle">Đồng bộ hóa nhà cung cấp này để nhập phim vào thư viện.</string>
+  <string name="movies_sync_action">Đồng bộ phim</string>
+  <string name="movies_syncing_title">Đang đồng bộ phim...</string>
+  <string name="movies_sync_progress_format">Đã lập chỉ mục %1$d / %2$d mục</string>
+    <string name="home_categories_title">Danh mục trực tiếp</string>
+    <string name="home_back_to_categories">Quay lại danh mục</string>
+    <string name="home_live_categories_subtitle">Chọn danh mục để duyệt các kênh</string>
+    <string name="home_category_channel_count">%1$d kênh</string>
+    <string name="home_category_summary">%1$d Kênh • %2$d Danh mục</string>
+    <string name="home_no_channels_in_category">Không có kênh nào khả dụng trong danh mục này</string>
+    <string name="home_all_channels">Tất cả các kênh</string>
+    <string name="movies_watch_history_title">Lịch sử xem</string>
 </resources>

@@ -151,6 +151,17 @@ internal fun releaseOutgoingLiveZapPlayback(
 
 fun PlayerViewModel.playNext() {
     clearNumericChannelInput()
+    if (currentContentType == ContentType.MOVIE) {
+        if (!isSongPlayback.value && !isMovieChannelPlayback.value) return
+        val movies = currentCategoryMovies.value
+        if (movies.isNotEmpty()) {
+            val currentId = currentContentId
+            val currentIndex = movies.indexOfFirst { it.id == currentId || it.streamUrl == currentStreamUrl }
+            val nextIndex = if (currentIndex != -1) (currentIndex + 1) % movies.size else 0
+            playMovie(movies[nextIndex])
+        }
+        return
+    }
     if (channelList.isEmpty()) return
     val nextIndex = wrappedChannelIndex(1)
     if (nextIndex == -1) return
@@ -159,6 +170,17 @@ fun PlayerViewModel.playNext() {
 
 fun PlayerViewModel.playPrevious() {
     clearNumericChannelInput()
+    if (currentContentType == ContentType.MOVIE) {
+        if (!isSongPlayback.value && !isMovieChannelPlayback.value) return
+        val movies = currentCategoryMovies.value
+        if (movies.isNotEmpty()) {
+            val currentId = currentContentId
+            val currentIndex = movies.indexOfFirst { it.id == currentId || it.streamUrl == currentStreamUrl }
+            val prevIndex = if (currentIndex != -1) (currentIndex - 1 + movies.size) % movies.size else movies.lastIndex
+            playMovie(movies[prevIndex])
+        }
+        return
+    }
     if (channelList.isEmpty()) return
     val prevIndex = wrappedChannelIndex(-1)
     if (prevIndex == -1) return

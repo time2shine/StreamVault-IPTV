@@ -138,6 +138,39 @@ internal fun PlayerViewModel.applyPrepareSessionState(
         playerEngine.stopLiveTimeshift()
     }
 
+    if (currentContentType == ContentType.MOVIE && providerId > 0) {
+        categoryMovieLoadJob?.cancel()
+        categoryMovieLoadJob = viewModelScope.launch {
+            val movie = if (internalChannelId > 0L) playerContentResolver.getMovie(internalChannelId) else null
+            val targetCatId = if (categoryId > 0) categoryId else (movie?.categoryId ?: -1L)
+            val isKids = movie?.categoryName?.trim().equals("Kids Songs", ignoreCase = true) ||
+                movie?.categoryName?.contains("song", ignoreCase = true) == true ||
+                title.contains("kids", ignoreCase = true) ||
+                title.contains("song", ignoreCase = true)
+            val isMovieChannel = movie?.categoryName?.trim().equals("Movie Channels", ignoreCase = true) ||
+                movie?.categoryName?.contains("channel", ignoreCase = true) == true ||
+                title.contains("channel", ignoreCase = true)
+            setIsSongPlayback(isKids)
+            setIsMovieChannelPlayback(isMovieChannel)
+            setLooping(isKids)
+            if ((isKids || isMovieChannel) && targetCatId > 0) {
+                playerContentResolver.getMoviesByCategory(providerId, targetCatId).collect { movies ->
+                    currentCategoryMovies.value = movies
+                }
+            } else {
+                currentCategoryMovies.value = emptyList()
+            }
+        }
+    } else {
+        categoryMovieLoadJob?.cancel()
+        currentCategoryMovies.value = emptyList()
+        setIsSongPlayback(false)
+        setIsMovieChannelPlayback(false)
+        if (currentContentType != ContentType.MOVIE) {
+            setLooping(false)
+        }
+    }
+
     playerRecoveryCoordinator.resetPreparationAttempts()
     playerEngine.setDecoderModes(
         audioMode = preferredAudioDecoderMode,

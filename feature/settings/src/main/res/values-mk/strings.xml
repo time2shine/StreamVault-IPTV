@@ -948,4 +948,5 @@
     <string name="settings_sync_index_progress">%1$s · %2$s</string>
     <string name="settings_refresh_rate_matching">Усогласи со брзината на кадрите</string>
     <string name="settings_refresh_rate_matching_description">Ја усогласува стапката на освежување на екранот со видеото за помазни движења. Потребна е поддршка од екранот; при префрлање екранот може накратко да се затемни.</string>
+    <string name="settings_refresh_playlist_now">Освежи плејлиста</string>
 </resources>

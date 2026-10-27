@@ -579,6 +579,42 @@ class HomeViewModelTest {
     }
 
     @Test
+    fun `initial category selection skips empty favorites and selects all channels or first channel category`() = runTest {
+        val provider = Provider(id = 25L, name = "Provider", type = ProviderType.M3U, serverUrl = "http://test")
+        val newsCategory = Category(id = 15L, name = "News", type = ContentType.LIVE, count = 10)
+        whenever(providerRepository.getActiveProvider()).thenReturn(flowOf(provider))
+        whenever(channelRepository.getCategories(provider.id)).thenReturn(flowOf(listOf(newsCategory)))
+        whenever(getCustomCategories.invoke(eq(provider.id), eq(ContentType.LIVE))).thenReturn(
+            flowOf(listOf(Category(id = VirtualCategoryIds.FAVORITES, name = "Favorites", isVirtual = true, count = 0)))
+        )
+        whenever(channelRepository.getChannelsByCategoryPage(eq(provider.id), any(), any())).thenReturn(flowOf(emptyList()))
+
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertThat(state.selectedCategory?.id).isEqualTo(ChannelRepository.ALL_CHANNELS_ID)
+    }
+
+    @Test
+    fun `initial category selection selects favorites when favorites has starred items`() = runTest {
+        val provider = Provider(id = 26L, name = "Provider", type = ProviderType.M3U, serverUrl = "http://test")
+        val newsCategory = Category(id = 15L, name = "News", type = ContentType.LIVE, count = 10)
+        whenever(providerRepository.getActiveProvider()).thenReturn(flowOf(provider))
+        whenever(channelRepository.getCategories(provider.id)).thenReturn(flowOf(listOf(newsCategory)))
+        whenever(getCustomCategories.invoke(eq(provider.id), eq(ContentType.LIVE))).thenReturn(
+            flowOf(listOf(Category(id = VirtualCategoryIds.FAVORITES, name = "Favorites", isVirtual = true, count = 3)))
+        )
+        whenever(channelRepository.getChannelsByCategoryPage(eq(provider.id), any(), any())).thenReturn(flowOf(emptyList()))
+
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertThat(state.selectedCategory?.id).isEqualTo(VirtualCategoryIds.FAVORITES)
+    }
+
+    @Test
     fun `hidden favorites category is removed from live tv categories`() = runTest {
         val provider = Provider(
             id = 8L,

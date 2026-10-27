@@ -9,14 +9,18 @@ import kotlinx.coroutines.launch
 
 private const val PLAYBACK_CONTROL_MUTE_TOGGLE_DEBOUNCE_MS = 250L
 
-fun PlayerViewModel.seekForward() {
+fun PlayerViewModel.seekForward(ms: Long? = null) {
     notifyUserActivity()
-    playerEngine.seekForward()
+    val isRegularMovie = currentContentType == ContentType.MOVIE && !isSongPlayback.value
+    val seekMs = ms ?: if (isRegularMovie) 60_000L else 10_000L
+    playerEngine.seekForward(seekMs)
 }
 
-fun PlayerViewModel.seekBackward() {
+fun PlayerViewModel.seekBackward(ms: Long? = null) {
     notifyUserActivity()
-    playerEngine.seekBackward()
+    val isRegularMovie = currentContentType == ContentType.MOVIE && !isSongPlayback.value
+    val seekMs = ms ?: if (isRegularMovie) 60_000L else 10_000L
+    playerEngine.seekBackward(seekMs)
 }
 
 fun PlayerViewModel.seekToLiveEdge() {

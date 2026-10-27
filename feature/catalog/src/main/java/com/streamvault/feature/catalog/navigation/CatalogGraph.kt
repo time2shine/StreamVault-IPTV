@@ -45,6 +45,19 @@ fun NavGraphBuilder.registerCatalogGraph(
     consumeSeriesPresentationHint: (NavBackStackEntry) -> Unit,
     decodeDestination: (String) -> AppDestination? = ::decodeCatalogReturnDestination,
 ) {
+    val handleMovieClick: (Movie, AppDestination) -> Unit = { movie, destination ->
+        val isSong = movie.categoryName?.trim().equals("Kids Songs", ignoreCase = true) ||
+            movie.categoryName?.contains("song", ignoreCase = true) == true ||
+            movie.name.contains("kids", ignoreCase = true)
+        val isMovieChannel = movie.categoryName?.trim().equals("Movie Channels", ignoreCase = true) ||
+            movie.categoryName?.contains("channel", ignoreCase = true) == true ||
+            movie.name.contains("channel", ignoreCase = true)
+        if (isSong || isMovieChannel) {
+            onPlayMovie(movie, destination)
+        } else {
+            onOpenMovieDetail(movie, destination)
+        }
+    }
     composable(CatalogRoutePatterns.HOME) {
         DashboardScreen(
             onDestinationRequested = onTopLevelDestinationRequested,
@@ -73,9 +86,21 @@ fun NavGraphBuilder.registerCatalogGraph(
                     )
                 )
             },
-            onMovieClick = { movie -> onOpenMovieDetail(movie, AppDestination.Home) },
+            onMovieClick = { movie -> handleMovieClick(movie, AppDestination.Home) },
             onSeriesClick = { series -> onOpenSeriesDetail(series, AppDestination.Home) },
             onPlaybackHistoryClick = { history -> onPlayHistory(history, AppDestination.Home) },
+            onChannelClick = { channel, categoryId, combinedProfileId ->
+                onPlayChannel(
+                    channel,
+                    CatalogChannelPlaybackContext(
+                        categoryId = categoryId,
+                        providerId = channel.providerId,
+                        isVirtual = categoryId?.let { it < 0 } ?: false,
+                        combinedProfileId = combinedProfileId,
+                        returnDestination = AppDestination.Home,
+                    )
+                )
+            },
             scaffold = scaffold,
             dashboardShelfCustomizationContent = dashboardShelfCustomizationContent,
         )
@@ -83,7 +108,7 @@ fun NavGraphBuilder.registerCatalogGraph(
 
     composable(CatalogRoutePatterns.MOVIES) {
         MoviesScreen(
-            onMovieClick = { movie -> onOpenMovieDetail(movie, AppDestination.Movies) },
+            onMovieClick = { movie -> handleMovieClick(movie, AppDestination.Movies) },
             onContinueWatchingPlay = { history -> onPlayHistory(history, AppDestination.Movies) },
             scaffold = scaffold,
         )
@@ -104,7 +129,7 @@ fun NavGraphBuilder.registerCatalogGraph(
 
     composable(CatalogRoutePatterns.VOD) {
         VodScreen(
-            onMovieClick = { movie -> onOpenMovieDetail(movie, AppDestination.Vod) },
+            onMovieClick = { movie -> handleMovieClick(movie, AppDestination.Vod) },
             onSeriesClick = { series -> onOpenSeriesDetail(series, AppDestination.Vod) },
             scaffold = scaffold,
         )
@@ -131,7 +156,7 @@ fun NavGraphBuilder.registerCatalogGraph(
                     )
                 )
             },
-            onMovieClick = { movie -> onOpenMovieDetail(movie, AppDestination.Search(query)) },
+            onMovieClick = { movie -> handleMovieClick(movie, AppDestination.Search(query)) },
             onSeriesClick = { series -> onOpenSeriesDetail(series, AppDestination.Search(query)) },
             scaffold = scaffold,
         )

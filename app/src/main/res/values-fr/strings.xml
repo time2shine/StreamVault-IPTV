@@ -303,4 +303,10 @@
     <string name="torrent_storage_check_failed">Impossible de vérifier le stockage disponible. La lecture du torrent ne peut pas continuer en toute sécurité.</string>
     <string name="nav_extensions">Extensions</string>
     <string name="nav_sports">Sports</string>
+    <string name="fork_catalog_sync_success">Bibliothèque mise à jour : les chaînes et les films sont prêts</string>
+    <string name="fork_catalog_sync_started">Actualisation de la playlist en arrière-plan…</string>
+    <string name="fork_catalog_sync_up_to_date">La playlist est déjà à jour</string>
+    <string name="fork_catalog_sync_completed_added">Synchronisation terminée ! %1$d nouvelles chaînes et %2$d nouveaux films ajoutés.</string>
+    <string name="fork_catalog_sync_failed">Échec de l\'actualisation de la playlist</string>
+    <string name="fork_catalog_sync_in_progress">La synchronisation de la playlist est déjà en cours…</string>
 </resources>

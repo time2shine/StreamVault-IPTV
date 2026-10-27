@@ -227,6 +227,48 @@ class PlayerViewModel @Inject constructor(
     internal val _sleepTimerUiState = MutableStateFlow(SleepTimerUiState())
     val sleepTimerUiState: StateFlow<SleepTimerUiState> = _sleepTimerUiState.asStateFlow()
     internal val _sleepTimerExitEvent = MutableStateFlow(0)
+    private val _isLoopEnabled = MutableStateFlow(false)
+    val isLoopEnabled: StateFlow<Boolean> = _isLoopEnabled.asStateFlow()
+    private val _isSongPlayback = MutableStateFlow(false)
+    val isSongPlayback: StateFlow<Boolean> = _isSongPlayback.asStateFlow()
+    private val _isMovieChannelPlayback = MutableStateFlow(false)
+    val isMovieChannelPlayback: StateFlow<Boolean> = _isMovieChannelPlayback.asStateFlow()
+    internal val currentCategoryMovies = MutableStateFlow<List<com.streamvault.domain.model.Movie>>(emptyList())
+    internal var categoryMovieLoadJob: Job? = null
+
+    fun setLooping(enabled: Boolean) {
+        _isLoopEnabled.value = enabled
+        playerEngine.setLooping(enabled)
+    }
+
+    fun setIsSongPlayback(isSong: Boolean) {
+        _isSongPlayback.value = isSong
+    }
+
+    fun setIsMovieChannelPlayback(isChannel: Boolean) {
+        _isMovieChannelPlayback.value = isChannel
+    }
+
+    fun toggleLoop() {
+        setLooping(!_isLoopEnabled.value)
+    }
+
+    fun playMovie(movie: com.streamvault.domain.model.Movie, showResumePrompt: Boolean = false) {
+        prepare(
+            streamUrl = movie.streamUrl,
+            epgChannelId = null,
+            internalChannelId = movie.id,
+            categoryId = movie.categoryId ?: -1L,
+            providerId = movie.providerId,
+            isVirtual = false,
+            contentType = com.streamvault.domain.model.ContentType.MOVIE.name,
+            title = movie.name,
+            artworkUrl = movie.posterUrl ?: movie.backdropUrl,
+            remoteContentId = movie.streamId.takeIf { it > 0L }?.toString(),
+            showResumePrompt = showResumePrompt
+        )
+    }
+
     val sleepTimerExitEvent: StateFlow<Int> = _sleepTimerExitEvent.asStateFlow()
     val remoteShortcutPreferences = playerPreferencesCoordinator.remoteShortcutPreferences
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000L), com.streamvault.domain.model.RemoteShortcutPreferences())
@@ -1770,7 +1812,17 @@ class PlayerViewModel @Inject constructor(
                 // Check for resume position after the player is fully prepared (VOD only).
                 // Doing this after preparePlayer ensures pause() acts on the live player instance,
                 // not a stale one that may have already been replaced by prepareInternal().
-                if (showResumePrompt && currentContentType != ContentType.LIVE) {
+                val isSong = _isSongPlayback.value ||
+                    _isMovieChannelPlayback.value ||
+                    currentTitle.contains("kids", ignoreCase = true) ||
+                    currentTitle.contains("song", ignoreCase = true) ||
+                    currentTitle.contains("channel", ignoreCase = true) ||
+                    (internalChannelId > 0L && playerContentResolver.getMovie(internalChannelId)?.let {
+                        it.categoryName?.contains("kids", ignoreCase = true) == true ||
+                        it.categoryName?.contains("song", ignoreCase = true) == true ||
+                        it.categoryName?.contains("channel", ignoreCase = true) == true
+                    } == true)
+                if (showResumePrompt && currentContentType != ContentType.LIVE && !isSong) {
                     val reference = currentStremioPlaybackReference
                     val contentKey = reference?.let {
                         stremioPlaybackContentKey(

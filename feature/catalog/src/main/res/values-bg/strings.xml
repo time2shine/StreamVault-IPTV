@@ -353,4 +353,17 @@
   <string name="vod_sync_needed_title">Нужна е синхронизация</string>
   <string name="vod_unavailable_subtitle">Този доставчик предоставя отделни каталози с филми и сериали.</string>
   <string name="vod_unavailable_title">VOD не е достъпно</string>
+  <string name="movies_sync_needed_title">Библиотека с филми</string>
+  <string name="movies_sync_needed_subtitle">Синхронизирайте този доставчик, за да импортирате филми в библиотеката.</string>
+  <string name="movies_sync_action">Синхронизиране на филми</string>
+  <string name="movies_syncing_title">Синхронизиране на филми...</string>
+  <string name="movies_sync_progress_format">Индексирани %1$d от %2$d елемента</string>
+    <string name="home_categories_title">Категории на живо</string>
+    <string name="home_back_to_categories">Назад към категориите</string>
+    <string name="home_live_categories_subtitle">Изберете категория за преглед на канали</string>
+    <string name="home_category_channel_count">%1$d канала</string>
+    <string name="home_category_summary">%1$d Канала • %2$d Категории</string>
+    <string name="home_no_channels_in_category">Няма налични канали в тази категория</string>
+    <string name="home_all_channels">Всички канали</string>
+    <string name="movies_watch_history_title">История на гледане</string>
 </resources>

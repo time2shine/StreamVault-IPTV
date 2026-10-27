@@ -946,4 +946,5 @@
     <string name="settings_sync_index_progress">%1$s · %2$s</string>
     <string name="settings_refresh_rate_matching">Ajustar a la frecuencia del contenido</string>
     <string name="settings_refresh_rate_matching_description">Adapta la frecuencia de actualización de la pantalla al vídeo para un movimiento más fluido. Requiere una pantalla compatible; al cambiar, la pantalla puede quedar negra brevemente.</string>
+    <string name="settings_refresh_playlist_now">Actualizar lista</string>
 </resources>

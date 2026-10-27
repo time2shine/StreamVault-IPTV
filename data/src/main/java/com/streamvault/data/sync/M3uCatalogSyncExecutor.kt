@@ -77,7 +77,13 @@ internal class M3uCatalogSyncExecutor(
         var metadata = syncMetadataRepository.getMetadata(provider.id) ?: SyncMetadata(provider.id)
         val now = System.currentTimeMillis()
 
-        if (force || ContentCachePolicy.shouldRefresh(metadata.lastLiveSuccess, ContentCachePolicy.CATALOG_TTL_MILLIS, now)) {
+        val needsLiveRefresh = force || ContentCachePolicy.shouldRefresh(metadata.lastLiveSuccess, ContentCachePolicy.CATALOG_TTL_MILLIS, now)
+        val needsMovieRefresh = provider.m3uVodClassificationEnabled && (
+            metadata.lastMovieSuccess <= 0L ||
+            ContentCachePolicy.shouldRefresh(metadata.lastMovieSuccess, ContentCachePolicy.CATALOG_TTL_MILLIS, now)
+        )
+
+        if (needsLiveRefresh || needsMovieRefresh) {
             val isBootstrapWithVod = bootstrap && provider.m3uVodClassificationEnabled
             val stats = withContext(Dispatchers.IO) {
                 if (isBootstrapWithVod) {

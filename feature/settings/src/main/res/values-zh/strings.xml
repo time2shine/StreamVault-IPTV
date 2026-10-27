@@ -946,4 +946,5 @@
     <string name="settings_sync_index_progress">%1$s · %2$s</string>
     <string name="settings_refresh_rate_matching">匹配内容帧率</string>
     <string name="settings_refresh_rate_matching_description">根据视频调整显示器刷新率，让运动画面更流畅。需要显示器支持；切换时屏幕可能会短暂变黑。</string>
+    <string name="settings_refresh_playlist_now">刷新播放列表</string>
 </resources>

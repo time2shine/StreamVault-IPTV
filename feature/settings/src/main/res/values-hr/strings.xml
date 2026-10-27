@@ -951,4 +951,5 @@
     <string name="settings_sync_index_progress">%1$s · %2$s</string>
     <string name="settings_refresh_rate_matching">Uskladi s brzinom kadrova sadržaja</string>
     <string name="settings_refresh_rate_matching_description">Usklađuje frekvenciju osvježavanja zaslona s videozapisom za glađe pokrete. Zahtijeva podršku zaslona; zaslon se pri promjeni može nakratko zacrniti.</string>
+    <string name="settings_refresh_playlist_now">Osvježi popis za reprodukciju</string>
 </resources>

@@ -946,4 +946,5 @@
     <string name="settings_sync_index_progress">%1$s · %2$s</string>
     <string name="settings_refresh_rate_matching">콘텐츠 프레임 속도에 맞추기</string>
     <string name="settings_refresh_rate_matching_description">더 부드러운 움직임을 위해 디스플레이 주사율을 동영상에 맞춥니다. 디스플레이의 지원이 필요하며 전환 시 화면이 잠시 검게 변할 수 있습니다.</string>
+    <string name="settings_refresh_playlist_now">재생목록 새로고침</string>
 </resources>

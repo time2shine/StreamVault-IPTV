@@ -1,5 +1,6 @@
 package com.streamvault.feature.catalog.presentation.dashboard
 
+import androidx.activity.compose.BackHandler
 import com.streamvault.core.ui.layout.isPortraitLayout
 
 import com.streamvault.core.ui.design.BrowseShapes
@@ -105,6 +106,7 @@ fun DashboardScreen(
     onPlaybackHistoryClick: (PlaybackHistory) -> Unit,
     scaffold: CatalogScaffoldContent,
     dashboardShelfCustomizationContent: CatalogDashboardShelfCustomizationContent,
+    onChannelClick: (Channel, Long?, Long?) -> Unit = { _, _, _ -> },
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -139,6 +141,37 @@ fun DashboardScreen(
                 )
                 return@scaffold
             }
+            val isPortrait = isPortraitLayout()
+            if (uiState.selectedCategory != null) {
+                BackHandler(enabled = true) {
+                    viewModel.clearSelectedCategory()
+                }
+                HomeCategoryChannelListView(
+                    category = uiState.selectedCategory!!,
+                    channels = uiState.categoryChannels,
+                    isLoading = uiState.isCategoryChannelsLoading,
+                    searchQuery = uiState.channelSearchQuery,
+                    onSearchQueryChange = viewModel::updateChannelSearchQuery,
+                    nowMs = nowMs,
+                    recordingChannelIds = recordingChannelIds,
+                    scheduledChannelIds = scheduledChannelIds,
+                    isPortrait = isPortrait,
+                    onBack = viewModel::clearSelectedCategory,
+                    onChannelClick = { channel ->
+                        onChannelClick(channel, uiState.selectedCategory?.id, uiState.currentCombinedProfileId)
+                    }
+                )
+            } else {
+                HomeCategoryGridView(
+                    categories = uiState.liveCategories,
+                    totalChannelCount = uiState.stats.liveChannelCount,
+                    isPortrait = isPortrait,
+                    providerWarnings = uiState.providerWarnings,
+                    onOpenSettings = { onDestinationRequested(AppDestination.Settings()) },
+                    onCategoryClick = viewModel::selectCategory
+                )
+            }
+            if (false) {
             val orderedSections = rememberDashboardSections(uiState)
             val onContinueWatchingItemClick: (PlaybackHistory) -> Unit = { history ->
                 val rawSeriesId = history.seriesId ?: history.contentId
@@ -344,6 +377,7 @@ fun DashboardScreen(
                         MovieCard(movie = movie, onClick = { onMovieClick(movie) })
                     }
                 }
+            }
             }
             }
         }
@@ -753,7 +787,7 @@ private fun DashboardHealthPill(
 }
 
 @Composable
-private fun DashboardProviderWarningCard(
+internal fun DashboardProviderWarningCard(
     warnings: List<String>,
     onOpenSettings: () -> Unit
 ) {
@@ -789,7 +823,7 @@ private fun DashboardProviderWarningCard(
 }
 
 @Composable
-private fun DashboardUpdateCard(
+internal fun DashboardUpdateCard(
     notice: DashboardUpdateNotice,
     onOpenSettings: () -> Unit,
     onInstallUpdate: () -> Unit

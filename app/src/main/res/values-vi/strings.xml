@@ -291,4 +291,10 @@
     <string name="torrent_storage_check_failed">Không thể kiểm tra dung lượng lưu trữ còn trống. Không thể tiếp tục phát torrent một cách an toàn.</string>
     <string name="nav_extensions">Tiện ích mở rộng</string>
     <string name="nav_sports">Thể thao</string>
+    <string name="fork_catalog_sync_success">Thư viện đã được cập nhật: Các kênh và phim đã sẵn sàng</string>
+    <string name="fork_catalog_sync_started">Đang làm mới danh sách phát ở chế độ nền…</string>
+    <string name="fork_catalog_sync_up_to_date">Danh sách phát đã được cập nhật</string>
+    <string name="fork_catalog_sync_completed_added">Đồng bộ hóa hoàn tất! Đã thêm %1$d kênh mới và %2$d phim mới.</string>
+    <string name="fork_catalog_sync_failed">Làm mới danh sách phát thất bại</string>
+    <string name="fork_catalog_sync_in_progress">Đang đồng bộ hóa danh sách phát…</string>
 </resources>

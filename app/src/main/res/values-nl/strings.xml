@@ -291,4 +291,10 @@
     <string name="torrent_storage_check_failed">De beschikbare opslagruimte kon niet worden gecontroleerd. De torrentweergave kan niet veilig doorgaan.</string>
     <string name="nav_extensions">Extensies</string>
     <string name="nav_sports">Sport</string>
+    <string name="fork_catalog_sync_success">Bibliotheek bijgewerkt: kanalen en films zijn klaar</string>
+    <string name="fork_catalog_sync_started">Afspeellijst op de achtergrond vernieuwen…</string>
+    <string name="fork_catalog_sync_up_to_date">Afspeellijst is al up-to-date</string>
+    <string name="fork_catalog_sync_completed_added">Synchronisatie voltooid! %1$d nieuwe kanalen en %2$d nieuwe films toegevoegd.</string>
+    <string name="fork_catalog_sync_failed">Vernieuwen van afspeellijst mislukt</string>
+    <string name="fork_catalog_sync_in_progress">Afspeellijstsynchronisatie wordt al uitgevoerd…</string>
 </resources>

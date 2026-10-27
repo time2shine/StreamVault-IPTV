@@ -31,6 +31,7 @@ import com.streamvault.core.ui.components.TvEmptyState
 import com.streamvault.core.ui.theme.OnSurface
 import com.streamvault.core.ui.theme.OnSurfaceDim
 import com.streamvault.core.ui.theme.Primary
+import com.streamvault.core.ui.theme.Secondary
 import com.streamvault.domain.model.LegacyProvider as Provider
 import com.streamvault.domain.model.ProviderType
 import com.streamvault.domain.settings.PlaybackQualityPreferenceScope
@@ -44,6 +45,7 @@ public fun LazyListScope.providerSection(
     providerState: SettingsProviderSectionState,
     targetItemId: String? = null,
     targetFocusModifier: Modifier = Modifier,
+    onQuickRefresh: () -> Unit = {},
 ) {
     item {
         Row(
@@ -70,12 +72,22 @@ public fun LazyListScope.providerSection(
                     color = OnSurfaceDim,
                 )
             }
-            CompactSettingsActionChip(
-                label = stringResource(R.string.settings_add_provider),
-                accent = Primary,
-                onClick = onAddProvider,
-                modifier = if (targetItemId == "sources.add") targetFocusModifier else Modifier,
-            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (uiState.providers.isNotEmpty()) {
+                    CompactSettingsActionChip(
+                        label = stringResource(R.string.settings_refresh_playlist_now),
+                        accent = Secondary,
+                        onClick = onQuickRefresh,
+                        modifier = if (targetItemId == "sources.quick_refresh") targetFocusModifier else Modifier,
+                    )
+                }
+                CompactSettingsActionChip(
+                    label = stringResource(R.string.settings_add_provider),
+                    accent = Primary,
+                    onClick = onAddProvider,
+                    modifier = if (targetItemId == "sources.add") targetFocusModifier else Modifier,
+                )
+            }
         }
     }
     if (uiState.providers.isEmpty()) {

@@ -842,6 +842,15 @@ class Media3PlayerEngine @Inject constructor(
         exoPlayer?.playbackParameters = PlaybackParameters(clamped)
     }
 
+    private var isLoopingEnabled = false
+
+    override fun setLooping(enabled: Boolean) {
+        isLoopingEnabled = enabled
+        preloadPriorityHandler.post {
+            exoPlayer?.repeatMode = if (enabled) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
+        }
+    }
+
     override fun setAudioVideoSyncEnabled(enabled: Boolean) {
         if (_audioVideoSyncEnabled.value == enabled) return
         _audioVideoSyncEnabled.value = enabled
@@ -1564,6 +1573,7 @@ class Media3PlayerEngine @Inject constructor(
         registerQualityNetworkCallback()
         return exoPlayer ?: createPlayer().also { player ->
             exoPlayer = player
+            player.repeatMode = if (isLoopingEnabled) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
             statsCollector.bind { exoPlayer }
             audioFocusController.reapplyVolume()
             pendingPreloadWindow?.let { preloadWindowManager?.updateWindow(it) }

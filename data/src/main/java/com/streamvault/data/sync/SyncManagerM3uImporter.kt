@@ -38,6 +38,7 @@ private const val M3U_PROGRESS_INTERVAL = 5_000
 private const val M3U_SERIES_RECONCILIATION_PAGE_SIZE = 2_048
 private const val M3U_MAX_SERIES_CATEGORY_QUERY_IDS = 900
 private const val M3U_IMPORTER_TAG = "SyncManagerM3u"
+private val WHITESPACE_REGEX = Regex("\\s+")
 
 internal class SyncManagerM3uImporter(
     private val m3uParser: M3uParser,
@@ -80,6 +81,18 @@ internal class SyncManagerM3uImporter(
         val stableLongHasher = StableLongHasher()
         val liveCategories = CategoryAccumulator(provider.id, ContentType.LIVE, stableLongHasher)
         val movieCategories = CategoryAccumulator(provider.id, ContentType.MOVIE, stableLongHasher)
+
+        // Pre-register custom categories in user's desired display order
+        listOf(
+            "Kids Songs",
+            "Bangla",
+            "Hindi",
+            "English",
+            "Hindi Dubbed",
+            "Other",
+            "Movie Channels"
+        ).forEach { movieCategories.idFor(it) }
+
         val channelBatch = ArrayList<ChannelEntity>(batchSize)
         val movieBatch = ArrayList<MovieEntity>(batchSize)
         val seriesCategoryIds = mutableSetOf<Long>()
@@ -123,6 +136,7 @@ internal class SyncManagerM3uImporter(
                         itemsIndexed = 0
                     )
                 )
+                var movieOrderCounter = 0L
                 BoundedInputStream(
                     input = maybeDecompressPlaylist(streamed),
                     maximumBytes = sizeLimits.maxM3uDecompressedBytes,
@@ -261,13 +275,19 @@ internal class SyncManagerM3uImporter(
                             } else {
                                 entry.groupTitle.ifBlank { "Uncategorized" }
                             }
-                            val groupTitle = rawGroup
-                                .removePrefix("Movies | ")
-                                .removePrefix("Movie | ")
-                                .removePrefix("movies | ")
-                                .removePrefix("movie | ")
-                                .trim()
-                                .ifBlank { "Uncategorized" }
+                            val trimmedRaw = rawGroup.trim()
+                            val groupTitle = when {
+                                trimmedRaw.startsWith("Movies | ", ignoreCase = true) ->
+                                    trimmedRaw.substring(9).trim()
+                                trimmedRaw.startsWith("Movie | ", ignoreCase = true) ->
+                                    trimmedRaw.substring(8).trim()
+                                trimmedRaw.equals("Kids Songs", ignoreCase = true) || trimmedRaw.equals("kids song", ignoreCase = true) ->
+                                    "Kids Songs"
+                                trimmedRaw.equals("Movies", ignoreCase = true) || trimmedRaw.equals("Movie", ignoreCase = true) ->
+                                    "Movie Channels"
+                                else ->
+                                    trimmedRaw.removePrefix("Movies | ").removePrefix("Movie | ").trim().ifBlank { "Uncategorized" }
+                            }
                             val stableStreamId = override?.streamId
                                 ?: sourceStableId
                             val categoryId = if (manualTarget == M3uClassificationTarget.MOVIE) {
@@ -293,7 +313,8 @@ internal class SyncManagerM3uImporter(
                                     year = entry.year,
                                     genre = entry.genre,
                                     isAdult = isAdult,
-                                    playbackMetadataJson = playbackMetadataJson
+                                    playbackMetadataJson = playbackMetadataJson,
+                                    addedAt = 100_000_000L - movieOrderCounter++
                                 )
                             )
                             if (movieBatch.size >= batchSize) {
@@ -301,7 +322,14 @@ internal class SyncManagerM3uImporter(
                             }
                         } else {
                             if (!includeLive) return@parseStreaming
-                            val groupTitle = entry.groupTitle.ifBlank { "Uncategorized" }
+                            val rawLiveGroup = entry.groupTitle.ifBlank { "Uncategorized" }
+                            val trimmedLive = rawLiveGroup.trim()
+                            val isMovieChannel = trimmedLive.equals("Movies", ignoreCase = true) || trimmedLive.equals("Movie", ignoreCase = true)
+                            val groupTitle = if (isMovieChannel) {
+                                "Movie Channels"
+                            } else {
+                                trimmedLive
+                            }
                             val stableStreamId = override?.streamId
                                 ?: sourceStableId
                             val categoryId = liveCategories.idFor(groupTitle)
@@ -330,6 +358,29 @@ internal class SyncManagerM3uImporter(
                             )
                             if (channelBatch.size >= batchSize) {
                                 liveCount += flushChannelBatch(provider.id, sessionId, channelBatch)
+                            }
+                            if (isMovieChannel && includeMovies) {
+                                val movieCatId = movieCategories.idFor("Movie Channels")
+                                movieBatch.add(
+                                    MovieEntity(
+                                        streamId = stableStreamId,
+                                        name = entry.name,
+                                        posterUrl = safeLogoUrl,
+                                        categoryId = movieCatId,
+                                        categoryName = "Movie Channels",
+                                        streamUrl = entry.url,
+                                        providerId = provider.id,
+                                        rating = entry.rating?.toFloatOrNull() ?: 0f,
+                                        year = entry.year,
+                                        genre = entry.genre,
+                                        isAdult = isAdult,
+                                        playbackMetadataJson = playbackMetadataJson,
+                                        addedAt = 100_000_000L - movieOrderCounter++
+                                    )
+                                )
+                                if (movieBatch.size >= batchSize) {
+                                    movieCount += flushMovieBatch(provider.id, sessionId, movieBatch)
+                                }
                             }
                         }
                         },
@@ -531,30 +582,29 @@ internal class SyncManagerM3uImporter(
     }
 
     private fun normalizeUrlForIdentity(url: String): String {
-        val parsed = runCatching { URI(url) }.getOrNull()
-        val scheme = parsed?.scheme?.lowercase().orEmpty()
-        val host = parsed?.host?.lowercase().orEmpty()
-        val path = parsed?.path.orEmpty().trimEnd('/')
-        val query = parsed?.query
-            ?.split('&')
-            ?.mapNotNull { pair ->
-                val key = pair.substringBefore('=').lowercase()
-                val value = pair.substringAfter('=', "")
-                when (key) {
-                    "token", "auth", "password", "username" -> null
-                    else -> "$key=$value"
+        val simple = url.substringBefore('#')
+        val qIdx = simple.indexOf('?')
+        val base = if (qIdx >= 0) simple.substring(0, qIdx) else simple
+        val query = if (qIdx >= 0) simple.substring(qIdx + 1) else ""
+        val normalizedQuery = if (query.isEmpty()) "" else {
+            query.split('&')
+                .mapNotNull { pair ->
+                    val eqIdx = pair.indexOf('=')
+                    val key = (if (eqIdx >= 0) pair.substring(0, eqIdx) else pair).trim().lowercase()
+                    val value = if (eqIdx >= 0) pair.substring(eqIdx + 1).trim() else ""
+                    when (key) {
+                        "token", "auth", "password", "username" -> null
+                        else -> "$key=$value"
+                    }
                 }
-            }
-            ?.sorted()
-            ?.joinToString("&")
-            .orEmpty()
-        return listOf(scheme, host, path, query)
-            .joinToString("|")
-            .ifBlank { url.trim().lowercase() }
+                .sorted()
+                .joinToString("&")
+        }
+        return if (normalizedQuery.isEmpty()) base.trim().lowercase() else "${base.trim().lowercase()}|$normalizedQuery"
     }
 
     private fun normalizeTextForIdentity(value: String?): String {
-        return value.orEmpty().lowercase().replace(Regex("\\s+"), " ").trim()
+        return value?.lowercase()?.replace(WHITESPACE_REGEX, " ")?.trim().orEmpty()
     }
 
     private fun requireM3uFieldBounds(fields: Iterable<String?>) {

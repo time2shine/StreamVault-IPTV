@@ -962,4 +962,5 @@
     <string name="settings_sync_index_progress">%1$s · %2$s</string>
     <string name="settings_refresh_rate_matching">مطابقة معدل إطارات المحتوى</string>
     <string name="settings_refresh_rate_matching_description">مطابقة معدل تحديث الشاشة مع الفيديو لحركة أكثر سلاسة. يتطلب دعم الشاشة؛ قد تصبح الشاشة سوداء للحظات عند التبديل.</string>
+    <string name="settings_refresh_playlist_now">تحديث قائمة التشغيل</string>
 </resources>

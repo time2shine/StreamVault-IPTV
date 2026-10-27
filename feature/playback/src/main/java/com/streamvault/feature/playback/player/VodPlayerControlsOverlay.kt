@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Audiotrack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ClosedCaption
 import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.Settings
@@ -71,6 +72,8 @@ internal fun VodPlayerControlsOverlay(
     onOpenSubtitleTracks: () -> Unit,
     onOpenAudioTracks: () -> Unit,
     onOpenSettings: () -> Unit,
+    isLoopEnabled: Boolean = false,
+    onToggleLoop: () -> Unit = {},
     onSeekToPosition: (Long) -> Unit,
     onSetScrubbingMode: (Boolean) -> Unit,
     onSeekPreviewPositionChanged: (Long?) -> Unit,
@@ -80,6 +83,7 @@ internal fun VodPlayerControlsOverlay(
     val vodControlsLabel = stringResource(R.string.player_vod_controls)
     val settingsLabel = stringResource(R.string.player_playback_settings)
     val closeLabel = stringResource(R.string.player_close_controls)
+    val repeatLabel = stringResource(R.string.player_schedule_by_time_repeat)
     AnimatedVisibility(
         visible = visible,
         enter = fadeIn(),
@@ -220,6 +224,18 @@ internal fun VodPlayerControlsOverlay(
                             icon = Icons.Default.Audiotrack,
                             label = stringResource(R.string.player_audio),
                             onClick = onOpenAudioTracks
+                        )
+                    }
+                    VodControlButton(
+                        onClick = onToggleLoop,
+                        modifier = Modifier.semantics {
+                            contentDescription = repeatLabel
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Repeat,
+                            contentDescription = null,
+                            tint = if (isLoopEnabled) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.72f)
                         )
                     }
                     if (overlayState.showSettingsAction) {

@@ -367,4 +367,17 @@
 <string name="trakt_rating_saved">Puanınız Trakt üzerine kaydedildi.</string>
 <string name="trakt_rating_failed">Puanınız Trakt üzerine kaydedilemedi.</string>
 <string name="trakt_favorite_sync_failed">StreamVault değişikliği kaydetti ancak Trakt Favorilerini güncelleyemedi. Yeniden deneyin.</string>
+  <string name="movies_sync_needed_title">Film Kitaplığı</string>
+  <string name="movies_sync_needed_subtitle">Filmleri kitaplığa aktarmak için bu sağlayıcıyı senkronize edin.</string>
+  <string name="movies_sync_action">Filmleri Senkronize Et</string>
+  <string name="movies_syncing_title">Filmler senkronize ediliyor...</string>
+  <string name="movies_sync_progress_format">%1$d / %2$d öğe dizine eklendi</string>
+    <string name="home_categories_title">Canlı Kategoriler</string>
+    <string name="home_back_to_categories">Kategorilere geri dön</string>
+    <string name="home_live_categories_subtitle">Kanallara göz atmak için bir kategori seçin</string>
+    <string name="home_category_channel_count">%1$d kanal</string>
+    <string name="home_category_summary">%1$d Kanal • %2$d Kategori</string>
+    <string name="home_no_channels_in_category">Bu kategoride kullanılabilir kanal yok</string>
+    <string name="home_all_channels">Tüm Kanallar</string>
+    <string name="movies_watch_history_title">İzleme Geçmişi</string>
 </resources>

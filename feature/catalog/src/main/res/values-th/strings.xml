@@ -353,4 +353,17 @@
   <string name="vod_sync_needed_title">ต้องซิงค์</string>
   <string name="vod_unavailable_subtitle">ผู้ให้บริการนี้มีแค็ตตาล็อกภาพยนตร์และซีรีส์แยกกัน</string>
   <string name="vod_unavailable_title">VOD ใช้งานไม่ได้</string>
+  <string name="movies_sync_needed_title">คลังภาพยนตร์</string>
+  <string name="movies_sync_needed_subtitle">ซิงค์ผู้ให้บริการนี้เพื่อนำเข้าภาพยนตร์เข้าสู่คลัง</string>
+  <string name="movies_sync_action">ซิงค์ภาพยนตร์</string>
+  <string name="movies_syncing_title">กำลังซิงค์ภาพยนตร์...</string>
+  <string name="movies_sync_progress_format">จัดทำดัชนีแล้ว %1$d / %2$d รายการ</string>
+    <string name="home_categories_title">หมวดหมู่ถ่ายทอดสด</string>
+    <string name="home_back_to_categories">กลับไปที่หมวดหมู่</string>
+    <string name="home_live_categories_subtitle">เลือกหมวดหมู่เพื่อเรียกดูช่อง</string>
+    <string name="home_category_channel_count">%1$d ช่อง</string>
+    <string name="home_category_summary">%1$d ช่อง • %2$d หมวดหมู่</string>
+    <string name="home_no_channels_in_category">ไม่มีช่องในหมวดหมู่นี้</string>
+    <string name="home_all_channels">ทุกช่อง</string>
+    <string name="movies_watch_history_title">ประวัติการรับชม</string>
 </resources>

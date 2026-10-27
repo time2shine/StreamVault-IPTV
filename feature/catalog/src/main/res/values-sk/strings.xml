@@ -353,4 +353,17 @@
   <string name="vod_sync_needed_title">Je potrebná synchronizácia</string>
   <string name="vod_unavailable_subtitle">Tento poskytovateľ ponúka samostatné katalógy filmov a seriálov.</string>
   <string name="vod_unavailable_title">VOD nie je k dispozícii</string>
+  <string name="movies_sync_needed_title">Knižnica filmov</string>
+  <string name="movies_sync_needed_subtitle">Synchronizujte tohto poskytovateľa pre import filmov do knižnice.</string>
+  <string name="movies_sync_action">Synchronizovať filmy</string>
+  <string name="movies_syncing_title">Synchronizácia filmov...</string>
+  <string name="movies_sync_progress_format">Indexovaných %1$d z %2$d položiek</string>
+    <string name="home_categories_title">Živé kategórie</string>
+    <string name="home_back_to_categories">Späť na kategórie</string>
+    <string name="home_live_categories_subtitle">Vyberte kategóriu na prehliadanie kanálov</string>
+    <string name="home_category_channel_count">%1$d kanálov</string>
+    <string name="home_category_summary">%1$d kanálov • %2$d kategórií</string>
+    <string name="home_no_channels_in_category">V tejto kategórii nie sú k dispozícii žiadne kanály</string>
+    <string name="home_all_channels">Všetky kanály</string>
+    <string name="movies_watch_history_title">História sledovania</string>
 </resources>

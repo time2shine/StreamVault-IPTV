@@ -181,6 +181,8 @@ fun PlayerScreen(
     val playerPreferencesUiState by viewModel.playerPreferencesUiState.collectAsStateWithLifecycle()
     
     val isCatchUpPlayback by viewModel.isCatchUpPlayback.collectAsStateWithLifecycle()
+    val isSongPlayback by viewModel.isSongPlayback.collectAsStateWithLifecycle()
+    val isMovieChannelPlayback by viewModel.isMovieChannelPlayback.collectAsStateWithLifecycle()
     val onlineSubtitleSearchAvailable = !isCatchUpPlayback && contentType in setOf("VOD", "MOVIE", "SERIES_EPISODE")
     val showChannelListOverlay by viewModel.showChannelListOverlay.collectAsStateWithLifecycle()
     val showCategoryListOverlay by viewModel.showCategoryListOverlay.collectAsStateWithLifecycle()
@@ -552,6 +554,7 @@ fun PlayerScreen(
                 PlayerBackAction.CANCEL_CLOSE_PLAYBACK -> dismissClosePlaybackConfirmation()
                 PlayerBackAction.QUALITY_GATE_ACTIVE -> Unit
                 PlayerBackAction.NAVIGATE_BACK -> {
+                    viewModel.persistProgressOnExit()
                     if (playerPreferences.confirmClosePlayback) {
                         openClosePlaybackConfirmation()
                     } else {
@@ -570,6 +573,8 @@ fun PlayerScreen(
             contentType = contentType,
             isCatchUpPlayback = isCatchUpPlayback,
             isRtl = isRtl,
+            isSongPlayback = isSongPlayback,
+            isMovieChannelPlayback = isMovieChannelPlayback,
             nextEpisodeCountdownVisible = nextEpisodeCountdownVisible,
             showChannelListOverlay = showChannelListOverlay,
             showCategoryListOverlay = showCategoryListOverlay,
@@ -612,7 +617,7 @@ fun PlayerScreen(
                     when {
                         anyOverlayVisible -> return@detectTapGestures
                         showControls -> viewModel.toggleControls()
-                        contentType == "LIVE" && !isCatchUpPlayback -> viewModel.openChannelInfoOverlay()
+                        contentType == "LIVE" && !isCatchUpPlayback -> viewModel.openChannelListOverlay()
                         else -> viewModel.toggleControls()
                     }
                 }
@@ -642,12 +647,24 @@ fun PlayerScreen(
                     viewModel.onLiveOverlayInteraction()
                 }
                 when (decision.action) {
+                    PlayerInputAction.OpenChannelList -> {
+                        viewModel.openChannelListOverlay()
+                        true
+                    }
                     PlayerInputAction.PlayNext -> {
                         viewModel.playNext()
                         true
                     }
                     PlayerInputAction.PlayPrevious -> {
                         viewModel.playPrevious()
+                        true
+                    }
+                    PlayerInputAction.SeekForward -> {
+                        viewModel.seekForward()
+                        true
+                    }
+                    PlayerInputAction.SeekBackward -> {
+                        viewModel.seekBackward()
                         true
                     }
                     else -> false
@@ -1020,6 +1037,7 @@ fun PlayerScreen(
         if (showClosePlaybackConfirmation) {
             PlayerClosePlaybackConfirmation(
                 onConfirm = {
+                    viewModel.persistProgressOnExit()
                     showClosePlaybackConfirmation = false
                     onBack()
                 },
@@ -1130,6 +1148,7 @@ fun PlayerScreen(
                     viewModel.runPlayerNoticeAction(PlayerNoticeAction.ALTERNATE_STREAM)
                 },
                 onStop = {
+                    viewModel.persistProgressOnExit()
                     playerEngine.stop()
                     onBack()
                 },
@@ -1153,8 +1172,13 @@ private fun playerInputKey(event: KeyEvent): PlayerInputKey = when (event.keyCod
     KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> PlayerInputKey.MediaPlayPause
     KeyEvent.KEYCODE_MUTE,
     KeyEvent.KEYCODE_VOLUME_MUTE -> PlayerInputKey.Mute(event.repeatCount > 0)
-    KeyEvent.KEYCODE_CHANNEL_UP -> PlayerInputKey.ChannelUp
-    KeyEvent.KEYCODE_CHANNEL_DOWN -> PlayerInputKey.ChannelDown
+    KeyEvent.KEYCODE_CHANNEL_UP,
+    KeyEvent.KEYCODE_MEDIA_NEXT,
+    KeyEvent.KEYCODE_MEDIA_SKIP_FORWARD,
+    KeyEvent.KEYCODE_MEDIA_STEP_FORWARD -> PlayerInputKey.ChannelUp
+    KeyEvent.KEYCODE_CHANNEL_DOWN,
+    KeyEvent.KEYCODE_MEDIA_SKIP_BACKWARD,
+    KeyEvent.KEYCODE_MEDIA_STEP_BACKWARD -> PlayerInputKey.ChannelDown
     KeyEvent.KEYCODE_MEDIA_PREVIOUS -> PlayerInputKey.MediaPrevious
     KeyEvent.KEYCODE_GUIDE -> PlayerInputKey.Guide
     KeyEvent.KEYCODE_INFO -> PlayerInputKey.Info

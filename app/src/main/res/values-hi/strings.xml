@@ -344,4 +344,10 @@
     <string name="torrent_storage_check_failed">उपलब्ध स्टोरेज की जाँच नहीं हो सकी। टोरेंट प्लेबैक सुरक्षित रूप से जारी नहीं रह सकता।</string>
     <string name="nav_extensions">एक्सटेंशन</string>
     <string name="nav_sports">खेल</string>
+    <string name="fork_catalog_sync_success">लाइब्रेरी अपडेट हो गई: चैनल और फ़िल्में तैयार हैं</string>
+    <string name="fork_catalog_sync_started">बैकग्राउंड में प्लेलिस्ट रीफ़्रेश हो रही है…</string>
+    <string name="fork_catalog_sync_up_to_date">प्लेलिस्ट पहले से ही अपडेट है</string>
+    <string name="fork_catalog_sync_completed_added">सिंक पूरा हुआ! %1$d नए चैनल और %2$d नई फ़िल्में जोड़ी गईं।</string>
+    <string name="fork_catalog_sync_failed">प्लेलिस्ट रीफ़्रेश विफल रहा</string>
+    <string name="fork_catalog_sync_in_progress">प्लेलिस्ट सिंक पहले से चल रहा है…</string>
 </resources>

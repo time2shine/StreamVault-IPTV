@@ -353,4 +353,17 @@
   <string name="vod_sync_needed_title">Penyegerakan diperlukan</string>
   <string name="vod_unavailable_subtitle">Penyedia ini menyediakan katalog Filem dan Siri yang berasingan.</string>
   <string name="vod_unavailable_title">VOD tidak tersedia</string>
+  <string name="movies_sync_needed_title">Pustaka Filem</string>
+  <string name="movies_sync_needed_subtitle">Sinkronkan pembekal ini untuk mengimport filem ke dalam pustaka.</string>
+  <string name="movies_sync_action">Sinkronkan Filem</string>
+  <string name="movies_syncing_title">Menyegerakkan Filem...</string>
+  <string name="movies_sync_progress_format">%1$d / %2$d item diindeks</string>
+    <string name="home_categories_title">Kategori Siaran Langsung</string>
+    <string name="home_back_to_categories">Kembali ke kategori</string>
+    <string name="home_live_categories_subtitle">Pilih kategori untuk menyemak imbas saluran</string>
+    <string name="home_category_channel_count">%1$d saluran</string>
+    <string name="home_category_summary">%1$d Saluran • %2$d Kategori</string>
+    <string name="home_no_channels_in_category">Tiada saluran tersedia dalam kategori ini</string>
+    <string name="home_all_channels">Semua Saluran</string>
+    <string name="movies_watch_history_title">Sejarah Tontonan</string>
 </resources>

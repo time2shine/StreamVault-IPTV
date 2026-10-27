@@ -108,6 +108,9 @@ class MainActivity : ComponentActivity(), CatalogPlatformHost {
     internal lateinit var appStartupCoordinator: AppStartupCoordinator
 
     @Inject
+    lateinit var forkCatalogSyncCoordinator: com.streamvault.app.custom.ForkCatalogSyncCoordinator
+
+    @Inject
     lateinit var castManager: CastManager
 
     @Inject
@@ -258,9 +261,11 @@ class MainActivity : ComponentActivity(), CatalogPlatformHost {
                                 coordinator = appNavigationCoordinator,
                                 settingsPlatformHost = settingsPlatformHost,
                                 catalogPlatformHost = this@MainActivity,
-                                onCloseApp = ::closeApp
+                                onCloseApp = ::closeApp,
+                                onQuickRefresh = { forkCatalogSyncCoordinator.triggerManualSync() }
                             )
                             LaunchedEffect(Unit) {
+                                forkCatalogSyncCoordinator.startSyncMaintenance()
                                 dispatchPendingExternalNavigationRequests()
                                 window.decorView.doOnPreDraw {
                                     window.decorView.post {
@@ -280,6 +285,7 @@ class MainActivity : ComponentActivity(), CatalogPlatformHost {
         super.onResume()
         applyImmersiveSystemUi()
         appStartupCoordinator.onAppForegrounded()
+        forkCatalogSyncCoordinator.onAppForegrounded()
     }
 
     private fun closeApp() {

@@ -353,4 +353,17 @@
   <string name="vod_sync_needed_title">Potrebna je sinkronizacija</string>
   <string name="vod_unavailable_subtitle">Ovaj pružatelj nudi odvojene kataloge filmova i serija.</string>
   <string name="vod_unavailable_title">VOD nije dostupan</string>
+  <string name="movies_sync_needed_title">Biblioteka filmova</string>
+  <string name="movies_sync_needed_subtitle">Sinkronizirajte ovog pružatelja za uvoz filmova u biblioteku.</string>
+  <string name="movies_sync_action">Sinkroniziraj filmove</string>
+  <string name="movies_syncing_title">Sinkronizacija filmova...</string>
+  <string name="movies_sync_progress_format">%1$d / %2$d stavki indeksirano</string>
+    <string name="home_categories_title">Kategorije uživo</string>
+    <string name="home_back_to_categories">Natrag na kategorije</string>
+    <string name="home_live_categories_subtitle">Odaberite kategoriju za pregled kanala</string>
+    <string name="home_category_channel_count">%1$d kanala</string>
+    <string name="home_category_summary">%1$d kanala • %2$d kategorija</string>
+    <string name="home_no_channels_in_category">Nema dostupnih kanala u ovoj kategoriji</string>
+    <string name="home_all_channels">Svi kanali</string>
+    <string name="movies_watch_history_title">Povijest gledanja</string>
 </resources>

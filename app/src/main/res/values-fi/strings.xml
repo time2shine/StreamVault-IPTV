@@ -291,4 +291,10 @@
     <string name="torrent_storage_check_failed">Vapaata tallennustilaa ei voitu tarkistaa. Torrentin toistoa ei voida jatkaa turvallisesti.</string>
     <string name="nav_extensions">Laajennukset</string>
     <string name="nav_sports">Urheilu</string>
+    <string name="fork_catalog_sync_success">Kirjasto päivitetty: Kanavat ja elokuvat ovat valmiina</string>
+    <string name="fork_catalog_sync_started">Päivitetään soittolistaa taustalla…</string>
+    <string name="fork_catalog_sync_up_to_date">Soittolista on jo ajan tasalla</string>
+    <string name="fork_catalog_sync_completed_added">Synkronointi valmis! Lisättiin %1$d uutta kanavaa ja %2$d uutta elokuvaa.</string>
+    <string name="fork_catalog_sync_failed">Soittolistan päivitys epäonnistui</string>
+    <string name="fork_catalog_sync_in_progress">Soittolistan synkronointi on jo käynnissä…</string>
 </resources>

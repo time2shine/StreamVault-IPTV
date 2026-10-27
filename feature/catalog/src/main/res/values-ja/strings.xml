@@ -367,4 +367,17 @@
 <string name="trakt_rating_saved">評価をTraktに保存しました。</string>
 <string name="trakt_rating_failed">評価をTraktに保存できませんでした。</string>
 <string name="trakt_favorite_sync_failed">StreamVaultで変更を保存しましたが、Traktのお気に入りを更新できませんでした。もう一度お試しください。</string>
+  <string name="movies_sync_needed_title">映画ライブラリ</string>
+  <string name="movies_sync_needed_subtitle">ライブラリに映画をインポートするには、このプロバイダーを同期してください。</string>
+  <string name="movies_sync_action">映画を同期</string>
+  <string name="movies_syncing_title">映画を同期中...</string>
+  <string name="movies_sync_progress_format">%1$d / %2$d 件をインデックス登録済み</string>
+    <string name="home_categories_title">ライブカテゴリー</string>
+    <string name="home_back_to_categories">カテゴリーに戻る</string>
+    <string name="home_live_categories_subtitle">カテゴリーを選択してチャンネルを表示</string>
+    <string name="home_category_channel_count">%1$d チャンネル</string>
+    <string name="home_category_summary">%1$d チャンネル • %2$d カテゴリー</string>
+    <string name="home_no_channels_in_category">このカテゴリーに利用可能なチャンネルはありません</string>
+    <string name="home_all_channels">すべてのチャンネル</string>
+    <string name="movies_watch_history_title">視聴履歴</string>
 </resources>

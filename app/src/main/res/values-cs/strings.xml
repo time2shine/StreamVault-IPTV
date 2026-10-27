@@ -291,4 +291,10 @@
     <string name="torrent_storage_check_failed">Volné úložiště se nepodařilo zkontrolovat. Přehrávání torrentu nemůže bezpečně pokračovat.</string>
     <string name="nav_extensions">Rozšíření</string>
     <string name="nav_sports">Sport</string>
+    <string name="fork_catalog_sync_success">Knihovna aktualizována: Kanály a filmy jsou připraveny</string>
+    <string name="fork_catalog_sync_started">Obnovování playlistu na pozadí…</string>
+    <string name="fork_catalog_sync_up_to_date">Playlist je již aktuální</string>
+    <string name="fork_catalog_sync_completed_added">Synchronizace dokončena! Bylo přidáno %1$d nových kanálů a %2$d nových filmů.</string>
+    <string name="fork_catalog_sync_failed">Obnovení playlistu se nezdařilo</string>
+    <string name="fork_catalog_sync_in_progress">Synchronizace playlistu již probíhá…</string>
 </resources>

@@ -353,4 +353,17 @@
   <string name="vod_sync_needed_title">Потребна е синхронизација</string>
   <string name="vod_unavailable_subtitle">Овој провајдер нуди одделни каталози за филмови и серии.</string>
   <string name="vod_unavailable_title">VOD е недостапен</string>
+  <string name="movies_sync_needed_title">Библиотека со филмови</string>
+  <string name="movies_sync_needed_subtitle">Синхронизирајте го овој провајдер за да увезете филмови во библиотеката.</string>
+  <string name="movies_sync_action">Синхронизирај филмови</string>
+  <string name="movies_syncing_title">Синхронизација на филмови...</string>
+  <string name="movies_sync_progress_format">%1$d / %2$d ставки индексирани</string>
+    <string name="home_categories_title">Категории во живо</string>
+    <string name="home_back_to_categories">Назад кон категориите</string>
+    <string name="home_live_categories_subtitle">Изберете категорија за прегледување канали</string>
+    <string name="home_category_channel_count">%1$d канали</string>
+    <string name="home_category_summary">%1$d Канали • %2$d Категории</string>
+    <string name="home_no_channels_in_category">Нема достапни канали во оваа категорија</string>
+    <string name="home_all_channels">Сите канали</string>
+    <string name="movies_watch_history_title">Историја на гледање</string>
 </resources>

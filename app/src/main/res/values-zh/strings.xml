@@ -291,4 +291,10 @@
     <string name="torrent_storage_check_failed">无法检查可用存储空间，无法安全地继续播放种子内容。</string>
     <string name="nav_extensions">扩展功能</string>
     <string name="nav_sports">体育</string>
+    <string name="fork_catalog_sync_success">媒体库已更新：频道和电影已准备就绪</string>
+    <string name="fork_catalog_sync_started">正在后台刷新播放列表…</string>
+    <string name="fork_catalog_sync_up_to_date">播放列表已是最新</string>
+    <string name="fork_catalog_sync_completed_added">同步完成！已添加 %1$d 个新频道和 %2$d 部新电影。</string>
+    <string name="fork_catalog_sync_failed">刷新播放列表失败</string>
+    <string name="fork_catalog_sync_in_progress">播放列表同步已在运行…</string>
 </resources>

@@ -293,4 +293,10 @@
     <string name="torrent_storage_check_failed">تعذر التحقق من مساحة التخزين المتاحة، ولا يمكن متابعة تشغيل التورنت بأمان.</string>
     <string name="nav_extensions">التمديدات</string>
     <string name="nav_sports">الرياضة</string>
+    <string name="fork_catalog_sync_success">تم تحديث المكتبة: القنوات والأفلام جاهزة</string>
+    <string name="fork_catalog_sync_started">جارٍ تحديث قائمة التشغيل في الخلفية…</string>
+    <string name="fork_catalog_sync_up_to_date">قائمة التشغيل محدّثة بالفعل</string>
+    <string name="fork_catalog_sync_completed_added">اكتملت المزامنة! تمت إضافة %1$d قناة جديدة و%2$d فيلم جديد.</string>
+    <string name="fork_catalog_sync_failed">فشل تحديث قائمة التشغيل</string>
+    <string name="fork_catalog_sync_in_progress">مزامنة قائمة التشغيل قيد التشغيل بالفعل…</string>
 </resources>

@@ -291,4 +291,10 @@
     <string name="torrent_storage_check_failed">Não foi possível verificar o armazenamento disponível. A reprodução do torrent não pode continuar com segurança.</string>
     <string name="nav_extensions">Extensões</string>
     <string name="nav_sports">Desporto</string>
+    <string name="fork_catalog_sync_success">Biblioteca atualizada: Os canais e filmes estão prontos</string>
+    <string name="fork_catalog_sync_started">Atualizando lista de reprodução em segundo plano…</string>
+    <string name="fork_catalog_sync_up_to_date">A lista de reprodução já está atualizada</string>
+    <string name="fork_catalog_sync_completed_added">Sincronização concluída! %1$d novos canais e %2$d novos filmes adicionados.</string>
+    <string name="fork_catalog_sync_failed">Falha ao atualizar lista de reprodução</string>
+    <string name="fork_catalog_sync_in_progress">A sincronização da lista de reprodução já está em andamento…</string>
 </resources>

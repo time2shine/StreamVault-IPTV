@@ -367,4 +367,17 @@
 <string name="trakt_rating_saved">Оценка сохранена в Trakt.</string>
 <string name="trakt_rating_failed">Не удалось сохранить оценку в Trakt.</string>
 <string name="trakt_favorite_sync_failed">StreamVault сохранил изменение, но не смог обновить избранное Trakt. Попробуйте снова.</string>
+  <string name="movies_sync_needed_title">Библиотека фильмов</string>
+  <string name="movies_sync_needed_subtitle">Синхронизируйте этого провайдера, чтобы импортировать фильмы в библиотеку.</string>
+  <string name="movies_sync_action">Синхронизировать фильмы</string>
+  <string name="movies_syncing_title">Синхронизация фильмов...</string>
+  <string name="movies_sync_progress_format">Индексировано %1$d из %2$d элементов</string>
+    <string name="home_categories_title">Категории в прямом эфире</string>
+    <string name="home_back_to_categories">Назад к категориям</string>
+    <string name="home_live_categories_subtitle">Выберите категорию для просмотра каналов</string>
+    <string name="home_category_channel_count">%1$d каналов</string>
+    <string name="home_category_summary">%1$d каналов • %2$d категорий</string>
+    <string name="home_no_channels_in_category">В этой категории нет доступных каналов</string>
+    <string name="home_all_channels">Все каналы</string>
+    <string name="movies_watch_history_title">История просмотров</string>
 </resources>

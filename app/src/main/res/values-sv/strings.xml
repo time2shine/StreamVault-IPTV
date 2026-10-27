@@ -292,4 +292,10 @@
     <string name="torrent_storage_check_failed">Det gick inte att kontrollera tillgängligt lagringsutrymme. Torrentuppspelningen kan inte fortsätta på ett säkert sätt.</string>
     <string name="nav_extensions">Tillägg</string>
     <string name="nav_sports">Sport</string>
+    <string name="fork_catalog_sync_success">Biblioteket har uppdaterats: Kanaler och filmer är klara</string>
+    <string name="fork_catalog_sync_started">Uppdaterar spellista i bakgrunden…</string>
+    <string name="fork_catalog_sync_up_to_date">Spellistan är redan uppdaterad</string>
+    <string name="fork_catalog_sync_completed_added">Synkronisering slutförd! %1$d nya kanaler och %2$d nya filmer lades till.</string>
+    <string name="fork_catalog_sync_failed">Misslyckades med att uppdatera spellistan</string>
+    <string name="fork_catalog_sync_in_progress">Synkronisering av spellista körs redan…</string>
 </resources>

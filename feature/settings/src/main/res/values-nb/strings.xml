@@ -950,4 +950,5 @@
     <string name="settings_sync_index_progress">%1$s · %2$s</string>
     <string name="settings_refresh_rate_matching">Tilpass til innholdets bildefrekvens</string>
     <string name="settings_refresh_rate_matching_description">Tilpasser skjermens oppdateringsfrekvens til videoen for jevnere bevegelser. Krever støtte fra skjermen; skjermen kan bli svart et øyeblikk ved bytte.</string>
+    <string name="settings_refresh_playlist_now">Oppdater spilleliste</string>
 </resources>

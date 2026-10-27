@@ -291,4 +291,10 @@
     <string name="torrent_storage_check_failed">Не вдалося перевірити доступне сховище. Відтворення торрента не можна безпечно продовжити.</string>
     <string name="nav_extensions">Розширення</string>
     <string name="nav_sports">Спорт</string>
+    <string name="fork_catalog_sync_success">Медіатеку оновлено: Канали та фільми готові</string>
+    <string name="fork_catalog_sync_started">Оновлення списку відтворення у фоновому режимі…</string>
+    <string name="fork_catalog_sync_up_to_date">Список відтворення вже актуальний</string>
+    <string name="fork_catalog_sync_completed_added">Синхронізацію завершено! Додано %1$d нових каналів та %2$d нових фільмів.</string>
+    <string name="fork_catalog_sync_failed">Не вдалося оновити список відтворення</string>
+    <string name="fork_catalog_sync_in_progress">Синхронізація списку відтворення вже виконується…</string>
 </resources>

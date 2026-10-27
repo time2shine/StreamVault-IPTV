@@ -353,4 +353,17 @@
   <string name="vod_sync_needed_title">Kailangan ng Sync</string>
   <string name="vod_unavailable_subtitle">Naglalabas ang provider na ito ng hiwalay na catalog para sa Mga Pelikula at Serye.</string>
   <string name="vod_unavailable_title">Hindi available ang VOD</string>
+  <string name="movies_sync_needed_title">Library ng mga Pelikula</string>
+  <string name="movies_sync_needed_subtitle">I-sync ang provider na ito upang mag-import ng mga pelikula sa library.</string>
+  <string name="movies_sync_action">I-sync ang mga Pelikula</string>
+  <string name="movies_syncing_title">Nagsi-sync ng mga Pelikula...</string>
+  <string name="movies_sync_progress_format">%1$d / %2$d mga item na-index</string>
+    <string name="home_categories_title">Mga Live na Kategorya</string>
+    <string name="home_back_to_categories">Bumalik sa mga kategorya</string>
+    <string name="home_live_categories_subtitle">Pumili ng kategorya para mag-browse ng mga channel</string>
+    <string name="home_category_channel_count">%1$d na channel</string>
+    <string name="home_category_summary">%1$d na Channel • %2$d na Kategorya</string>
+    <string name="home_no_channels_in_category">Walang available na channel sa kategoryang ito</string>
+    <string name="home_all_channels">Lahat ng Channel</string>
+    <string name="movies_watch_history_title">Kasaysayan ng Panonood</string>
 </resources>

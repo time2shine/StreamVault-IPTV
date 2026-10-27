@@ -956,4 +956,5 @@
     <string name="settings_sync_index_progress">%1$s · %2$s</string>
     <string name="settings_refresh_rate_matching">Dopasuj do liczby klatek treści</string>
     <string name="settings_refresh_rate_matching_description">Dopasowuje częstotliwość odświeżania ekranu do filmu, aby ruch był płynniejszy. Wymaga obsługi przez ekran; podczas zmiany ekran może na chwilę zgasnąć.</string>
+    <string name="settings_refresh_playlist_now">Odśwież playlistę</string>
 </resources>

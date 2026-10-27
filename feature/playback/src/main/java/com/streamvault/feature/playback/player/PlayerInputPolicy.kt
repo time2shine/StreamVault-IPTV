@@ -27,6 +27,8 @@ internal data class PlayerInputState(
     val contentType: String,
     val isCatchUpPlayback: Boolean,
     val isRtl: Boolean,
+    val isSongPlayback: Boolean = false,
+    val isMovieChannelPlayback: Boolean = false,
     val nextEpisodeCountdownVisible: Boolean = false,
     val showChannelListOverlay: Boolean = false,
     val showCategoryListOverlay: Boolean = false,
@@ -99,7 +101,7 @@ internal fun playerPreviewInputDecision(
     state: PlayerInputState,
     key: PlayerInputKey
 ): PlayerInputDecision {
-    if (state.nextEpisodeCountdownVisible || state.contentType != "LIVE") {
+    if (state.nextEpisodeCountdownVisible) {
         return PlayerInputDecision(PlayerInputAction.Pass)
     }
     if (
@@ -124,14 +126,50 @@ internal fun playerPreviewInputDecision(
         return PlayerInputDecision(PlayerInputAction.Pass)
     }
 
+    val isLive = state.contentType == "LIVE"
+    val isSongOrChannelMovie = state.contentType == "MOVIE" && (state.isSongPlayback || state.isMovieChannelPlayback)
     val notifyInteraction = state.showChannelInfoOverlay || state.showDiagnostics
+    val isForward = !state.isRtl
+
     return when (key) {
         PlayerInputKey.DpadUp,
+        PlayerInputKey.DpadDown -> {
+            if (isLive) {
+                PlayerInputDecision(PlayerInputAction.OpenChannelList, notifyInteraction)
+            } else {
+                PlayerInputDecision(PlayerInputAction.Pass)
+            }
+        }
+        PlayerInputKey.DpadRight -> {
+            if (isLive || isSongOrChannelMovie) {
+                PlayerInputDecision(if (isForward) PlayerInputAction.PlayNext else PlayerInputAction.PlayPrevious, notifyInteraction)
+            } else {
+                PlayerInputDecision(if (isForward) PlayerInputAction.SeekForward else PlayerInputAction.SeekBackward, notifyInteraction)
+            }
+        }
+        PlayerInputKey.DpadLeft -> {
+            if (isLive || isSongOrChannelMovie) {
+                PlayerInputDecision(if (isForward) PlayerInputAction.PlayPrevious else PlayerInputAction.PlayNext, notifyInteraction)
+            } else {
+                PlayerInputDecision(if (isForward) PlayerInputAction.SeekBackward else PlayerInputAction.SeekForward, notifyInteraction)
+            }
+        }
         PlayerInputKey.ChannelUp,
-        PlayerInputKey.DpadUpRight -> PlayerInputDecision(PlayerInputAction.PlayNext, notifyInteraction)
-        PlayerInputKey.DpadDown,
+        PlayerInputKey.DpadUpRight -> {
+            if (isLive || isSongOrChannelMovie) {
+                PlayerInputDecision(PlayerInputAction.PlayNext, notifyInteraction)
+            } else {
+                PlayerInputDecision(PlayerInputAction.Pass)
+            }
+        }
         PlayerInputKey.ChannelDown,
-        PlayerInputKey.DpadDownLeft -> PlayerInputDecision(PlayerInputAction.PlayPrevious, notifyInteraction)
+        PlayerInputKey.DpadDownLeft -> {
+            if (isLive || isSongOrChannelMovie) {
+                PlayerInputDecision(PlayerInputAction.PlayPrevious, notifyInteraction)
+            } else {
+                PlayerInputDecision(PlayerInputAction.Pass)
+            }
+        }
         else -> PlayerInputDecision(PlayerInputAction.Pass)
     }
 }
@@ -280,37 +318,34 @@ private fun directionalInputDecision(
     if (isLeft && state.showChannelListOverlay && state.contentType == "LIVE" && !state.isCatchUpPlayback) {
         return PlayerInputDecision(PlayerInputAction.OpenCategoryList, notifyInteraction)
     }
-    val liveWithoutOverlay = state.contentType == "LIVE" &&
-        !state.isCatchUpPlayback &&
-        !state.showChannelListOverlay &&
-        !state.showEpgOverlay &&
-        !state.showChannelInfoOverlay &&
-        (isLeft.not() || !state.showCategoryListOverlay)
-    if (liveWithoutOverlay) {
-        val openChannelList = if (isLeft) !state.isRtl else state.isRtl
+
+    val hasBlockingOverlay = state.showChannelListOverlay ||
+        state.showCategoryListOverlay ||
+        state.showEpgOverlay ||
+        state.showChannelInfoOverlay ||
+        state.showDiagnostics
+    if (hasBlockingOverlay) {
+        return PlayerInputDecision(PlayerInputAction.Pass, notifyInteraction)
+    }
+
+    val isForward = if (!isLeft) !state.isRtl else state.isRtl
+
+    if (state.contentType == "LIVE" && !state.isCatchUpPlayback) {
         return PlayerInputDecision(
-            if (openChannelList) PlayerInputAction.OpenChannelList else PlayerInputAction.OpenEpg,
+            if (isForward) PlayerInputAction.PlayNext else PlayerInputAction.PlayPrevious,
             notifyInteraction
         )
     }
 
-    val noSeekBlockingOverlay = if (isLeft) {
-        !state.showChannelListOverlay &&
-            !state.showCategoryListOverlay &&
-            !state.showEpgOverlay &&
-            !state.showChannelInfoOverlay
-    } else {
-        !state.showChannelListOverlay &&
-            !state.showEpgOverlay &&
-            !state.showChannelInfoOverlay
-    }
-    if (!noSeekBlockingOverlay) {
-        return PlayerInputDecision(PlayerInputAction.Pass, notifyInteraction)
+    if (state.contentType == "MOVIE" && (state.isSongPlayback || state.isMovieChannelPlayback)) {
+        return PlayerInputDecision(
+            if (isForward) PlayerInputAction.PlayNext else PlayerInputAction.PlayPrevious,
+            notifyInteraction
+        )
     }
 
-    val seekBackward = if (isLeft) !state.isRtl else state.isRtl
     return PlayerInputDecision(
-        if (seekBackward) PlayerInputAction.SeekBackward else PlayerInputAction.SeekForward,
+        if (isForward) PlayerInputAction.SeekForward else PlayerInputAction.SeekBackward,
         notifyInteraction
     )
 }
@@ -321,7 +356,7 @@ private fun channelStepDecision(
 ): PlayerInputDecision = when {
     state.showDiagnostics || (state.showChannelInfoOverlay && state.channelInfoSubPanelOpen) ->
         PlayerInputDecision(PlayerInputAction.Consume)
-    state.contentType == "LIVE" ->
+    state.contentType == "LIVE" || (state.contentType == "MOVIE" && (state.isSongPlayback || state.isMovieChannelPlayback)) ->
         PlayerInputDecision(if (isUp) PlayerInputAction.PlayNext else PlayerInputAction.PlayPrevious)
     else -> PlayerInputDecision(PlayerInputAction.Pass)
 }
@@ -350,7 +385,7 @@ private fun verticalInputDecision(
         return PlayerInputDecision(PlayerInputAction.Pass, notifyInteraction)
     }
     val action = if (state.contentType == "LIVE" && !state.isCatchUpPlayback) {
-        if (isUp) PlayerInputAction.PlayNext else PlayerInputAction.PlayPrevious
+        PlayerInputAction.OpenChannelList
     } else if (isUp && state.canOpenEpisodePicker) {
         PlayerInputAction.ShowEpisodePicker
     } else {

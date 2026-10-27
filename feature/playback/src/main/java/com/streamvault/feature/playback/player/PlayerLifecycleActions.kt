@@ -66,7 +66,7 @@ internal fun isUsableTokenRenewalExpiry(
 
 /** Captures the old content before prepare mutates the shared playback context. */
 internal fun PlayerViewModel.queueContentSwitchProgressFlush(): Job? {
-    if (currentContentType == ContentType.LIVE) return null
+    if (currentContentType == ContentType.LIVE || isSongPlayback.value || isMovieChannelPlayback.value) return null
     val stremioHistory = buildStremioPlaybackHistorySnapshot(
         positionMs = playerEngine.currentPosition.value,
         durationMs = playerEngine.duration.value
@@ -104,7 +104,7 @@ internal fun PlayerViewModel.queueContentSwitchProgressFlush(): Job? {
  * ignore the return value.
  */
 internal fun PlayerViewModel.queueForcedProgressFlush(): Job? {
-    if (currentContentType == ContentType.LIVE) return null
+    if (currentContentType == ContentType.LIVE || isSongPlayback.value || isMovieChannelPlayback.value) return null
     val stremioHistory = buildStremioPlaybackHistorySnapshot(
         playerEngine.currentPosition.value,
         playerEngine.duration.value
@@ -131,9 +131,21 @@ internal fun PlayerViewModel.queueForcedProgressFlush(): Job? {
     }
 }
 
+internal fun PlayerViewModel.persistProgressOnExit() {
+    if (currentContentType == ContentType.LIVE || isSongPlayback.value || isMovieChannelPlayback.value) return
+    val pos = playerEngine.currentPosition.value
+    val dur = playerEngine.duration.value
+    if (pos > 0 && dur > 0) {
+        viewModelScope.launch {
+            persistPlaybackProgress()
+            playbackHistoryCoordinator.flushPendingProgress()
+        }
+    }
+}
+
 internal fun PlayerViewModel.startProgressTracking() {
     progressTrackingJob?.cancel()
-    if (currentContentType == ContentType.LIVE) return
+    if (currentContentType == ContentType.LIVE || isSongPlayback.value || isMovieChannelPlayback.value) return
 
     val requestVersion = prepareRequestVersion
     progressTrackingJob = playbackSessionScope(requestVersion)?.launch {
@@ -146,6 +158,7 @@ internal fun PlayerViewModel.startProgressTracking() {
 }
 
 internal suspend fun PlayerViewModel.persistPlaybackProgress() {
+    if (isSongPlayback.value || isMovieChannelPlayback.value) return
     val pos = playerEngine.currentPosition.value
     val dur = playerEngine.duration.value
 

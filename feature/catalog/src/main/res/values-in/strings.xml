@@ -367,4 +367,17 @@
 <string name="trakt_rating_saved">Nilai Anda tersimpan di Trakt.</string>
 <string name="trakt_rating_failed">Nilai Anda tidak dapat disimpan di Trakt.</string>
 <string name="trakt_favorite_sync_failed">StreamVault menyimpan perubahan, tetapi tidak dapat memperbarui Favorit Trakt. Coba lagi.</string>
+  <string name="movies_sync_needed_title">Pustaka Film</string>
+  <string name="movies_sync_needed_subtitle">Sinkronkan penyedia ini untuk mengimpor film ke perpustakaan.</string>
+  <string name="movies_sync_action">Sinkronkan Film</string>
+  <string name="movies_syncing_title">Menyinkronkan Film...</string>
+  <string name="movies_sync_progress_format">%1$d / %2$d item diindeks</string>
+    <string name="home_categories_title">Kategori Langsung</string>
+    <string name="home_back_to_categories">Kembali ke kategori</string>
+    <string name="home_live_categories_subtitle">Pilih kategori untuk menjelajahi saluran</string>
+    <string name="home_category_channel_count">%1$d saluran</string>
+    <string name="home_category_summary">%1$d Saluran • %2$d Kategori</string>
+    <string name="home_no_channels_in_category">Tidak ada saluran yang tersedia dalam kategori ini</string>
+    <string name="home_all_channels">Semua Saluran</string>
+    <string name="movies_watch_history_title">Riwayat Tontonan</string>
 </resources>

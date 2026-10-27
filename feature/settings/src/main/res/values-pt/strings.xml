@@ -946,4 +946,5 @@
     <string name="settings_sync_index_progress">%1$s · %2$s</string>
     <string name="settings_refresh_rate_matching">Ajustar à taxa de fotogramas do conteúdo</string>
     <string name="settings_refresh_rate_matching_description">Adapta a taxa de atualização do ecrã ao vídeo para movimentos mais fluidos. Requer um ecrã compatível; ao mudar, o ecrã pode ficar preto por instantes.</string>
+    <string name="settings_refresh_playlist_now">Atualizar lista de reprodução</string>
 </resources>

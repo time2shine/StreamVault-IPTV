@@ -313,4 +313,10 @@
     <string name="torrent_storage_check_failed">無法檢查可用儲存空間，因此無法安全地繼續播放 Torrent。</string>
     <string name="nav_extensions">擴充功能</string>
     <string name="nav_sports">體育</string>
+    <string name="fork_catalog_sync_success">媒體庫已更新：頻道與電影已準備就緒</string>
+    <string name="fork_catalog_sync_started">正在背景重新整理播放清單…</string>
+    <string name="fork_catalog_sync_up_to_date">播放清單已是最新</string>
+    <string name="fork_catalog_sync_completed_added">同步完成！已新增 %1$d 個新頻道和 %2$d 部新電影。</string>
+    <string name="fork_catalog_sync_failed">重新整理播放清單失敗</string>
+    <string name="fork_catalog_sync_in_progress">播放清單同步已在執行中…</string>
 </resources>

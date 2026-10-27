@@ -953,4 +953,5 @@
     <string name="settings_sync_index_progress">%1$s · %2$s</string>
     <string name="settings_refresh_rate_matching">התאמת קצב הרענון לתוכן</string>
     <string name="settings_refresh_rate_matching_description">התאמת קצב הרענון של המסך לסרטון לתנועה חלקה יותר. נדרשת תמיכה במסך; בעת המעבר המסך עשוי להחשיך לזמן קצר.</string>
+    <string name="settings_refresh_playlist_now">רענן רשימת השמעה</string>
 </resources>

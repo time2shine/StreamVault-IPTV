@@ -948,4 +948,5 @@
     <string name="settings_sync_index_progress">%1$s · %2$s</string>
     <string name="settings_refresh_rate_matching">Përshtat shpejtësinë e kuadrove të përmbajtjes</string>
     <string name="settings_refresh_rate_matching_description">Përshtat ritmin e rifreskimit të ekranit me videon për lëvizje më të rrjedhshme. Kërkon mbështetje nga ekrani; gjatë ndërrimit ekrani mund të nxihet për pak çaste.</string>
+    <string name="settings_refresh_playlist_now">Rifresko listën</string>
 </resources>

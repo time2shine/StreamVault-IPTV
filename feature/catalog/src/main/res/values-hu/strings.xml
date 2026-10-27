@@ -367,4 +367,17 @@
 <string name="trakt_rating_saved">Az értékelésed mentve a Traktra.</string>
 <string name="trakt_rating_failed">Nem sikerült menteni az értékelésedet a Traktra.</string>
 <string name="trakt_favorite_sync_failed">A StreamVault mentette a módosítást, de nem sikerült frissítenie a Trakt kedvenceket. Próbáld újra.</string>
+  <string name="movies_sync_needed_title">Filmtár</string>
+  <string name="movies_sync_needed_subtitle">Szinkronizálja ezt a szolgáltatót a filmek könyvtárba történő importálásához.</string>
+  <string name="movies_sync_action">Filmek szinkronizálása</string>
+  <string name="movies_syncing_title">Filmek szinkronizálása folyamatban...</string>
+  <string name="movies_sync_progress_format">%1$d / %2$d elem indexelve</string>
+    <string name="home_categories_title">Élő kategóriák</string>
+    <string name="home_back_to_categories">Vissza a kategóriákhoz</string>
+    <string name="home_live_categories_subtitle">Válasszon kategóriát a csatornák böngészéséhez</string>
+    <string name="home_category_channel_count">%1$d csatorna</string>
+    <string name="home_category_summary">%1$d csatorna • %2$d kategória</string>
+    <string name="home_no_channels_in_category">Nincsenek elérhető csatornák ebben a kategóriában</string>
+    <string name="home_all_channels">Minden csatorna</string>
+    <string name="movies_watch_history_title">Megtekintési előzmények</string>
 </resources>

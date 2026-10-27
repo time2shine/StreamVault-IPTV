@@ -367,4 +367,17 @@
 <string name="trakt_rating_saved">Η βαθμολογία σας αποθηκεύτηκε στο Trakt.</string>
 <string name="trakt_rating_failed">Δεν ήταν δυνατή η αποθήκευση της βαθμολογίας σας στο Trakt.</string>
 <string name="trakt_favorite_sync_failed">Το StreamVault αποθήκευσε την αλλαγή, αλλά δεν μπόρεσε να ενημερώσει τα αγαπημένα του Trakt. Δοκιμάστε ξανά.</string>
+  <string name="movies_sync_needed_title">Βιβλιοθήκη ταινιών</string>
+  <string name="movies_sync_needed_subtitle">Συγχρονίστε αυτόν τον πάροχο για εισαγωγή ταινιών στη βιβλιοθήκη.</string>
+  <string name="movies_sync_action">Συγχρονισμός ταινιών</string>
+  <string name="movies_syncing_title">Συγχρονισμός ταινιών...</string>
+  <string name="movies_sync_progress_format">%1$d / %2$d στοιχεία ευρετηριάστηκαν</string>
+    <string name="home_categories_title">Ζωντανές κατηγορίες</string>
+    <string name="home_back_to_categories">Επιστροφή στις κατηγορίες</string>
+    <string name="home_live_categories_subtitle">Επιλέξτε κατηγορία για περιήγηση καναλιών</string>
+    <string name="home_category_channel_count">%1$d κανάλια</string>
+    <string name="home_category_summary">%1$d κανάλια • %2$d κατηγορίες</string>
+    <string name="home_no_channels_in_category">Δεν υπάρχουν διαθέσιμα κανάλια σε αυτήν την κατηγορία</string>
+    <string name="home_all_channels">Όλα τα κανάλια</string>
+    <string name="movies_watch_history_title">Ιστορικό παρακολούθησης</string>
 </resources>

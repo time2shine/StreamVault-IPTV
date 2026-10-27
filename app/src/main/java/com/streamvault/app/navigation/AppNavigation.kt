@@ -28,6 +28,7 @@ fun AppNavigation(
     settingsPlatformHost: SettingsPlatformHost,
     catalogPlatformHost: CatalogPlatformHost? = null,
     onCloseApp: () -> Unit,
+    onQuickRefresh: () -> Unit = {},
     navController: NavHostController = rememberNavController()
 ) {
     val navigator = remember(navController) { NavControllerNavigator(navController) }
@@ -73,7 +74,8 @@ fun AppNavigation(
                 startupReady = state.startupTarget != null,
                 onStartupNavigationRequested = coordinator::requestStartupNavigation,
                 onTopLevelDestinationRequested = coordinator::requestTopLevelNavigation,
-                onCloseApp = onCloseApp
+                onCloseApp = onCloseApp,
+                onQuickRefresh = onQuickRefresh
             )
         }
     }

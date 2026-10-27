@@ -1,4 +1,4 @@
-﻿package com.streamvault.feature.catalog.presentation.movies
+package com.streamvault.feature.catalog.presentation.movies
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
@@ -62,6 +62,9 @@ import com.streamvault.feature.catalog.presentation.vod.VodBrowseDefaults
 import com.streamvault.feature.catalog.presentation.vod.orderedTraktDiscoveryItems
 import com.streamvault.feature.catalog.presentation.dashboard.orderedWatchlistItems
 import com.streamvault.domain.playback.isPlaybackComplete
+import com.streamvault.data.sync.ProviderSyncStateSource
+import com.streamvault.data.sync.SyncProgressBus
+import com.streamvault.domain.model.SyncState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import com.streamvault.feature.catalog.R
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -76,6 +79,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -109,6 +113,8 @@ class MoviesViewModel @Inject constructor(
     private val traktAccount: TraktAccount,
     private val traktWatchlist: TraktWatchlist,
     private val traktDiscovery: TraktDiscovery,
+    private val syncManager: ProviderSyncStateSource,
+    private val syncProgressBus: SyncProgressBus,
 ) : ViewModel() {
     private companion object {
         const val UNCATEGORIZED = "Uncategorized"
@@ -134,6 +140,7 @@ class MoviesViewModel @Inject constructor(
     private var activeProviderId: Long? = null
     private var remotePageRequestInFlight = false
     private var initialRemoteRequestInFlight = false
+    private var hasTriggeredAutoSync = false
 
     private data class PreviewLoadResult(
         val snapshot: MovieCatalogSnapshot,
@@ -567,13 +574,29 @@ class MoviesViewModel @Inject constructor(
                             scope = ContinueWatchingScope.MOVIES
                         )
                             .collect { result ->
+                                val rawItems = when (result) {
+                                    is ContinueWatchingResult.Items -> result.items
+                                    ContinueWatchingResult.Degraded -> emptyList()
+                                }
+                                val filtered = if (rawItems.isEmpty()) {
+                                    emptyList()
+                                } else {
+                                    val movieMap = movieRepository.getMoviesByIds(rawItems.map { it.contentId }).first().associateBy { it.id }
+                                    rawItems.filter { item ->
+                                        val movie = movieMap[item.contentId]
+                                        val cat = movie?.categoryName?.trim()
+                                        val isSong = cat.equals("Kids Songs", ignoreCase = true) ||
+                                            cat?.contains("song", ignoreCase = true) == true ||
+                                            item.title.contains("kids", ignoreCase = true) ||
+                                            item.title.contains("song", ignoreCase = true)
+                                        val isChannel = cat.equals("Movie Channels", ignoreCase = true) ||
+                                            cat?.contains("channel", ignoreCase = true) == true ||
+                                            item.title.contains("channel", ignoreCase = true)
+                                        !isSong && !isChannel
+                                    }
+                                }
                                 _uiState.update {
-                                    it.copy(
-                                        continueWatching = when (result) {
-                                            is ContinueWatchingResult.Items -> result.items
-                                            ContinueWatchingResult.Degraded -> emptyList()
-                                        }
-                                    )
+                                    it.copy(continueWatching = filtered)
                                 }
                             }
                     }
@@ -612,14 +635,31 @@ class MoviesViewModel @Inject constructor(
                         .map { it.contentId }
                         .take(VodBrowseDefaults.PREVIEW_ROW_LIMIT)
                         .toList()
-                    val continueIds = dependencies.history
-                        .asSequence()
+                    val rawMovieHistory = dependencies.history
                         .filter { it.contentType == ContentType.MOVIE }
                         .sortedByDescending { it.lastWatchedAt }
                         .distinctBy { it.contentId }
+                    val filteredMovieHistory = if (rawMovieHistory.isEmpty()) {
+                        emptyList()
+                    } else {
+                        val movieMap = movieRepository.getMoviesByIds(rawMovieHistory.map { it.contentId }).first().associateBy { it.id }
+                        rawMovieHistory.filter { item ->
+                            val movie = movieMap[item.contentId]
+                            val cat = movie?.categoryName?.trim()
+                            val isSong = cat.equals("Kids Songs", ignoreCase = true) ||
+                                cat?.contains("song", ignoreCase = true) == true ||
+                                item.title.contains("kids", ignoreCase = true) ||
+                                item.title.contains("song", ignoreCase = true)
+                            val isChannel = cat.equals("Movie Channels", ignoreCase = true) ||
+                                cat?.contains("channel", ignoreCase = true) == true ||
+                                item.title.contains("channel", ignoreCase = true)
+                            !isSong && !isChannel
+                        }
+                    }
+                    val continueIds = filteredMovieHistory
                         .map { it.contentId }
                         .take(VodBrowseDefaults.PREVIEW_ROW_LIMIT)
-                        .toList()
+                    val movieHistory = filteredMovieHistory
 
                     val favoritePreview = if (favoriteIds.isEmpty()) {
                         emptyList()
@@ -634,6 +674,7 @@ class MoviesViewModel @Inject constructor(
 
                     _uiState.update {
                         it.copy(
+                            watchHistory = movieHistory,
                             libraryLensRows = mapOf(
                                 MovieLibraryLens.FAVORITES to favoritePreview,
                                 MovieLibraryLens.CONTINUE to continuePreview,
@@ -680,6 +721,64 @@ class MoviesViewModel @Inject constructor(
                 .collect { pinnedIds ->
                     _uiState.update { it.copy(pinnedCategoryIds = pinnedIds) }
                 }
+        }
+
+        viewModelScope.launch {
+            _uiState.map { it.hasActiveProvider }
+                .distinctUntilChanged()
+                .flatMapLatest { hasActive ->
+                    val id = activeProviderId
+                    if (hasActive && id != null) {
+                        syncManager.syncStateForProvider(id)
+                    } else {
+                        flowOf(SyncState.Idle)
+                    }
+                }
+                .collectLatest { syncState ->
+                    val isSyncing = syncState is SyncState.Syncing
+                    val phase = (syncState as? SyncState.Syncing)?.phase
+                    _uiState.update {
+                        it.copy(
+                            isSyncing = isSyncing,
+                            syncPhase = if (isSyncing) phase ?: it.syncPhase else null
+                        )
+                    }
+                }
+        }
+
+        viewModelScope.launch {
+            syncProgressBus.progressByProvider.collectLatest { progressMap ->
+                val id = activeProviderId ?: return@collectLatest
+                val providerProgress = progressMap[id]?.progress
+                if (providerProgress != null) {
+                    _uiState.update {
+                        it.copy(
+                            syncCurrent = providerProgress.current,
+                            syncTotal = providerProgress.total,
+                            syncPhase = providerProgress.currentLabel.ifBlank { it.syncPhase }
+                        )
+                    }
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            _uiState
+                .filter { it.hasActiveProvider && !it.isLoading }
+                .collect { state ->
+                    if (state.libraryCount == 0 && !state.isSyncing && !hasTriggeredAutoSync) {
+                        hasTriggeredAutoSync = true
+                        syncMovies()
+                    }
+                }
+        }
+    }
+
+    fun syncMovies() {
+        val providerId = activeProviderId ?: return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSyncing = true, syncPhase = null, syncCurrent = 0, syncTotal = 0) }
+            providerRepository.refreshProviderData(providerId, force = true)
         }
     }
 
@@ -1709,6 +1808,7 @@ data class MoviesUiState(
     val vodViewMode: VodViewMode = VodViewMode.MODERN,
     val vodInfiniteScroll: Boolean = true,
     val continueWatching: List<PlaybackHistory> = emptyList(),
+    val watchHistory: List<PlaybackHistory> = emptyList(),
     val hasProviders: Boolean = false,
     val hasActiveProvider: Boolean = false,
     val isM3uProvider: Boolean = false,
@@ -1733,6 +1833,10 @@ data class MoviesUiState(
     val isReorderMode: Boolean = false,
     val reorderCategory: Category? = null,
     val filteredMovies: List<Movie> = emptyList(),
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val isSyncing: Boolean = false,
+    val syncPhase: String? = null,
+    val syncCurrent: Int = 0,
+    val syncTotal: Int = 0
 )
 

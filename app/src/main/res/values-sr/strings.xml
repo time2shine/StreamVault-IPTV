@@ -344,4 +344,10 @@
     <string name="torrent_storage_check_failed">Није могуће проверити доступан простор. Репродукција торента не може безбедно да се настави.</string>
     <string name="nav_extensions">Проширења</string>
     <string name="nav_sports">Спорт</string>
+    <string name="fork_catalog_sync_success">Библиотека је ажурирана: Канали и филмови су спремни</string>
+    <string name="fork_catalog_sync_started">Освежавање листе у позадини…</string>
+    <string name="fork_catalog_sync_up_to_date">Листа је већ ажурирана</string>
+    <string name="fork_catalog_sync_completed_added">Синхронизација је завршена! Додато је %1$d нових канала и %2$d нових филмова.</string>
+    <string name="fork_catalog_sync_failed">Освежавање листе није успело</string>
+    <string name="fork_catalog_sync_in_progress">Синхронизација листе је већ у току…</string>
 </resources>

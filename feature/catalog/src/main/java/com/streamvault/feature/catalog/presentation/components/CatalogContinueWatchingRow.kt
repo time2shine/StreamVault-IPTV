@@ -1,4 +1,4 @@
-﻿package com.streamvault.feature.catalog.presentation.components
+package com.streamvault.feature.catalog.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +20,8 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -47,7 +49,9 @@ fun ContinueWatchingRow(
     title: String? = null,
     items: List<PlaybackHistory>,
     onItemClick: (PlaybackHistory) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    initialFocusContentId: Long? = null,
+    initialFocusRequester: FocusRequester? = null
 ) {
     if (items.isEmpty()) return
 
@@ -76,7 +80,14 @@ fun ContinueWatchingRow(
                 key = { it.id },
                 contentType = { it.contentType }
             ) { history ->
-                ContinueWatchingTile(history = history, onClick = { onItemClick(history) })
+                val tileModifier = if (history.contentId == initialFocusContentId && initialFocusRequester != null) {
+                    Modifier.focusRequester(initialFocusRequester)
+                } else Modifier
+                ContinueWatchingTile(
+                    history = history,
+                    onClick = { onItemClick(history) },
+                    modifier = tileModifier
+                )
             }
         }
     }
@@ -85,7 +96,8 @@ fun ContinueWatchingRow(
 @Composable
 private fun ContinueWatchingTile(
     history: PlaybackHistory,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val progress = if (history.totalDurationMs > 0) {
         (history.resumePositionMs.toFloat() / history.totalDurationMs).coerceIn(0f, 1f)
@@ -95,6 +107,7 @@ private fun ContinueWatchingTile(
 
     FocusableCard(
         onClick = onClick,
+        modifier = modifier,
         width = 208.dp,
         height = 117.dp
     ) {

@@ -291,4 +291,10 @@
     <string name="torrent_storage_check_failed">Kullanılabilir depolama alanı denetlenemedi. Torrent oynatma güvenli biçimde sürdürülemez.</string>
     <string name="nav_extensions">Eklentiler</string>
     <string name="nav_sports">Spor</string>
+    <string name="fork_catalog_sync_success">Kütüphane güncellendi: Kanallar ve filmler hazır</string>
+    <string name="fork_catalog_sync_started">Oynatma listesi arka planda yenileniyor…</string>
+    <string name="fork_catalog_sync_up_to_date">Oynatma listesi zaten güncel</string>
+    <string name="fork_catalog_sync_completed_added">Senkronizasyon tamamlandı! %1$d yeni kanal ve %2$d yeni film eklendi.</string>
+    <string name="fork_catalog_sync_failed">Oynatma listesi yenilenemedi</string>
+    <string name="fork_catalog_sync_in_progress">Oynatma listesi senkronizasyonu zaten çalışıyor…</string>
 </resources>

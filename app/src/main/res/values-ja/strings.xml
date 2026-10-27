@@ -292,4 +292,10 @@
     <string name="torrent_storage_check_failed">空き容量を確認できませんでした。安全にトレント再生を続けられません。</string>
     <string name="nav_extensions">拡張機能</string>
     <string name="nav_sports">スポーツ</string>
+    <string name="fork_catalog_sync_success">ライブラリが更新されました: チャンネルと映画の準備が完了しました</string>
+    <string name="fork_catalog_sync_started">バックグラウンドでプレイリストを更新中…</string>
+    <string name="fork_catalog_sync_up_to_date">プレイリストは最新です</string>
+    <string name="fork_catalog_sync_completed_added">同期が完了しました！ %1$d 件の新しいチャンネルと %2$d 件の新しい映画が追加されました。</string>
+    <string name="fork_catalog_sync_failed">プレイリストの更新に失敗しました</string>
+    <string name="fork_catalog_sync_in_progress">プレイリストの同期は既に実行中です…</string>
 </resources>

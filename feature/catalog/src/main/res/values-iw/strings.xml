@@ -367,4 +367,17 @@
 <string name="trakt_rating_saved">הדירוג נשמר ב‑Trakt.</string>
 <string name="trakt_rating_failed">לא ניתן לשמור את הדירוג ב‑Trakt.</string>
 <string name="trakt_favorite_sync_failed">StreamVault שמר את השינוי, אך לא הצליח לעדכן את המועדפים ב‑Trakt. נסו שוב.</string>
+  <string name="movies_sync_needed_title">ספריית סרטים</string>
+  <string name="movies_sync_needed_subtitle">סנכרן ספק זה כדי לייבא סרטים לספרייה.</string>
+  <string name="movies_sync_action">סנכרן סרטים</string>
+  <string name="movies_syncing_title">מסנכרן סרטים...</string>
+  <string name="movies_sync_progress_format">%1$d / %2$d פריטים נוספו לאינדקס</string>
+    <string name="home_categories_title">קטגוריות בשידור חי</string>
+    <string name="home_back_to_categories">חזרה לקטגוריות</string>
+    <string name="home_live_categories_subtitle">בחר קטגוריה לעיון בערוצים</string>
+    <string name="home_category_channel_count">%1$d ערוצים</string>
+    <string name="home_category_summary">%1$d ערוצים • %2$d קטגוריות</string>
+    <string name="home_no_channels_in_category">אין ערוצים זמינים בקטגוריה זו</string>
+    <string name="home_all_channels">כל הערוצים</string>
+    <string name="movies_watch_history_title">היסטוריית צפייה</string>
 </resources>

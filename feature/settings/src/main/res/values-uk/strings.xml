@@ -956,4 +956,5 @@
     <string name="settings_sync_index_progress">%1$s · %2$s</string>
     <string name="settings_refresh_rate_matching">Узгоджувати частоту з відеовмістом</string>
     <string name="settings_refresh_rate_matching_description">Узгоджує частоту оновлення екрана з відео для плавнішого руху. Потрібна підтримка екрана; під час перемикання екран може ненадовго згаснути.</string>
+    <string name="settings_refresh_playlist_now">Оновити список відтворення</string>
 </resources>

@@ -353,4 +353,17 @@
   <string name="vod_sync_needed_title">نیاز به همگام‌سازی</string>
   <string name="vod_unavailable_subtitle">این سرویس‌دهنده کاتالوگ‌های جداگانه فیلم و سریال ارائه می‌دهد.</string>
   <string name="vod_unavailable_title">VOD در دسترس نیست</string>
+  <string name="movies_sync_needed_title">کتابخانه فیلم‌ها</string>
+  <string name="movies_sync_needed_subtitle">این سرویس‌دهنده را همگام‌سازی کنید تا فیلم‌ها به کتابخانه وارد شوند.</string>
+  <string name="movies_sync_action">همگام‌سازی فیلم‌ها</string>
+  <string name="movies_syncing_title">در حال همگام‌سازی فیلم‌ها...</string>
+  <string name="movies_sync_progress_format">%1$d از %2$d مورد فهرست شد</string>
+    <string name="home_categories_title">دسته‌بندی‌های زنده</string>
+    <string name="home_back_to_categories">بازگشت به دسته‌بندی‌ها</string>
+    <string name="home_live_categories_subtitle">یک دسته را برای مشاهده کانال‌ها انتخاب کنید</string>
+    <string name="home_category_channel_count">%1$d کانال</string>
+    <string name="home_category_summary">%1$d کانال • %2$d دسته</string>
+    <string name="home_no_channels_in_category">هیچ کانالی در این دسته موجود نیست</string>
+    <string name="home_all_channels">همه کانال‌ها</string>
+    <string name="movies_watch_history_title">تاریخچه تماشا</string>
 </resources>

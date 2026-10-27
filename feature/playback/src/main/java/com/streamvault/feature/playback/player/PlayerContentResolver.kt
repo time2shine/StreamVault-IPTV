@@ -57,6 +57,9 @@ class PlayerContentResolver @Inject constructor(
 
     internal suspend fun getMovie(movieId: Long): Movie? = movieRepository.getMovie(movieId)
 
+    internal fun getMoviesByCategory(providerId: Long, categoryId: Long): kotlinx.coroutines.flow.Flow<List<com.streamvault.domain.model.Movie>> =
+        movieRepository.getMoviesByCategory(providerId, categoryId)
+
     internal suspend fun getMovieVariants(movieId: Long): List<VodMovieVariant> =
         movieRepository.getMovieVariants(movieId)
 

@@ -120,6 +120,7 @@ dependencies {
     testImplementation(libs.kxml2)
     // Mocking for SyncManagerTest
     testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.work.testing)
 
     // Android instrumentation tests
     androidTestImplementation(libs.room.testing)

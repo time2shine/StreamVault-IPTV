@@ -100,6 +100,12 @@ class DashboardViewModel @Inject constructor(
     private val _scheduledChannelIds = MutableStateFlow<Set<Long>>(emptySet())
     val scheduledChannelIds: StateFlow<Set<Long>> = _scheduledChannelIds.asStateFlow()
 
+    private val _selectedCategory = MutableStateFlow<Category?>(null)
+    private val _rawCategoryChannels = MutableStateFlow<List<Channel>>(emptyList())
+    private val _isCategoryChannelsLoading = MutableStateFlow(false)
+    private val _channelSearchQuery = MutableStateFlow("")
+    private var categoryChannelsJob: kotlinx.coroutines.Job? = null
+
     init {
         viewModelScope.launch {
             traktAccount.state
@@ -120,57 +126,73 @@ class DashboardViewModel @Inject constructor(
                     .map { it.channelId }.toSet()
             }
         }
-        viewModelScope.launch {
-            combine(
-                combinedM3uRepository.getActiveLiveSource(),
-                providerRepository.getActiveProvider()
-            ) { activeSource, activeProvider ->
-                Pair(activeSource ?: activeProvider?.id?.let { ActiveLiveSource.ProviderSource(it) }, activeProvider)
+        val dashboardFlow = combine(
+            combinedM3uRepository.getActiveLiveSource(),
+            providerRepository.getActiveProvider()
+        ) { activeSource, activeProvider ->
+            Pair(activeSource ?: activeProvider?.id?.let { ActiveLiveSource.ProviderSource(it) }, activeProvider)
+        }
+            .distinctUntilChanged { old, new ->
+                old.first == new.first && old.second?.id == new.second?.id
             }
-                .distinctUntilChanged { old, new ->
-                    old.first == new.first && old.second?.id == new.second?.id
-                }
-                .flatMapLatest { (activeSource, activeProvider) ->
-                    flow {
-                        if (activeSource == null && activeProvider == null) {
-                            emit(DashboardUiState(isLoading = false))
-                            return@flow
+            .flatMapLatest { (activeSource, activeProvider) ->
+                flow {
+                    if (activeSource == null && activeProvider == null) {
+                        emit(DashboardUiState(isLoading = false))
+                        return@flow
+                    }
+
+                    when (activeSource) {
+                        is ActiveLiveSource.ProviderSource -> {
+                            val provider = activeProvider?.takeIf { it.id == activeSource.providerId }
+                                ?: providerRepository.getProvider(activeSource.providerId)
+                                ?: run {
+                                    emit(DashboardUiState(isLoading = false))
+                                    return@flow
+                                }
+                            emitAll(observeDashboard(provider, listOf(provider.id), combinedProfileId = null))
                         }
 
-                        when (activeSource) {
-                            is ActiveLiveSource.ProviderSource -> {
-                                val provider = activeProvider?.takeIf { it.id == activeSource.providerId }
-                                    ?: providerRepository.getProvider(activeSource.providerId)
-                                    ?: run {
-                                        emit(DashboardUiState(isLoading = false))
-                                        return@flow
-                                    }
-                                emitAll(observeDashboard(provider, listOf(provider.id), combinedProfileId = null))
-                            }
-
-                            is ActiveLiveSource.CombinedM3uSource -> {
-                                val liveProviderIds = combinedM3uRepository.getProfile(activeSource.profileId)
-                                    ?.members
-                                    .orEmpty()
-                                    .filter { it.enabled }
-                                    .map { it.providerId }
-                                    .distinct()
-                                val provider = activeProvider?.takeIf { it.id in liveProviderIds }
-                                    ?: liveProviderIds.firstOrNull()?.let { providerRepository.getProvider(it) }
-                                    ?: run {
-                                        emit(DashboardUiState(isLoading = false, currentCombinedProfileId = activeSource.profileId))
-                                        return@flow
-                                    }
-                                emitAll(observeDashboard(provider, liveProviderIds, combinedProfileId = activeSource.profileId))
-                            }
-
-                            null -> emit(DashboardUiState(isLoading = false))
+                        is ActiveLiveSource.CombinedM3uSource -> {
+                            val liveProviderIds = combinedM3uRepository.getProfile(activeSource.profileId)
+                                ?.members
+                                .orEmpty()
+                                .filter { it.enabled }
+                                .map { it.providerId }
+                                .distinct()
+                            val provider = activeProvider?.takeIf { it.id in liveProviderIds }
+                                ?: liveProviderIds.firstOrNull()?.let { providerRepository.getProvider(it) }
+                                ?: run {
+                                    emit(DashboardUiState(isLoading = false, currentCombinedProfileId = activeSource.profileId))
+                                    return@flow
+                                }
+                            emitAll(observeDashboard(provider, liveProviderIds, combinedProfileId = activeSource.profileId))
                         }
+
+                        null -> emit(DashboardUiState(isLoading = false))
                     }
                 }
-                .collect { state ->
-                    _uiState.value = state
-                }
+            }
+
+        viewModelScope.launch {
+            combine(
+                dashboardFlow,
+                _selectedCategory,
+                _rawCategoryChannels,
+                _isCategoryChannelsLoading,
+                _channelSearchQuery
+            ) { baseState, selectedCat, rawChannels, isLoadingChannels, searchQuery ->
+                val filtered = if (searchQuery.isBlank()) rawChannels
+                else rawChannels.filter { it.name.contains(searchQuery, ignoreCase = true) }
+                baseState.copy(
+                    selectedCategory = selectedCat,
+                    categoryChannels = filtered,
+                    isCategoryChannelsLoading = isLoadingChannels,
+                    channelSearchQuery = searchQuery
+                )
+            }.collect { state ->
+                _uiState.value = state
+            }
         }
     }
 
@@ -407,8 +429,16 @@ class DashboardViewModel @Inject constructor(
             },
             observeLiveChannelCount(liveProviderIds).onStart { emit(0) },
             movieRepository.getLibraryCount(provider.id).onStart { emit(0) },
-            seriesRepository.getLibraryCount(provider.id).onStart { emit(0) }
-        ) { shelves, liveContext, liveChannelCount, movieCount, seriesCount ->
+            seriesRepository.getLibraryCount(provider.id).onStart { emit(0) },
+            observeLiveCategories(provider.id, liveProviderIds).onStart { emit(emptyList()) }
+        ) { values ->
+            val shelves = values[0] as DashboardContentShelves
+            val liveContext = values[1] as DashboardLiveContext
+            val liveChannelCount = values[2] as Int
+            val movieCount = values[3] as Int
+            val seriesCount = values[4] as Int
+            @Suppress("UNCHECKED_CAST")
+            val liveCategories = values[5] as List<Category>
             DashboardSnapshot(
                 shelves = shelves,
                 liveContext = liveContext,
@@ -418,7 +448,8 @@ class DashboardViewModel @Inject constructor(
                 homeDashboardShelves = AppHomeDashboardShelf.defaultOrder,
                 updateNotice = null,
                 pinnedMovieCategories = shelves.pinnedMovieCategories,
-                pinnedSeriesCategories = shelves.pinnedSeriesCategories
+                pinnedSeriesCategories = shelves.pinnedSeriesCategories,
+                liveCategories = liveCategories
             )
         }
 
@@ -481,7 +512,8 @@ class DashboardViewModel @Inject constructor(
                     else -> emptyList()
                 },
                 updateNotice = snapshot.updateNotice,
-                isLoading = false
+                isLoading = false,
+                liveCategories = snapshot.liveCategories
             )
         }
     }
@@ -551,22 +583,45 @@ class DashboardViewModel @Inject constructor(
         ).flatMapLatest { result ->
             when (result) {
                 is ContinueWatchingResult.Items -> {
-                    val seriesIds = result.items
-                        .asSequence()
-                        .filter { history ->
-                            history.contentType == ContentType.SERIES || history.contentType == ContentType.SERIES_EPISODE
-                        }
-                        .map { history -> history.seriesId ?: history.contentId }
-                        .distinct()
-                        .toList()
-                    if (seriesIds.isEmpty()) {
-                        flowOf(ContinueWatchingShelf(items = result.items))
+                    val movieHistory = result.items.filter { it.contentType == ContentType.MOVIE }
+                    val filterFlow = if (movieHistory.isEmpty()) {
+                        flowOf(result.items)
                     } else {
-                        seriesRepository.getSeriesByIds(seriesIds).map { series ->
-                            ContinueWatchingShelf(
-                                items = result.items,
-                                series = series.orderedByRequestedSeriesIds(seriesIds)
-                            )
+                        movieRepository.getMoviesByIds(movieHistory.map { it.contentId }).map { movies ->
+                            val movieMap = movies.associateBy { it.id }
+                            result.items.filter { item ->
+                                if (item.contentType != ContentType.MOVIE) return@filter true
+                                val movie = movieMap[item.contentId]
+                                val cat = movie?.categoryName?.trim()
+                                val isSong = cat.equals("Kids Songs", ignoreCase = true) ||
+                                    cat?.contains("song", ignoreCase = true) == true ||
+                                    item.title.contains("kids", ignoreCase = true) ||
+                                    item.title.contains("song", ignoreCase = true)
+                                val isChannel = cat.equals("Movie Channels", ignoreCase = true) ||
+                                    cat?.contains("channel", ignoreCase = true) == true ||
+                                    item.title.contains("channel", ignoreCase = true)
+                                !isSong && !isChannel
+                            }
+                        }
+                    }
+                    filterFlow.flatMapLatest { filteredItems ->
+                        val seriesIds = filteredItems
+                            .asSequence()
+                            .filter { history ->
+                                history.contentType == ContentType.SERIES || history.contentType == ContentType.SERIES_EPISODE
+                            }
+                            .map { history -> history.seriesId ?: history.contentId }
+                            .distinct()
+                            .toList()
+                        if (seriesIds.isEmpty()) {
+                            flowOf(ContinueWatchingShelf(items = filteredItems))
+                        } else {
+                            seriesRepository.getSeriesByIds(seriesIds).map { series ->
+                                ContinueWatchingShelf(
+                                    items = filteredItems,
+                                    series = series.orderedByRequestedSeriesIds(seriesIds)
+                                )
+                            }
                         }
                     }
                 }
@@ -582,10 +637,29 @@ class DashboardViewModel @Inject constructor(
             providerIds = providerIds,
             limit = CONTINUE_WATCHING_LIMIT,
             scope = scope
-        ).map { result ->
-            when (result) {
+        ).flatMapLatest { result ->
+            val items = when (result) {
                 is ContinueWatchingResult.Items -> result.items
                 ContinueWatchingResult.Degraded -> emptyList()
+            }
+            if (items.isEmpty() || scope != ContinueWatchingScope.MOVIES) {
+                flowOf(items)
+            } else {
+                movieRepository.getMoviesByIds(items.map { it.contentId }).map { movies ->
+                    val movieMap = movies.associateBy { it.id }
+                    items.filter { item ->
+                        val movie = movieMap[item.contentId]
+                        val cat = movie?.categoryName?.trim()
+                        val isSong = cat.equals("Kids Songs", ignoreCase = true) ||
+                            cat?.contains("song", ignoreCase = true) == true ||
+                            item.title.contains("kids", ignoreCase = true) ||
+                            item.title.contains("song", ignoreCase = true)
+                        val isChannel = cat.equals("Movie Channels", ignoreCase = true) ||
+                            cat?.contains("channel", ignoreCase = true) == true ||
+                            item.title.contains("channel", ignoreCase = true)
+                        !isSong && !isChannel
+                    }
+                }
             }
         }
 
@@ -927,6 +1001,103 @@ class DashboardViewModel @Inject constructor(
     fun userMessageShown() {
         _uiState.value = _uiState.value.copy(userMessage = null)
     }
+
+    private fun observeLiveCategories(
+        providerId: Long,
+        liveProviderIds: List<Long>
+    ): Flow<List<Category>> = combine(
+        channelRepository.getCategories(providerId).onStart { emit(emptyList()) },
+        getCustomCategories(liveProviderIds, ContentType.LIVE).onStart { emit(emptyList()) },
+        preferencesRepository.getHiddenCategoryIds(providerId, ContentType.LIVE).onStart { emit(emptySet()) },
+        preferencesRepository.getPinnedCategoryIds(providerId, ContentType.LIVE).onStart { emit(emptySet()) }
+    ) { providerCats, customCats, hiddenCategoryIds, pinnedCategoryIds ->
+        val visibleProviderCats = providerCats
+            .filter { it.id != ChannelRepository.ALL_CHANNELS_ID && it.id !in hiddenCategoryIds }
+        
+        val allChannelsCount = visibleProviderCats.sumOf { it.count }
+        val allChannelsCategory = Category(
+            id = ChannelRepository.ALL_CHANNELS_ID,
+            name = appContext.getString(R.string.home_all_channels),
+            type = ContentType.LIVE,
+            count = allChannelsCount
+        )
+
+        val result = mutableListOf<Category>()
+        if (allChannelsCount > 0) {
+            result.add(allChannelsCategory)
+        }
+        customCats.filter { it.count > 0 && it.id !in hiddenCategoryIds }.forEach {
+            result.add(it)
+        }
+        val (pinned, unpinned) = visibleProviderCats.partition { it.id in pinnedCategoryIds }
+        result.addAll(pinned)
+        result.addAll(unpinned)
+        result
+    }
+
+    fun selectCategory(category: Category?) {
+        _selectedCategory.value = category
+        _channelSearchQuery.value = ""
+        categoryChannelsJob?.cancel()
+        if (category == null) {
+            _rawCategoryChannels.value = emptyList()
+            _isCategoryChannelsLoading.value = false
+            return
+        }
+        val providerId = _uiState.value.provider?.id ?: return
+        _isCategoryChannelsLoading.value = true
+        categoryChannelsJob = viewModelScope.launch {
+            try {
+                val flow: Flow<List<Channel>> = if (category.isVirtual) {
+                    when (category.id) {
+                        VirtualCategoryIds.FAVORITES -> {
+                            favoriteRepository.getFavorites(providerId, ContentType.LIVE)
+                                .map { favorites -> favorites.sortedBy { it.position }.map { it.contentId } }
+                                .flatMapLatest { ids ->
+                                    if (ids.isEmpty()) flowOf(emptyList())
+                                    else loadChannelsByOrderedIds(ids)
+                                }
+                        }
+                        VirtualCategoryIds.RECENT -> {
+                            playbackHistoryRepository.getRecentlyWatchedByProvider(providerId, limit = 50)
+                                .map { history -> history.map { it.contentId } }
+                                .flatMapLatest { ids ->
+                                    if (ids.isEmpty()) flowOf(emptyList())
+                                    else loadChannelsByOrderedIds(ids)
+                                }
+                        }
+                        else -> {
+                            val groupId = -category.id
+                            favoriteRepository.getFavoritesByGroup(groupId)
+                                .map { favorites -> favorites.sortedBy { it.position }.map { it.contentId } }
+                                .flatMapLatest { ids ->
+                                    if (ids.isEmpty()) flowOf(emptyList())
+                                    else loadChannelsByOrderedIds(ids)
+                                }
+                        }
+                    }
+                } else if (category.id == ChannelRepository.ALL_CHANNELS_ID) {
+                    channelRepository.getChannels(providerId)
+                } else {
+                    channelRepository.getChannelsByCategory(providerId, category.id)
+                }
+                flow.collect { channels ->
+                    _rawCategoryChannels.value = channels
+                    _isCategoryChannelsLoading.value = false
+                }
+            } catch (e: Exception) {
+                _isCategoryChannelsLoading.value = false
+            }
+        }
+    }
+
+    fun updateChannelSearchQuery(query: String) {
+        _channelSearchQuery.value = query
+    }
+
+    fun clearSelectedCategory() {
+        selectCategory(null)
+    }
 }
 
 private data class DashboardLiveContext(
@@ -969,7 +1140,8 @@ private data class DashboardSnapshot(
     val homeDashboardShelves: List<AppHomeDashboardShelf>,
     val updateNotice: DashboardUpdateNotice?,
     val pinnedMovieCategories: Map<String, List<Movie>> = emptyMap(),
-    val pinnedSeriesCategories: Map<String, List<Series>> = emptyMap()
+    val pinnedSeriesCategories: Map<String, List<Series>> = emptyMap(),
+    val liveCategories: List<Category> = emptyList()
 )
 
 data class DashboardUiState(
@@ -1001,7 +1173,12 @@ data class DashboardUiState(
     val updateNotice: DashboardUpdateNotice? = null,
     val stats: DashboardStats = DashboardStats(),
     val userMessage: String? = null,
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val liveCategories: List<Category> = emptyList(),
+    val selectedCategory: Category? = null,
+    val categoryChannels: List<Channel> = emptyList(),
+    val isCategoryChannelsLoading: Boolean = false,
+    val channelSearchQuery: String = ""
 )
 
 data class DashboardUpdateNotice(

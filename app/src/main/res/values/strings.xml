@@ -344,4 +344,10 @@
     <string name="torrent_cache_capacity_reached">Torrent playback reached its temporary storage limit. Clear the cache or free device storage, then try again.</string>
     <string name="torrent_storage_check_failed">Available storage could not be checked. Torrent playback cannot continue safely.</string>
     <string name="nav_sports">Sports</string>
+    <string name="fork_catalog_sync_success">Library updated: Channels and movies are ready</string>
+    <string name="fork_catalog_sync_started">Refreshing playlist in background…</string>
+    <string name="fork_catalog_sync_up_to_date">Playlist is already up to date</string>
+    <string name="fork_catalog_sync_completed_added">Sync complete! %1$d new channels and %2$d new movies added.</string>
+    <string name="fork_catalog_sync_failed">Playlist refresh failed</string>
+    <string name="fork_catalog_sync_in_progress">Playlist sync is already running…</string>
 </resources>

@@ -367,4 +367,17 @@
 <string name="trakt_rating_saved">Vurderingen ble lagret på Trakt.</string>
 <string name="trakt_rating_failed">Kunne ikke lagre vurderingen på Trakt.</string>
 <string name="trakt_favorite_sync_failed">StreamVault lagret endringen, men kunne ikke oppdatere Trakt-favorittene. Prøv igjen.</string>
+  <string name="movies_sync_needed_title">Filmbibliotek</string>
+  <string name="movies_sync_needed_subtitle">Synkroniser denne leverandøren for å importere filmer til biblioteket.</string>
+  <string name="movies_sync_action">Synkroniser filmer</string>
+  <string name="movies_syncing_title">Synkroniserer filmer...</string>
+  <string name="movies_sync_progress_format">%1$d / %2$d elementer indeksert</string>
+    <string name="home_categories_title">Direktekategorier</string>
+    <string name="home_back_to_categories">Tilbake til kategorier</string>
+    <string name="home_live_categories_subtitle">Velg en kategori for å bla gjennom kanaler</string>
+    <string name="home_category_channel_count">%1$d kanaler</string>
+    <string name="home_category_summary">%1$d kanaler • %2$d kategorier</string>
+    <string name="home_no_channels_in_category">Ingen tilgjengelige kanaler i denne kategorien</string>
+    <string name="home_all_channels">Alle kanaler</string>
+    <string name="movies_watch_history_title">Seerhistorikk</string>
 </resources>

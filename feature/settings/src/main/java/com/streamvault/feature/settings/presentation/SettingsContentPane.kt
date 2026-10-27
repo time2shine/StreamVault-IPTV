@@ -69,7 +69,8 @@ public fun SettingsContentPane(
     onPageChanged: (SettingsPage?) -> Unit = {},
     categorySelectionId: Long = 0L,
     openOpenSubtitlesSignIn: Boolean = false,
-    onCloseApp: () -> Unit = {}
+    onCloseApp: () -> Unit = {},
+    onQuickRefresh: () -> Unit = {}
 ) {
     val category = SettingsCategory.fromId(dialogState.selectedCategory)
     var page by rememberSaveable(category.legacyId) { mutableStateOf<SettingsPage?>(null) }
@@ -291,6 +292,7 @@ public fun SettingsContentPane(
                             providerState = providerState,
                             targetItemId = activeSearchTarget?.itemId,
                             targetFocusModifier = searchTargetModifier,
+                            onQuickRefresh = onQuickRefresh,
                         )
                     }
                     if (dialogState.selectedCategory == 1 || page in listOf(SettingsPage.CLOCK, SettingsPage.TIMESHIFT, SettingsPage.MULTIVIEW, SettingsPage.VOD_PLAYBACK)) {

@@ -951,4 +951,5 @@
     <string name="settings_sync_index_progress">%1$s · %2$s</string>
     <string name="settings_refresh_rate_matching">Усклади са брзином кадрова садржаја</string>
     <string name="settings_refresh_rate_matching_description">Усклађује учесталост освежавања екрана са видеом ради глаткијег кретања. Потребна је подршка екрана; при промени екран може накратко да се зацрни.</string>
+    <string name="settings_refresh_playlist_now">Освежи листу песама</string>
 </resources>

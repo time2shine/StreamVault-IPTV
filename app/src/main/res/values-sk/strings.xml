@@ -344,4 +344,10 @@
     <string name="torrent_storage_check_failed">Voľné úložisko sa nepodarilo skontrolovať. Prehrávanie torrentu nemôže bezpečne pokračovať.</string>
     <string name="nav_extensions">Rozšírenia</string>
     <string name="nav_sports">Šport</string>
+    <string name="fork_catalog_sync_success">Knižnica aktualizovaná: Kanály a filmy sú pripravené</string>
+    <string name="fork_catalog_sync_started">Obnovovanie zoznamu na pozadí…</string>
+    <string name="fork_catalog_sync_up_to_date">Zoznam je už aktuálny</string>
+    <string name="fork_catalog_sync_completed_added">Synchronizácia dokončená! Pridaných %1$d nových kanálov a %2$d nových filmov.</string>
+    <string name="fork_catalog_sync_failed">Obnovenie zoznamu zlyhalo</string>
+    <string name="fork_catalog_sync_in_progress">Synchronizácia zoznamu už prebieha…</string>
 </resources>

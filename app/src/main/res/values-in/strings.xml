@@ -291,4 +291,10 @@
     <string name="torrent_storage_check_failed">Penyimpanan yang tersedia tidak dapat diperiksa. Pemutaran torrent tidak dapat dilanjutkan dengan aman.</string>
     <string name="nav_extensions">Ekstensi</string>
     <string name="nav_sports">Olahraga</string>
+    <string name="fork_catalog_sync_success">Pustaka diperbarui: Saluran dan film siap ditonton</string>
+    <string name="fork_catalog_sync_started">Menyegarkan daftar putar di latar belakang…</string>
+    <string name="fork_catalog_sync_up_to_date">Daftar putar sudah yang terbaru</string>
+    <string name="fork_catalog_sync_completed_added">Sinkronisasi selesai! %1$d saluran baru dan %2$d film baru ditambahkan.</string>
+    <string name="fork_catalog_sync_failed">Gagal menyegarkan daftar putar</string>
+    <string name="fork_catalog_sync_in_progress">Sinkronisasi daftar putar sedang berjalan…</string>
 </resources>

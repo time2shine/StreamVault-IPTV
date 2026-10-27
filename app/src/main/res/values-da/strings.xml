@@ -291,4 +291,10 @@
     <string name="torrent_storage_check_failed">Den ledige lagerplads kunne ikke kontrolleres. Torrentafspilningen kan ikke fortsætte sikkert.</string>
     <string name="nav_extensions">Udvidelser</string>
     <string name="nav_sports">Sport</string>
+    <string name="fork_catalog_sync_success">Bibliotek opdateret: Kanaler og film er klar</string>
+    <string name="fork_catalog_sync_started">Opdaterer afspilningsliste i baggrunden…</string>
+    <string name="fork_catalog_sync_up_to_date">Afspilningslisten er allerede opdateret</string>
+    <string name="fork_catalog_sync_completed_added">Synkronisering fuldført! %1$d nye kanaler og %2$d nye film tilføjet.</string>
+    <string name="fork_catalog_sync_failed">Opdatering af afspilningsliste mislykkedes</string>
+    <string name="fork_catalog_sync_in_progress">Synkronisering af afspilningsliste kører allerede…</string>
 </resources>

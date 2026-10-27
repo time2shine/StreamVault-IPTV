@@ -338,15 +338,17 @@ fun ChannelListOverlay(
                                         textAlign = TextAlign.Start,
                                         modifier = Modifier.width(32.dp)
                                     )
-                                    Text(
-                                        text = channel.name,
-                                        style = MaterialTheme.typography.bodyLarge.copy(fontSize = 17.sp),
-                                        color = Color.White,
-                                        maxLines = 1,
-                                        overflow = if (isFocused) TextOverflow.Clip else TextOverflow.Ellipsis,
+                                    Column(
                                         modifier = Modifier
                                             .weight(1f)
-                                            .then(
+                                    ) {
+                                        Text(
+                                            text = channel.name,
+                                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp, fontWeight = FontWeight.SemiBold),
+                                            color = Color.White,
+                                            maxLines = 1,
+                                            overflow = if (isFocused) TextOverflow.Clip else TextOverflow.Ellipsis,
+                                            modifier = Modifier.then(
                                                 if (isFocused) {
                                                     Modifier.basicMarquee(
                                                         iterations = Int.MAX_VALUE,
@@ -358,7 +360,17 @@ fun ChannelListOverlay(
                                                     Modifier
                                                 }
                                             )
-                                    )
+                                        )
+                                        channel.currentProgram?.title?.takeIf { it.isNotBlank() }?.let { programTitle ->
+                                            Text(
+                                                text = programTitle,
+                                                style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                                                color = if (isFocused) Color.White.copy(alpha = 0.90f) else Color.White.copy(alpha = 0.60f),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                        }
+                                    }
                                     if (isSelected) {
                                         StatusPill(
                                             label = stringResource(R.string.player_channel_selected),

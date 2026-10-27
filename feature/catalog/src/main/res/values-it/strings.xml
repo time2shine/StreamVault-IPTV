@@ -367,4 +367,17 @@
 <string name="trakt_rating_saved">La tua valutazione è stata salvata su Trakt.</string>
 <string name="trakt_rating_failed">Impossibile salvare la valutazione su Trakt.</string>
 <string name="trakt_favorite_sync_failed">StreamVault ha salvato la modifica, ma non è riuscito ad aggiornare i Preferiti di Trakt. Riprova.</string>
+  <string name="movies_sync_needed_title">Libreria film</string>
+  <string name="movies_sync_needed_subtitle">Sincronizza questo provider per importare film nella libreria.</string>
+  <string name="movies_sync_action">Sincronizza film</string>
+  <string name="movies_syncing_title">Sincronizzazione film in corso...</string>
+  <string name="movies_sync_progress_format">%1$d / %2$d elementi indicizzati</string>
+    <string name="home_categories_title">Categorie live</string>
+    <string name="home_back_to_categories">Torna alle categorie</string>
+    <string name="home_live_categories_subtitle">Seleziona una categoria per sfogliare i canali</string>
+    <string name="home_category_channel_count">%1$d canali</string>
+    <string name="home_category_summary">%1$d Canali • %2$d Categorie</string>
+    <string name="home_no_channels_in_category">Nessun canale disponibile in questa categoria</string>
+    <string name="home_all_channels">Tutti i canali</string>
+    <string name="movies_watch_history_title">Cronologia visualizzazioni</string>
 </resources>

@@ -49,7 +49,8 @@ internal fun AppNavHost(
     startupReady: Boolean,
     onStartupNavigationRequested: (popUpTo: AppDestination) -> Unit,
     onTopLevelDestinationRequested: (AppDestination) -> Unit,
-    onCloseApp: () -> Unit
+    onCloseApp: () -> Unit,
+    onQuickRefresh: () -> Unit = {}
 ) {
     NavHost(
         navController = navController,
@@ -171,7 +172,11 @@ internal fun AppNavHost(
                     },
                     initialBackupImportUri = backupUri,
                     openOpenSubtitlesSignIn = openOpenSubtitlesSignIn,
-                    onCloseApp = onCloseApp
+                    onCloseApp = onCloseApp,
+                    onQuickRefresh = {
+                        onTopLevelDestinationRequested(AppDestination.Home)
+                        onQuickRefresh()
+                    }
                 )
             },
             parentalControlContent = { onBack, destinations ->

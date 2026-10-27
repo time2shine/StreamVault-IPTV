@@ -9,11 +9,18 @@ class PlayerInputPolicyTest {
     fun `preview zaps live channels and reports channel info interaction`() {
         val decision = playerPreviewInputDecision(
             state = liveState(showChannelInfoOverlay = true),
-            key = PlayerInputKey.DpadUp
+            key = PlayerInputKey.ChannelUp
         )
 
         assertThat(decision.action).isEqualTo(PlayerInputAction.PlayNext)
         assertThat(decision.notifyLiveOverlayInteraction).isTrue()
+
+        val dpadDecision = playerPreviewInputDecision(
+            state = liveState(showChannelInfoOverlay = true),
+            key = PlayerInputKey.DpadUp
+        )
+        assertThat(dpadDecision.action).isEqualTo(PlayerInputAction.OpenChannelList)
+        assertThat(dpadDecision.notifyLiveOverlayInteraction).isTrue()
     }
 
     @Test
@@ -34,6 +41,42 @@ class PlayerInputPolicyTest {
         )
 
         assertThat(decision.action).isEqualTo(PlayerInputAction.Pass)
+    }
+
+    @Test
+    fun `preview and channel step allow zapping for song playback in movies`() {
+        val previewDecision = playerPreviewInputDecision(
+            state = liveState(contentType = "MOVIE", isSongPlayback = true),
+            key = PlayerInputKey.ChannelUp
+        )
+        assertThat(previewDecision.action).isEqualTo(PlayerInputAction.PlayNext)
+
+        val stepDecisionUp = playerInputDecision(
+            state = liveState(contentType = "MOVIE", isSongPlayback = true),
+            key = PlayerInputKey.ChannelUp
+        )
+        assertThat(stepDecisionUp.action).isEqualTo(PlayerInputAction.PlayNext)
+
+        val stepDecisionDown = playerInputDecision(
+            state = liveState(contentType = "MOVIE", isSongPlayback = true),
+            key = PlayerInputKey.ChannelDown
+        )
+        assertThat(stepDecisionDown.action).isEqualTo(PlayerInputAction.PlayPrevious)
+    }
+
+    @Test
+    fun `channel step ignores channel zapping for standard movie playback`() {
+        val decisionUp = playerInputDecision(
+            state = liveState(contentType = "MOVIE", isSongPlayback = false),
+            key = PlayerInputKey.ChannelUp
+        )
+        assertThat(decisionUp.action).isEqualTo(PlayerInputAction.Pass)
+
+        val decisionDown = playerInputDecision(
+            state = liveState(contentType = "MOVIE", isSongPlayback = false),
+            key = PlayerInputKey.ChannelDown
+        )
+        assertThat(decisionDown.action).isEqualTo(PlayerInputAction.Pass)
     }
 
     @Test
@@ -151,23 +194,23 @@ class PlayerInputPolicyTest {
         assertThat(playerInputDecision(state, PlayerInputKey.DpadUp).action)
             .isEqualTo(PlayerInputAction.Pass)
         assertThat(playerInputDecision(state, PlayerInputKey.DpadDown).action)
+            .isEqualTo(PlayerInputAction.OpenChannelList)
+    }
+
+    @Test
+    fun `left and right zap channels according to layout direction`() {
+        assertThat(playerInputDecision(liveState(), PlayerInputKey.DpadLeft).action)
+            .isEqualTo(PlayerInputAction.PlayPrevious)
+        assertThat(playerInputDecision(liveState(), PlayerInputKey.DpadRight).action)
+            .isEqualTo(PlayerInputAction.PlayNext)
+        assertThat(playerInputDecision(liveState(isRtl = true), PlayerInputKey.DpadLeft).action)
+            .isEqualTo(PlayerInputAction.PlayNext)
+        assertThat(playerInputDecision(liveState(isRtl = true), PlayerInputKey.DpadRight).action)
             .isEqualTo(PlayerInputAction.PlayPrevious)
     }
 
     @Test
-    fun `left and right map channel list and EPG according to layout direction`() {
-        assertThat(playerInputDecision(liveState(), PlayerInputKey.DpadLeft).action)
-            .isEqualTo(PlayerInputAction.OpenChannelList)
-        assertThat(playerInputDecision(liveState(), PlayerInputKey.DpadRight).action)
-            .isEqualTo(PlayerInputAction.OpenEpg)
-        assertThat(playerInputDecision(liveState(isRtl = true), PlayerInputKey.DpadLeft).action)
-            .isEqualTo(PlayerInputAction.OpenEpg)
-        assertThat(playerInputDecision(liveState(isRtl = true), PlayerInputKey.DpadRight).action)
-            .isEqualTo(PlayerInputAction.OpenChannelList)
-    }
-
-    @Test
-    fun `left opens categories from channel list and right keeps the existing category behavior`() {
+    fun `left opens categories from channel list and right passes to overlay UI`() {
         assertThat(
             playerInputDecision(
                 liveState(showChannelListOverlay = true),
@@ -179,7 +222,41 @@ class PlayerInputPolicyTest {
                 liveState(showCategoryListOverlay = true),
                 PlayerInputKey.DpadRight
             ).action
-        ).isEqualTo(PlayerInputAction.OpenEpg)
+        ).isEqualTo(PlayerInputAction.Pass)
+    }
+
+    @Test
+    fun `left and right zap songs for song playback in movies`() {
+        val songState = liveState(contentType = "MOVIE", isSongPlayback = true)
+        assertThat(playerInputDecision(songState, PlayerInputKey.DpadLeft).action)
+            .isEqualTo(PlayerInputAction.PlayPrevious)
+        assertThat(playerInputDecision(songState, PlayerInputKey.DpadRight).action)
+            .isEqualTo(PlayerInputAction.PlayNext)
+        assertThat(playerPreviewInputDecision(songState, PlayerInputKey.DpadLeft).action)
+            .isEqualTo(PlayerInputAction.PlayPrevious)
+        assertThat(playerPreviewInputDecision(songState, PlayerInputKey.DpadRight).action)
+            .isEqualTo(PlayerInputAction.PlayNext)
+        assertThat(playerInputDecision(songState.copy(isRtl = true), PlayerInputKey.DpadLeft).action)
+            .isEqualTo(PlayerInputAction.PlayNext)
+        assertThat(playerInputDecision(songState.copy(isRtl = true), PlayerInputKey.DpadRight).action)
+            .isEqualTo(PlayerInputAction.PlayPrevious)
+    }
+
+    @Test
+    fun `left and right zap channels for movie channel playback in movies`() {
+        val channelState = liveState(contentType = "MOVIE", isMovieChannelPlayback = true)
+        assertThat(playerInputDecision(channelState, PlayerInputKey.DpadLeft).action)
+            .isEqualTo(PlayerInputAction.PlayPrevious)
+        assertThat(playerInputDecision(channelState, PlayerInputKey.DpadRight).action)
+            .isEqualTo(PlayerInputAction.PlayNext)
+        assertThat(playerPreviewInputDecision(channelState, PlayerInputKey.DpadLeft).action)
+            .isEqualTo(PlayerInputAction.PlayPrevious)
+        assertThat(playerPreviewInputDecision(channelState, PlayerInputKey.DpadRight).action)
+            .isEqualTo(PlayerInputAction.PlayNext)
+        assertThat(playerInputDecision(channelState.copy(isRtl = true), PlayerInputKey.DpadLeft).action)
+            .isEqualTo(PlayerInputAction.PlayNext)
+        assertThat(playerInputDecision(channelState.copy(isRtl = true), PlayerInputKey.DpadRight).action)
+            .isEqualTo(PlayerInputAction.PlayPrevious)
     }
 
     @Test
@@ -190,7 +267,13 @@ class PlayerInputPolicyTest {
             .isEqualTo(PlayerInputAction.SeekBackward)
         assertThat(playerInputDecision(state, PlayerInputKey.DpadRight).action)
             .isEqualTo(PlayerInputAction.SeekForward)
+        assertThat(playerPreviewInputDecision(state, PlayerInputKey.DpadLeft).action)
+            .isEqualTo(PlayerInputAction.SeekBackward)
+        assertThat(playerPreviewInputDecision(state, PlayerInputKey.DpadRight).action)
+            .isEqualTo(PlayerInputAction.SeekForward)
         assertThat(playerInputDecision(state.copy(isRtl = true), PlayerInputKey.DpadLeft).action)
+            .isEqualTo(PlayerInputAction.SeekForward)
+        assertThat(playerPreviewInputDecision(state.copy(isRtl = true), PlayerInputKey.DpadLeft).action)
             .isEqualTo(PlayerInputAction.SeekForward)
     }
 
@@ -255,6 +338,8 @@ class PlayerInputPolicyTest {
         contentType: String = "LIVE",
         isCatchUpPlayback: Boolean = false,
         isRtl: Boolean = false,
+        isSongPlayback: Boolean = false,
+        isMovieChannelPlayback: Boolean = false,
         nextEpisodeCountdownVisible: Boolean = false,
         showChannelListOverlay: Boolean = false,
         showCategoryListOverlay: Boolean = false,
@@ -280,6 +365,8 @@ class PlayerInputPolicyTest {
         contentType = contentType,
         isCatchUpPlayback = isCatchUpPlayback,
         isRtl = isRtl,
+        isSongPlayback = isSongPlayback,
+        isMovieChannelPlayback = isMovieChannelPlayback,
         nextEpisodeCountdownVisible = nextEpisodeCountdownVisible,
         showChannelListOverlay = showChannelListOverlay,
         showCategoryListOverlay = showCategoryListOverlay,

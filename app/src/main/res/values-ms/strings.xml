@@ -345,4 +345,10 @@
 
     <string name="nav_extensions">Sambungan</string>
     <string name="nav_sports">Sukan</string>
+    <string name="fork_catalog_sync_success">Pustaka dikemas kini: Saluran dan filem telah sedia</string>
+    <string name="fork_catalog_sync_started">Menyegarkan senarai main di latar belakang…</string>
+    <string name="fork_catalog_sync_up_to_date">Senarai main sudah terkini</string>
+    <string name="fork_catalog_sync_completed_added">Penyegerakan selesai! %1$d saluran baharu dan %2$d filem baharu ditambah.</string>
+    <string name="fork_catalog_sync_failed">Gagal menyegarkan senarai main</string>
+    <string name="fork_catalog_sync_in_progress">Penyegerakan senarai main sudah berjalan…</string>
 </resources>

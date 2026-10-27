@@ -956,4 +956,5 @@
     <string name="settings_sync_index_progress">%1$s · %2$s</string>
     <string name="settings_refresh_rate_matching">Подстраивать частоту под видеоконтент</string>
     <string name="settings_refresh_rate_matching_description">Подстраивает частоту обновления экрана под видео для более плавного движения. Требуется поддержка экрана; при переключении экран может ненадолго погаснуть.</string>
+    <string name="settings_refresh_playlist_now">Обновить плейлист</string>
 </resources>

@@ -347,4 +347,10 @@
     <string name="torrent_storage_check_failed">بررسی فضای ذخیره‌سازی ممکن نشد و پخش تورنت نمی‌تواند با اطمینان ادامه یابد.</string>
     <string name="nav_extensions">افزونه‌ها</string>
     <string name="nav_sports">ورزش</string>
+    <string name="fork_catalog_sync_success">کتابخانه به‌روز شد: کانال‌ها و فیلم‌ها آماده هستند</string>
+    <string name="fork_catalog_sync_started">در حال به‌روزرسانی لیست پخش در پس‌زمینه…</string>
+    <string name="fork_catalog_sync_up_to_date">لیست پخش در حال حاضر به‌روز است</string>
+    <string name="fork_catalog_sync_completed_added">همگام‌سازی انجام شد! %1$d کانال جدید و %2$d فیلم جدید اضافه شد.</string>
+    <string name="fork_catalog_sync_failed">به‌روزرسانی لیست پخش ناموفق بود</string>
+    <string name="fork_catalog_sync_in_progress">همگام‌سازی لیست پخش در حال اجرا است…</string>
 </resources>

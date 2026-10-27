@@ -39,6 +39,11 @@ internal suspend fun PlayerViewModel.persistPlaybackCompletion() {
 
 internal fun PlayerViewModel.handlePlaybackEnded() {
     if (currentContentType == ContentType.LIVE) return
+    if (isLoopEnabled.value) {
+        playerEngine.seekTo(0L)
+        playerEngine.play()
+        return
+    }
     val requestVersion = prepareRequestVersion
     playbackSessionScope(requestVersion)?.launch {
         persistPlaybackCompletion()

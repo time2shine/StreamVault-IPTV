@@ -367,4 +367,17 @@
 <string name="trakt_rating_saved">تم حفظ تقييمك في Trakt.</string>
 <string name="trakt_rating_failed">تعذر حفظ تقييمك في Trakt.</string>
 <string name="trakt_favorite_sync_failed">حفظ StreamVault التغيير، لكن تعذر تحديث مفضلات Trakt. حاول مرة أخرى.</string>
+  <string name="movies_sync_needed_title">مكتبة الأفلام</string>
+  <string name="movies_sync_needed_subtitle">حدّث هذا المزود لاستيراد الأفلام إلى المكتبة.</string>
+  <string name="movies_sync_action">مزامنة الأفلام</string>
+  <string name="movies_syncing_title">جارٍ مزامنة الأفلام...</string>
+  <string name="movies_sync_progress_format">تمت فهرسة %1$d من %2$d عنصر</string>
+    <string name="home_categories_title">فئات البث المباشر</string>
+    <string name="home_back_to_categories">العودة إلى الفئات</string>
+    <string name="home_live_categories_subtitle">حدد فئة لتصفح القنوات</string>
+    <string name="home_category_channel_count">%1$d قناة</string>
+    <string name="home_category_summary">%1$d قناة • %2$d فئة</string>
+    <string name="home_no_channels_in_category">لا توجد قنوات متاحة في هذه الفئة</string>
+    <string name="home_all_channels">جميع القنوات</string>
+    <string name="movies_watch_history_title">سجل المشاهدة</string>
 </resources>

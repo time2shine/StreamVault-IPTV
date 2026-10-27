@@ -353,4 +353,17 @@
   <string name="vod_sync_needed_title">需要同步</string>
   <string name="vod_unavailable_subtitle">此供應商分別提供電影和影集目錄。</string>
   <string name="vod_unavailable_title">VOD 無法使用</string>
+  <string name="movies_sync_needed_title">電影庫</string>
+  <string name="movies_sync_needed_subtitle">同步此供應商以將電影匯入媒體庫。</string>
+  <string name="movies_sync_action">同步電影</string>
+  <string name="movies_syncing_title">正在同步電影...</string>
+  <string name="movies_sync_progress_format">已編目 %1$d / %2$d 個項目</string>
+    <string name="home_categories_title">直播分類</string>
+    <string name="home_back_to_categories">返回分類</string>
+    <string name="home_live_categories_subtitle">選擇分類以瀏覽頻道</string>
+    <string name="home_category_channel_count">%1$d 個頻道</string>
+    <string name="home_category_summary">%1$d 個頻道 • %2$d 個分類</string>
+    <string name="home_no_channels_in_category">此分類下沒有可用頻道</string>
+    <string name="home_all_channels">所有頻道</string>
+    <string name="movies_watch_history_title">觀看紀錄</string>
 </resources>

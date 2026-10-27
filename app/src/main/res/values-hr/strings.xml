@@ -344,4 +344,10 @@
     <string name="torrent_storage_check_failed">Nije moguće provjeriti dostupnu pohranu. Reprodukcija torrenta ne može se sigurno nastaviti.</string>
     <string name="nav_extensions">Proširenja</string>
     <string name="nav_sports">Sport</string>
+    <string name="fork_catalog_sync_success">Kolekcija ažurirana: Kanali i filmovi su spremni</string>
+    <string name="fork_catalog_sync_started">Osvježavanje popisa za reprodukciju u pozadini…</string>
+    <string name="fork_catalog_sync_up_to_date">Popis za reprodukciju je već ažuriran</string>
+    <string name="fork_catalog_sync_completed_added">Sinkronizacija dovršena! Dodano %1$d novih kanala i %2$d novih filmova.</string>
+    <string name="fork_catalog_sync_failed">Ažuriranje popisa za reprodukciju nije uspjelo</string>
+    <string name="fork_catalog_sync_in_progress">Sinkronizacija popisa za reprodukciju već je u tijeku…</string>
 </resources>

@@ -344,4 +344,10 @@
     <string name="torrent_storage_check_failed">Nuk mund të kontrollohej hapësira e disponueshme. Luajtja e torrentit nuk mund të vazhdojë në mënyrë të sigurt.</string>
     <string name="nav_extensions">Zgjerimet</string>
     <string name="nav_sports">Sport</string>
+    <string name="fork_catalog_sync_success">Biblioteka u përditësua: Kanalet dhe filmat janë gati</string>
+    <string name="fork_catalog_sync_started">Po rifreskohet lista në sfond…</string>
+    <string name="fork_catalog_sync_up_to_date">Lista është tashmë e përditësuar</string>
+    <string name="fork_catalog_sync_completed_added">Sinkronizimi përfundoi! U shtuan %1$d kanale të reja dhe %2$d filma të rinj.</string>
+    <string name="fork_catalog_sync_failed">Rifreskimi i listës dështoi</string>
+    <string name="fork_catalog_sync_in_progress">Sinkronizimi i listës po ekzekutohet tashmë…</string>
 </resources>

@@ -344,4 +344,10 @@
     <string name="torrent_storage_check_failed">Hindi masuri ang available na storage. Hindi ligtas na maipagpapatuloy ang pag-play ng torrent.</string>
     <string name="nav_extensions">Mga extension</string>
     <string name="nav_sports">Palakasan</string>
+    <string name="fork_catalog_sync_success">Na-update ang library: Handa na ang mga channel at pelikula</string>
+    <string name="fork_catalog_sync_started">Inire-refresh ang playlist sa background…</string>
+    <string name="fork_catalog_sync_up_to_date">Napapanahon na ang playlist</string>
+    <string name="fork_catalog_sync_completed_added">Kumpleto ang pag-sync! Naidagdag ang %1$d bagong channel at %2$d bagong pelikula.</string>
+    <string name="fork_catalog_sync_failed">Nabigong i-refresh ang playlist</string>
+    <string name="fork_catalog_sync_in_progress">Kasalukuyan nang tumatakbo ang pag-sync ng playlist…</string>
 </resources>

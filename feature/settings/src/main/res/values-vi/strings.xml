@@ -947,4 +947,5 @@
     <string name="settings_sync_index_progress">%1$s · %2$s</string>
     <string name="settings_refresh_rate_matching">Khớp với tốc độ khung hình nội dung</string>
     <string name="settings_refresh_rate_matching_description">Điều chỉnh tần số quét màn hình theo video để chuyển động mượt hơn. Cần màn hình hỗ trợ; màn hình có thể tối trong chốc lát khi chuyển đổi.</string>
+    <string name="settings_refresh_playlist_now">Làm mới danh sách phát</string>
 </resources>
