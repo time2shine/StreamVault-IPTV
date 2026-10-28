@@ -41,3 +41,19 @@ data class Movie(
         require(lastWatchedAt >= 0) { "lastWatchedAt must be non-negative" }
     }
 }
+
+private val NEW_EMOJI_PATTERN = Regex("""(?i)(?:\s*\bnew\b\s*)?[🆕\uD83C\uDD95\uFE0F]+(?:\s*\bnew\b\s*)?""")
+private val EMPTY_BRACKETS_PATTERN = Regex("""[\[\(]\s*[\]\)]""")
+private val MULTI_SPACE_PATTERN = Regex("""\s+""")
+
+val Movie.hasNewBadge: Boolean
+    get() = name.contains("🆕") || name.contains("\uD83C\uDD95")
+
+val Movie.displayTitle: String
+    get() {
+        if (!hasNewBadge) return name
+        val stripped = name.replace(NEW_EMOJI_PATTERN, " ")
+        val withoutEmptyBrackets = stripped.replace(EMPTY_BRACKETS_PATTERN, " ")
+        return withoutEmptyBrackets.replace(MULTI_SPACE_PATTERN, " ").trim()
+    }
+

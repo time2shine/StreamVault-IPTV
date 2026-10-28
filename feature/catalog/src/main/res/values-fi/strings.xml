@@ -25,6 +25,7 @@
   <string name="badge_catch_up">OTA KIINNI</string>
   <string name="badge_error">VIRH</string>
   <string name="badge_movie">ELOKUVA</string>
+  <string name="badge_new">UUSI</string>
   <string name="badge_moving">LIIKKUVA</string>
   <string name="badge_recording">REC</string>
   <string name="badge_saved">TALLENNETTU</string>

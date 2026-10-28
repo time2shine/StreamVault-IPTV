@@ -25,6 +25,7 @@
   <string name="badge_catch_up">ДОГНАТЬ</string>
   <string name="badge_error">ОШИБКА</string>
   <string name="badge_movie">ФИЛЬМ</string>
+  <string name="badge_new">НОВОЕ</string>
   <string name="badge_moving">ПЕРЕМЕЩЕНИЕ</string>
   <string name="badge_recording">REC</string>
   <string name="badge_saved">СОХРАНЕНО</string>

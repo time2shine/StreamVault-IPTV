@@ -49,4 +49,5 @@ interface MovieRepository {
     suspend fun getStreamInfo(movie: Movie): Result<StreamInfo>
     suspend fun refreshMovies(providerId: Long): Result<Unit>
     suspend fun getWatchProgress(movieId: Long): Long? = null
+    suspend fun enrichMoviesMetadata(movies: List<Movie>): Int = 0
 }

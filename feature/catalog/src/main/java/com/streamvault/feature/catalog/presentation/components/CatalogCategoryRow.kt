@@ -1,4 +1,4 @@
-﻿package com.streamvault.feature.catalog.presentation.components
+package com.streamvault.feature.catalog.presentation.components
 
 import com.streamvault.core.ui.design.BrowseShapes
 import androidx.compose.foundation.layout.Arrangement
@@ -14,7 +14,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.focus.onFocusChanged
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -52,14 +58,26 @@ fun <T : Any> CategoryRow(
     isPinned: Boolean = false,
     keySelector: (T) -> Any,
     contentTypeSelector: ((T) -> Any?)? = null,
+    onRowFocused: (() -> Unit)? = null,
     itemContent: @Composable (T) -> Unit
 ) {
     val resolvedContentTypeSelector: (T) -> Any? = contentTypeSelector ?: { null }
+    var hasRowFocus by remember { mutableStateOf(false) }
+
+    LaunchedEffect(hasRowFocus) {
+        if (hasRowFocus) {
+            delay(600)
+            onRowFocused?.invoke()
+        }
+    }
 
     Column(
         modifier = modifier
             .fillMaxWidth()
             .suppressParentVerticalScroll()
+            .onFocusChanged { focusState ->
+                hasRowFocus = focusState.hasFocus
+            }
     ) {
         if (onSeeAll != null) {
             val seeAllFocusRequester = remember { FocusRequester() }

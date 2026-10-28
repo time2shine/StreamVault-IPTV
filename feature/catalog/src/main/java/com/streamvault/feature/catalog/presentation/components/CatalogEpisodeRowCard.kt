@@ -1,4 +1,4 @@
-﻿package com.streamvault.feature.catalog.presentation.components
+package com.streamvault.feature.catalog.presentation.components
 
 import com.streamvault.core.ui.design.BrowseShapes
 import androidx.compose.animation.core.animateFloatAsState
@@ -48,6 +48,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import com.streamvault.domain.model.displayTitle
 import androidx.tv.material3.Border
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.MaterialTheme
@@ -356,7 +357,7 @@ fun LiveChannelRowSurface(
 fun MoviePosterCard(movie: Movie, modifier: Modifier = Modifier) {
     PosterCard(
         imageUrl = movie.posterUrl,
-        title = movie.name,
+        title = movie.displayTitle,
         subtitle = movie.year,
         modifier = modifier
     )
@@ -366,7 +367,7 @@ fun MoviePosterCard(movie: Movie, modifier: Modifier = Modifier) {
 fun SeriesPosterCard(series: Series, modifier: Modifier = Modifier) {
     PosterCard(
         imageUrl = series.posterUrl,
-        title = series.name,
+        title = series.displayTitle,
         subtitle = series.releaseDate ?: series.genre,
         modifier = modifier
     )

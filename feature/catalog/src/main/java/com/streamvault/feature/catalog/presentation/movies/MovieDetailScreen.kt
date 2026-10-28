@@ -81,6 +81,8 @@ import com.streamvault.core.ui.design.requestFocusSafely
 import com.streamvault.domain.model.ExternalRatings
 import com.streamvault.domain.model.Movie
 import com.streamvault.domain.model.VodMovieVariant
+import com.streamvault.domain.model.displayTitle
+import com.streamvault.domain.model.hasNewBadge
 import com.streamvault.domain.trakt.TraktCustomListItem
 import com.streamvault.domain.trakt.TraktCustomListItemIdentity
 import com.streamvault.domain.trakt.TraktCustomListItemType
@@ -255,7 +257,7 @@ private fun MovieDetailContent(
 
         AsyncImage(
             model = rememberCrossfadeImageModel(movie.backdropUrl ?: movie.posterUrl),
-            contentDescription = movie.name,
+            contentDescription = movie.displayTitle,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(heroHeight)
@@ -466,7 +468,7 @@ private fun MoviePoster(
     ) {
         AsyncImage(
             model = rememberCrossfadeImageModel(movie.posterUrl ?: movie.backdropUrl),
-            contentDescription = movie.name,
+            contentDescription = movie.displayTitle,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
@@ -498,6 +500,13 @@ private fun MovieDetailHeroText(
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             StatusPill(label = stringResource(R.string.nav_movies), containerColor = AppColors.BrandMuted)
+            if (movie.hasNewBadge) {
+                StatusPill(
+                    label = stringResource(R.string.badge_new),
+                    containerColor = AppColors.Live,
+                    contentColor = Color.White
+                )
+            }
             movie.rating.takeIf { it > 0f }?.let {
                 StatusPill(
                     label = formatVodRatingLabel(it),
@@ -511,7 +520,7 @@ private fun MovieDetailHeroText(
         }
 
         Text(
-            text = movie.name,
+            text = movie.displayTitle,
             style = MaterialTheme.typography.displayMedium,
             color = AppColors.TextPrimary,
             maxLines = 2,

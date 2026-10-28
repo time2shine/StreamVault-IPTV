@@ -69,8 +69,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import com.streamvault.feature.catalog.R
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -905,6 +907,15 @@ class MoviesViewModel @Inject constructor(
                 remotePageRequestInFlight = false
                 _uiState.update { it.copy(isLoadingMoreSelectedCategory = false) }
             }
+        }
+    }
+
+    private var rowEnrichmentJob: Job? = null
+
+    fun onCategoryRowFocused(movies: List<Movie>) {
+        rowEnrichmentJob?.cancel()
+        rowEnrichmentJob = viewModelScope.launch(Dispatchers.IO) {
+            movieRepository.enrichMoviesMetadata(movies)
         }
     }
 

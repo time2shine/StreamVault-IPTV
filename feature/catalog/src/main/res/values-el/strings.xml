@@ -25,6 +25,7 @@
   <string name="badge_catch_up">ΠΛΗΡΩΣΤΕ</string>
   <string name="badge_error">ΣΦΑΛΜΑ</string>
   <string name="badge_movie">ΤΑΙΝΙΑ</string>
+  <string name="badge_new">ΝΕΟ</string>
   <string name="badge_moving">ΜΕΤΑΚΙΝΗΣΗ</string>
   <string name="badge_recording">REC</string>
   <string name="badge_saved">ΑΠΟΘΗΚΕΥΜΕΝΟ</string>

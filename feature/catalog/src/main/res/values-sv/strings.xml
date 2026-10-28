@@ -25,6 +25,7 @@
   <string name="badge_catch_up">HÄMPA</string>
   <string name="badge_error">FEL</string>
   <string name="badge_movie">FILM</string>
+  <string name="badge_new">NYTT</string>
   <string name="badge_moving">RÖRNING</string>
   <string name="badge_recording">REC</string>
   <string name="badge_saved">SPARAD</string>

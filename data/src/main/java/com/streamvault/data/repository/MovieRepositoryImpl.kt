@@ -68,6 +68,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.combine
@@ -720,6 +722,46 @@ class MovieRepositoryImpl @Inject constructor(
             }
             is Result.Loading -> Result.error("Unexpected loading state")
         }
+    }
+
+    override suspend fun enrichMoviesMetadata(movies: List<Movie>): Int = withContext(Dispatchers.IO) {
+        val scraper = tmdbMetadataScraper ?: return@withContext 0
+        val candidates = movies.take(18).filter { movie ->
+            movie.id > 0 && !scraper.hasAttempted(movie.id) && (movie.rating <= 0f || movie.plot.isNullOrBlank())
+        }
+        if (candidates.isEmpty()) return@withContext 0
+
+        val entitiesById = movieDao.getByIdsSync(candidates.map { it.id }).associateBy { it.id }
+        val updatedEntities = mutableListOf<com.streamvault.data.local.entity.MovieEntity>()
+
+        for (movie in candidates) {
+            val enriched = try {
+                scraper.enrichMovie(movie)
+            } catch (ignored: Exception) {
+                movie
+            }
+            val entity = entitiesById[movie.id]
+            if (entity != null && (enriched.rating > entity.rating || !enriched.plot.isNullOrBlank() || !enriched.backdropUrl.isNullOrBlank())) {
+                val updated = entity.copy(
+                    rating = if (enriched.rating > 0f) enriched.rating else entity.rating,
+                    plot = enriched.plot?.takeIf { it.isNotBlank() } ?: entity.plot,
+                    backdropUrl = enriched.backdropUrl?.takeIf { it.isNotBlank() } ?: entity.backdropUrl,
+                    posterUrl = enriched.posterUrl?.takeIf { it.isNotBlank() } ?: entity.posterUrl,
+                    tmdbId = enriched.tmdbId ?: entity.tmdbId,
+                    genre = enriched.genre ?: entity.genre,
+                    cast = enriched.cast ?: entity.cast,
+                    director = enriched.director ?: entity.director,
+                    year = enriched.year ?: entity.year
+                )
+                updatedEntities.add(updated)
+            }
+            delay(150)
+        }
+
+        if (updatedEntities.isNotEmpty()) {
+            movieDao.updateAll(updatedEntities)
+        }
+        updatedEntities.size
     }
 
     override suspend fun getStreamInfo(movie: Movie): Result<StreamInfo> = try {

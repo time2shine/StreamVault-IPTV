@@ -39,6 +39,22 @@ data class Series(
     }
 }
 
+private val SERIES_NEW_EMOJI_PATTERN = Regex("""(?i)(?:\s*\bnew\b\s*)?[🆕\uD83C\uDD95\uFE0F]+(?:\s*\bnew\b\s*)?""")
+private val SERIES_EMPTY_BRACKETS_PATTERN = Regex("""[\[\(]\s*[\]\)]""")
+private val SERIES_MULTI_SPACE_PATTERN = Regex("""\s+""")
+
+val Series.hasNewBadge: Boolean
+    get() = name.contains("🆕") || name.contains("\uD83C\uDD95")
+
+val Series.displayTitle: String
+    get() {
+        if (!hasNewBadge) return name
+        val stripped = name.replace(SERIES_NEW_EMOJI_PATTERN, " ")
+        val withoutEmptyBrackets = stripped.replace(SERIES_EMPTY_BRACKETS_PATTERN, " ")
+        return withoutEmptyBrackets.replace(SERIES_MULTI_SPACE_PATTERN, " ").trim()
+    }
+
+
 enum class SeriesCatalogOrigin {
     NATIVE,
     VOD_DERIVED

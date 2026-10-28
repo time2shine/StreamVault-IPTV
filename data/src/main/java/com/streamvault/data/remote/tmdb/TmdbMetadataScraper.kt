@@ -1,6 +1,7 @@
 package com.streamvault.data.remote.tmdb
 
 import com.streamvault.domain.model.Movie
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -8,9 +9,21 @@ import javax.inject.Singleton
 class TmdbMetadataScraper @Inject constructor(
     private val tmdbApiClient: TmdbApiClient
 ) {
+    private val attemptedMovieIds = ConcurrentHashMap.newKeySet<Long>()
+
+    fun hasAttempted(movieId: Long): Boolean = movieId in attemptedMovieIds
+
+    fun markAttempted(movieId: Long) {
+        attemptedMovieIds.add(movieId)
+    }
+
     suspend fun enrichMovie(movie: Movie, systemLanguage: String? = null): Movie {
-        // If movie already has both plot and backdrop, no need to query TMDB
-        if (!movie.plot.isNullOrBlank() && !movie.backdropUrl.isNullOrBlank()) {
+        if (movie.id > 0) {
+            attemptedMovieIds.add(movie.id)
+        }
+
+        // If movie already has plot, backdrop, and rating, no need to query TMDB
+        if (!movie.plot.isNullOrBlank() && !movie.backdropUrl.isNullOrBlank() && movie.rating > 0f) {
             return movie
         }
 

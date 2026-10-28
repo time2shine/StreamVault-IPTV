@@ -323,6 +323,7 @@ fun MoviesScreen(
                 onMoveReorderItemUp = viewModel::moveItemUp,
                 onMoveReorderItemDown = viewModel::moveItemDown,
                 onToggleCategoryPinned = viewModel::toggleCategoryPinned,
+                onCategoryRowFocused = viewModel::onCategoryRowFocused,
                 initialFocusRequester = initialContentFocusRequester
             )
         }
@@ -426,6 +427,7 @@ private fun MoviesVodContent(
     onMoveReorderItemUp: (Movie) -> Unit,
     onMoveReorderItemDown: (Movie) -> Unit,
     onToggleCategoryPinned: (Category) -> Unit,
+    onCategoryRowFocused: ((List<Movie>) -> Unit)? = null,
     initialFocusRequester: FocusRequester,
     lastInteractedMovieId: Long? = null
 ) {
@@ -676,7 +678,8 @@ private fun MoviesVodContent(
                     title = stringResource(R.string.favorites_title),
                     items = favoriteMovies,
                     onSeeAll = { onSelectCategory(uiState.favoriteCategoryName) },
-                    keySelector = { it.id }
+                    keySelector = { it.id },
+                    onRowFocused = { onCategoryRowFocused?.invoke(favoriteMovies) }
                 ) { movie ->
                         val isLocked = isMovieLocked(movie)
                         MovieCard(
@@ -707,7 +710,8 @@ private fun MoviesVodContent(
                     },
                     onPinToggle = matchedCategory?.let { { onToggleCategoryPinned(it) } },
                     isPinned = matchedCategory?.id in uiState.pinnedCategoryIds,
-                    keySelector = { it.id }
+                    keySelector = { it.id },
+                    onRowFocused = { onCategoryRowFocused?.invoke(movies) }
                 ) { movie ->
                     val isLocked = isMovieLocked(movie)
                     MovieCard(
@@ -733,7 +737,8 @@ private fun MoviesVodContent(
                     },
                     onPinToggle = matchedCategory?.let { { onToggleCategoryPinned(it) } },
                     isPinned = matchedCategory?.id in uiState.pinnedCategoryIds,
-                    keySelector = { it.id }
+                    keySelector = { it.id },
+                    onRowFocused = { onCategoryRowFocused?.invoke(movies) }
                 ) { movie ->
                     val isLocked = isMovieLocked(movie)
                     MovieCard(

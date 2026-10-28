@@ -1,4 +1,4 @@
-﻿package com.streamvault.feature.catalog.presentation.components
+package com.streamvault.feature.catalog.presentation.components
 
 import com.streamvault.core.ui.design.BrowseShapes
 import androidx.compose.animation.core.animateFloatAsState
@@ -78,6 +78,9 @@ import com.streamvault.core.ui.design.browse.TextTertiary
 import com.streamvault.domain.model.Channel
 import com.streamvault.domain.model.Movie
 import com.streamvault.domain.model.Series
+import com.streamvault.domain.model.displayTitle
+import com.streamvault.domain.model.hasNewBadge
+import androidx.compose.ui.text.font.FontWeight
 import com.streamvault.core.ui.design.BrowseFocusSpec as FocusSpec
 import com.streamvault.core.ui.interaction.mouseClickable
 import com.streamvault.core.ui.interaction.rememberTvInteractionSounds
@@ -382,10 +385,14 @@ fun MovieCard(
     height: Dp = 204.dp
 ) {
     val movieDescription = buildString {
-        append(movie.name)
+        append(movie.displayTitle)
         movie.year?.takeIf { it.isNotBlank() }?.let {
             append(". ")
             append(it)
+        }
+        if (movie.hasNewBadge) {
+            append(". ")
+            append(stringResource(R.string.badge_new))
         }
         if (movie.isFavorite && !isLocked) {
             append(". ")
@@ -446,19 +453,43 @@ fun MovieCard(
                 )
             }
 
-            if (movie.rating > 0f) {
-                Box(
+            val hasRating = movie.rating > 0f
+            val hasNewTag = movie.hasNewBadge
+
+            if (hasRating || hasNewTag) {
+                Row(
                     modifier = Modifier
                         .align(Alignment.TopStart)
-                        .padding(8.dp)
-                        .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                        .padding(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = formatVodRatingLabel(movie.rating),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = com.streamvault.core.ui.design.BrowseColors.MediaWarning
-                    )
+                    if (hasRating) {
+                        Box(
+                            modifier = Modifier
+                                .background(Color.Black.copy(alpha = 0.65f), RoundedCornerShape(4.dp))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = formatVodRatingLabel(movie.rating),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = com.streamvault.core.ui.design.BrowseColors.MediaWarning
+                            )
+                        }
+                    }
+                    if (hasNewTag) {
+                        Box(
+                            modifier = Modifier
+                                .background(AccentRed, RoundedCornerShape(4.dp))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.badge_new),
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                color = Color.White
+                            )
+                        }
+                    }
                 }
             }
 
@@ -499,13 +530,17 @@ fun SeriesCard(
     height: Dp = 204.dp
 ) {
     val seriesDescription = buildString {
-        append(series.name)
+        append(series.displayTitle)
         subtitle?.takeIf { it.isNotBlank() }?.let {
             append(". ")
             append(it)
         } ?: series.genre?.takeIf { it.isNotBlank() }?.let {
             append(". ")
             append(it)
+        }
+        if (series.hasNewBadge) {
+            append(". ")
+            append(stringResource(R.string.badge_new))
         }
         if (series.isFavorite && !isLocked) {
             append(". ")
@@ -566,19 +601,43 @@ fun SeriesCard(
                 )
             }
 
-            if (series.rating > 0f) {
-                Box(
+            val hasRating = series.rating > 0f
+            val hasNewTag = series.hasNewBadge
+
+            if (hasRating || hasNewTag) {
+                Row(
                     modifier = Modifier
                         .align(Alignment.TopStart)
-                        .padding(8.dp)
-                        .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                        .padding(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = formatVodRatingLabel(series.rating),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = com.streamvault.core.ui.design.BrowseColors.MediaWarning
-                    )
+                    if (hasRating) {
+                        Box(
+                            modifier = Modifier
+                                .background(Color.Black.copy(alpha = 0.65f), RoundedCornerShape(4.dp))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = formatVodRatingLabel(series.rating),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = com.streamvault.core.ui.design.BrowseColors.MediaWarning
+                            )
+                        }
+                    }
+                    if (hasNewTag) {
+                        Box(
+                            modifier = Modifier
+                                .background(AccentRed, RoundedCornerShape(4.dp))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.badge_new),
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                color = Color.White
+                            )
+                        }
+                    }
                 }
             }
 
