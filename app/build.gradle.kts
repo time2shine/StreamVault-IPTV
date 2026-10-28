@@ -496,7 +496,7 @@ dependencies {
     implementation(libs.compose.ui.tooling.preview)
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation("androidx.compose.ui:ui-test-manifest")
-    debugImplementation(libs.leakcanary.android)
+    // debugImplementation(libs.leakcanary.android) // Disabled during UI testing to prevent JVM heap dump freezes
 
     // Compose TV
     implementation(libs.compose.tv.foundation)

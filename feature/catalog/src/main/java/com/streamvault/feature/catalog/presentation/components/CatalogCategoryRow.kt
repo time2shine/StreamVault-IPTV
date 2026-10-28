@@ -14,13 +14,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.focus.onFocusChanged
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -62,12 +61,19 @@ fun <T : Any> CategoryRow(
     itemContent: @Composable (T) -> Unit
 ) {
     val resolvedContentTypeSelector: (T) -> Any? = contentTypeSelector ?: { null }
-    var hasRowFocus by remember { mutableStateOf(false) }
-
-    LaunchedEffect(hasRowFocus) {
-        if (hasRowFocus) {
-            delay(600)
-            onRowFocused?.invoke()
+    val coroutineScope = rememberCoroutineScope()
+    val focusDebouncer = remember(coroutineScope) {
+        object {
+            var job: Job? = null
+            fun onFocusChanged(hasFocus: Boolean, onSettled: (() -> Unit)?) {
+                job?.cancel()
+                if (hasFocus && onSettled != null) {
+                    job = coroutineScope.launch {
+                        delay(800)
+                        onSettled()
+                    }
+                }
+            }
         }
     }
 
@@ -76,7 +82,7 @@ fun <T : Any> CategoryRow(
             .fillMaxWidth()
             .suppressParentVerticalScroll()
             .onFocusChanged { focusState ->
-                hasRowFocus = focusState.hasFocus
+                focusDebouncer.onFocusChanged(focusState.hasFocus, onRowFocused)
             }
     ) {
         if (onSeeAll != null) {
