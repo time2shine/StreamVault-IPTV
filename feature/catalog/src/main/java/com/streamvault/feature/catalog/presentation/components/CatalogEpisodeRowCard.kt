@@ -501,9 +501,7 @@ private fun PosterCard(
             AsyncImage(
                 model = rememberCrossfadeImageModel(imageUrl),
                 contentDescription = title,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(posterShape),
+                modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
         }

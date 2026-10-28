@@ -70,6 +70,7 @@ import com.streamvault.feature.catalog.R
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -1391,7 +1392,7 @@ class MoviesViewModel @Inject constructor(
     private suspend fun buildPreviewCatalog(
         params: MovieCatalogParams,
         providerPreviews: Map<Long?, List<Movie>>
-    ): MovieCatalogSnapshot {
+    ): MovieCatalogSnapshot = withContext(Dispatchers.Default) {
         val snapshot = buildVodPreviewCatalog(
             allFavorites = params.allFavorites,
             customCategories = params.customCategories,
@@ -1405,7 +1406,7 @@ class MoviesViewModel @Inject constructor(
             itemCategoryId = Movie::categoryId,
             copyWithFavorite = { movie, isFavorite -> movie.copy(isFavorite = isFavorite) }
         )
-        return MovieCatalogSnapshot(
+        MovieCatalogSnapshot(
             grouped = snapshot.grouped,
             categoryNames = snapshot.categoryNames,
             categoryCounts = snapshot.categoryCounts,
@@ -1415,14 +1416,14 @@ class MoviesViewModel @Inject constructor(
         )
     }
 
-    private fun buildSearchCatalog(
+    private suspend fun buildSearchCatalog(
         movies: List<Movie>,
         allFavorites: List<com.streamvault.domain.model.Favorite>,
         customCategories: List<Category>,
         providerCategories: List<Category>,
         hiddenCategoryIds: Set<Long>,
         pinnedCategoryIds: Set<Long>
-    ): MovieCatalogSnapshot {
+    ): MovieCatalogSnapshot = withContext(Dispatchers.Default) {
         val snapshot = buildVodSearchCatalog(
             items = movies,
             allFavorites = allFavorites,
@@ -1435,7 +1436,7 @@ class MoviesViewModel @Inject constructor(
             copyWithFavorite = { movie, isFavorite -> movie.copy(isFavorite = isFavorite) },
             uncategorizedName = UNCATEGORIZED
         )
-        return MovieCatalogSnapshot(
+        MovieCatalogSnapshot(
             grouped = snapshot.grouped,
             categoryNames = snapshot.categoryNames,
             categoryCounts = snapshot.categoryCounts,

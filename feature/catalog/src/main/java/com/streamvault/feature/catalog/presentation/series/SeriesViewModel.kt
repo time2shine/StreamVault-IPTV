@@ -66,6 +66,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import com.streamvault.feature.catalog.R
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -1273,7 +1275,7 @@ class SeriesViewModel @Inject constructor(
     private suspend fun buildPreviewCatalog(
         params: SeriesCatalogParams,
         providerPreviews: Map<Long?, List<Series>>
-    ): SeriesCatalogSnapshot {
+    ): SeriesCatalogSnapshot = withContext(Dispatchers.Default) {
         val snapshot = buildVodPreviewCatalog(
             allFavorites = params.allFavorites,
             customCategories = params.customCategories,
@@ -1287,7 +1289,7 @@ class SeriesViewModel @Inject constructor(
             itemCategoryId = Series::categoryId,
             copyWithFavorite = { series, isFavorite -> series.copy(isFavorite = isFavorite) }
         )
-        return SeriesCatalogSnapshot(
+        SeriesCatalogSnapshot(
             grouped = snapshot.grouped,
             categoryNames = snapshot.categoryNames,
             categoryCounts = snapshot.categoryCounts,
@@ -1297,14 +1299,14 @@ class SeriesViewModel @Inject constructor(
         )
     }
 
-    private fun buildSearchCatalog(
+    private suspend fun buildSearchCatalog(
         series: List<Series>,
         allFavorites: List<com.streamvault.domain.model.Favorite>,
         customCategories: List<Category>,
         providerCategories: List<Category>,
         hiddenCategoryIds: Set<Long>,
         pinnedCategoryIds: Set<Long>
-    ): SeriesCatalogSnapshot {
+    ): SeriesCatalogSnapshot = withContext(Dispatchers.Default) {
         val snapshot = buildVodSearchCatalog(
             items = series,
             allFavorites = allFavorites,
@@ -1317,7 +1319,7 @@ class SeriesViewModel @Inject constructor(
             copyWithFavorite = { series, isFavorite -> series.copy(isFavorite = isFavorite) },
             uncategorizedName = UNCATEGORIZED
         )
-        return SeriesCatalogSnapshot(
+        SeriesCatalogSnapshot(
             grouped = snapshot.grouped,
             categoryNames = snapshot.categoryNames,
             categoryCounts = snapshot.categoryCounts,
