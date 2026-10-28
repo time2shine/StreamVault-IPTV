@@ -78,3 +78,21 @@ count, media-session result, and log findings in the final report.
   wrong, directly and transparently explain why it is flawed and demonstrate the
   better, idiomatic way to achieve the goal.
 
+## Test Evidence & Screenshot Policy
+
+- **Curated Visual Proof**: For UI features, visual tweaks, and bug fixes tested on
+  an emulator or device, capture relevant screenshots to verify the work, but do
+  not dump dozens of raw, uncurated images directly into the final report.
+- **Milestone Screenshots Only**: Embed 2 to 3 key milestone screenshots in the final
+  report or artifact that clearly demonstrate the verified changes (e.g. focused card
+  with badges/tags, dialog views, before/after, or multi-locale layout checks).
+- **Statistical & Hash Verification for Playback**: For video playback or live TV
+  checks, capture the required frame cadence (45–61 frames over 90–120 seconds) in the
+  background, but report them via unique hash counts (`shasum -a 256 | uniq | wc -l`),
+  media session state (`dumpsys media_session`), and at most 2 anchor screenshots (initial
+  frame vs. 90s settled frame).
+- **Local Artifact Storage**: Store all raw captured frames in the temporary/scratch
+  directory so they can be inspected on demand without bloating the conversational
+  context or slowing down report rendering.
+
+
