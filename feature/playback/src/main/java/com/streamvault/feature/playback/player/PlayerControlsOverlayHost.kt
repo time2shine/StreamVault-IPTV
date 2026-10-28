@@ -108,6 +108,7 @@ internal fun PlayerControlsOverlayHost(
     val timeshiftUiState by viewModel.timeshiftUiState.collectAsStateWithLifecycle()
     val sleepTimerUiState by viewModel.sleepTimerUiState.collectAsStateWithLifecycle()
     val isLoopEnabled by viewModel.isLoopEnabled.collectAsStateWithLifecycle()
+    val isSongPlayback by viewModel.isSongPlayback.collectAsStateWithLifecycle()
     val currentSeriesSeasons = remember(currentSeries) {
         currentSeries?.seasons.sanitizedForPlayer()
     }
@@ -172,6 +173,7 @@ internal fun PlayerControlsOverlayHost(
             onOpenAudioTracks = onOpenAudioTracks,
             onOpenSettings = onOpenPlaybackSettings,
             isLoopEnabled = isLoopEnabled,
+            isSongPlayback = isSongPlayback,
             onToggleLoop = viewModel::toggleLoop,
             onSeekToPosition = viewModel::seekTo,
             onSetScrubbingMode = viewModel::setScrubbingMode,

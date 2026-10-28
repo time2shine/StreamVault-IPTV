@@ -1,9 +1,12 @@
 package com.streamvault.feature.catalog.presentation.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -48,48 +52,62 @@ fun resolveCategoryIcon(category: Category): String {
     if (category.isVirtual) {
         return when (category.id) {
             VirtualCategoryIds.FAVORITES -> "⭐"
-            VirtualCategoryIds.RECENT -> "🕒"
-            else -> "📺"
+            VirtualCategoryIds.RECENT -> "⏱️"
+            else -> "⚡"
         }
     }
     val lower = category.name.lowercase(Locale.ROOT)
     return when {
-        "sport" in lower || "cricket" in lower || "football" in lower || "fifa" in lower || "t sports" in lower || "sony ten" in lower -> "⚽"
+        "cricket" in lower -> "🏏"
+        "football" in lower || "fifa" in lower -> "⚽"
+        "sport" in lower || "t sports" in lower || "sony ten" in lower -> "🏆"
+        "bangla news" in lower || "somoy" in lower || "jamuna" in lower || "ekattor" in lower -> "🇧🇩"
         "bangla" in lower || "bd" in lower -> "🇧🇩"
-        "news" in lower || "khabar" in lower || "somoy" in lower || "bbc" in lower || "cnn" in lower -> "📰"
+        "international news" in lower || "world news" in lower || "bbc" in lower || "cnn" in lower -> "📰"
+        "news" in lower || "khabar" in lower -> "📡"
         "movie" in lower || "cinema" in lower || "film" in lower || "hbo" in lower -> "🎬"
         "hindi" in lower || "drama" in lower || "serial" in lower || "entert" in lower || "natok" in lower || "star plus" in lower || "zee" in lower -> "🎭"
-        "kid" in lower || "cartoon" in lower || "disney" in lower || "anim" in lower || "pogo" in lower || "nick" in lower -> "👶"
-        "docu" in lower || "discovery" in lower || "nat geo" in lower || "wild" in lower || "animal" in lower || "history" in lower -> "🦁"
-        "music" in lower || "song" in lower || "gaan" in lower || "mtv" in lower -> "🎵"
-        "islam" in lower || "quran" in lower || "relig" in lower || "peace" in lower -> "🕌"
-        "info" in lower || "know" in lower || "learn" in lower || "science" in lower -> "📚"
+        "kid" in lower || "cartoon" in lower || "disney" in lower || "anim" in lower || "pogo" in lower || "nick" in lower -> "🚀"
+        "docu" in lower || "discovery" in lower || "nat geo" in lower || "wild" in lower || "animal" in lower || "history" in lower -> "🌍"
+        "music" in lower || "song" in lower || "gaan" in lower || "mtv" in lower -> "🎧"
+        "india" in lower || "indian" in lower -> "🇮🇳"
+        "pakistan" in lower || "pakistani" in lower -> "🇵🇰"
+        "international" in lower || "world" in lower || "global" in lower -> "🌏"
+        "travel" in lower || "tour" in lower || "trip" in lower || "holiday" in lower -> "✈️"
+        "edu" in lower || "learn" in lower || "science" in lower || "know" in lower -> "🎓"
+        "islam" in lower || "quran" in lower || "relig" in lower || "peace" in lower -> "🌙"
         "cook" in lower || "food" in lower || "recipe" in lower || "life" in lower -> "🍳"
-        "comedy" in lower || "fun" in lower -> "😂"
-        "all" in lower -> "📺"
-        else -> "📺"
+        "comedy" in lower || "fun" in lower -> "🎭"
+        "all" in lower -> "⚡"
+        else -> "⚡"
     }
 }
 
 fun resolveCategoryGradient(category: Category): Pair<Color, Color> {
     if (category.isVirtual && category.id == VirtualCategoryIds.FAVORITES) {
-        return Color(0xFFB45309).copy(alpha = 0.50f) to Color(0xFF451A03).copy(alpha = 0.75f)
+        return Color(0xFFF59E0B) to Color(0xFFD97706)
     }
     if (category.isVirtual && category.id == VirtualCategoryIds.RECENT) {
-        return Color(0xFF0369A1).copy(alpha = 0.45f) to Color(0xFF082F49).copy(alpha = 0.75f)
+        return Color(0xFF0EA5E9) to Color(0xFF0284C7)
     }
     val lower = category.name.lowercase(Locale.ROOT)
     return when {
-        "sport" in lower || "cricket" in lower || "football" in lower -> Color(0xFF047857).copy(alpha = 0.45f) to Color(0xFF064E3B).copy(alpha = 0.80f)
-        "bangla" in lower || "bd" in lower -> Color(0xFF15803D).copy(alpha = 0.45f) to Color(0xFF7F1D1D).copy(alpha = 0.75f)
-        "news" in lower -> Color(0xFF1D4ED8).copy(alpha = 0.45f) to Color(0xFF1E3A8A).copy(alpha = 0.80f)
-        "movie" in lower || "cinema" in lower -> Color(0xFFBE123C).copy(alpha = 0.45f) to Color(0xFF881337).copy(alpha = 0.80f)
-        "hindi" in lower || "drama" in lower || "entert" in lower -> Color(0xFFB45309).copy(alpha = 0.45f) to Color(0xFF78350F).copy(alpha = 0.80f)
-        "kid" in lower || "cartoon" in lower -> Color(0xFF0E7490).copy(alpha = 0.45f) to Color(0xFF164E63).copy(alpha = 0.80f)
-        "docu" in lower || "wild" in lower -> Color(0xFF0F766E).copy(alpha = 0.45f) to Color(0xFF134E4A).copy(alpha = 0.80f)
-        "music" in lower -> Color(0xFF7E22CE).copy(alpha = 0.45f) to Color(0xFF581C87).copy(alpha = 0.80f)
-        "all" in lower -> Color(0xFF4338CA).copy(alpha = 0.45f) to Color(0xFF312E81).copy(alpha = 0.80f)
-        else -> Color(0xFF334155).copy(alpha = 0.45f) to Color(0xFF0F172A).copy(alpha = 0.85f)
+        "sport" in lower || "cricket" in lower || "football" in lower -> Color(0xFF10B981) to Color(0xFF047857)
+        "bangla news" in lower -> Color(0xFF2563EB) to Color(0xFF1D4ED8)
+        "bangla" in lower || "bd" in lower -> Color(0xFF059669) to Color(0xFF991B1B)
+        "news" in lower -> Color(0xFF2563EB) to Color(0xFF1D4ED8)
+        "movie" in lower || "cinema" in lower -> Color(0xFFF43F5E) to Color(0xFF9F1239)
+        "pakistan" in lower || "pakistani" in lower -> Color(0xFF047857) to Color(0xFF064E3B)
+        "travel" in lower || "tour" in lower -> Color(0xFF0EA5E9) to Color(0xFF0369A1)
+        "hindi" in lower || "drama" in lower || "entert" in lower -> Color(0xFFF59E0B) to Color(0xFFB45309)
+        "kid" in lower || "cartoon" in lower -> Color(0xFF06B6D4) to Color(0xFF0284C7)
+        "docu" in lower || "wild" in lower -> Color(0xFF14B8A6) to Color(0xFF0F766E)
+        "music" in lower -> Color(0xFFA855F7) to Color(0xFF7E22CE)
+        "india" in lower || "indian" in lower -> Color(0xFFF59E0B) to Color(0xFF059669)
+        "international" in lower || "world" in lower -> Color(0xFF0EA5E9) to Color(0xFF4F46E5)
+        "edu" in lower || "learn" in lower || "science" in lower -> Color(0xFF10B981) to Color(0xFF0D9488)
+        "all" in lower -> Color(0xFF06B6D4) to Color(0xFF4F46E5)
+        else -> Color(0xFF38BDF8) to Color(0xFF1E293B)
     }
 }
 
@@ -107,25 +125,29 @@ fun LiveCategoryCard(
     isPortrait: Boolean = false
 ) {
     var isFocused by remember { mutableStateOf(false) }
-    val (gradientStart, gradientEnd) = remember(category) { resolveCategoryGradient(category) }
+    val (accentColor, _) = remember(category) { resolveCategoryGradient(category) }
     val icon = remember(category) { resolveCategoryIcon(category) }
-    val scale by animateFloatAsState(targetValue = if (isFocused) 1.04f else 1f, label = "card_scale")
+    val scale by animateFloatAsState(
+        targetValue = if (isFocused) 1.05f else 1f,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "card_scale"
+    )
     val borderColor by animateColorAsState(
-        targetValue = if (isFocused) FocusBorder else gradientStart.copy(alpha = 0.35f),
+        targetValue = if (isFocused) FocusBorder else accentColor.copy(alpha = 0.35f),
         label = "card_border"
     )
 
     TvClickableSurface(
         onClick = onClick,
         onLongClick = onLongClick,
-        shape = ClickableSurfaceDefaults.shape(RoundedCornerShape(20.dp)),
+        shape = ClickableSurfaceDefaults.shape(RoundedCornerShape(18.dp)),
         colors = ClickableSurfaceDefaults.colors(
             containerColor = Color.Transparent,
             focusedContainerColor = Color.Transparent
         ),
         border = ClickableSurfaceDefaults.border(
             border = Border(BorderStroke(1.dp, borderColor)),
-            focusedBorder = Border(BorderStroke(3.dp, FocusBorder))
+            focusedBorder = Border(BorderStroke(2.5.dp, FocusBorder))
         ),
         modifier = modifier
             .fillMaxWidth()
@@ -144,78 +166,173 @@ fun LiveCategoryCard(
                 .background(
                     brush = Brush.linearGradient(
                         colors = listOf(
-                            if (isFocused) gradientStart.copy(alpha = 0.70f) else gradientStart,
-                            if (isFocused) gradientEnd.copy(alpha = 0.90f) else gradientEnd
+                            accentColor.copy(alpha = if (isFocused) 0.28f else 0.16f),
+                            Color(0xFF090E1A).copy(alpha = 0.95f)
                         )
                     )
                 )
-                .padding(14.dp)
         ) {
+            // Ambient corner glow flare
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                accentColor.copy(alpha = if (isFocused) 0.35f else 0.12f),
+                                Color.Transparent
+                            ),
+                            radius = 320f
+                        )
+                    )
+            )
+
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 14.dp, vertical = 13.dp),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
+                // Top Row: Icon + LIVE Pill + Channel Count
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(38.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color.White.copy(alpha = 0.14f)),
-                        contentAlignment = Alignment.Center
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text(
-                            text = icon,
-                            fontSize = 20.sp
-                        )
+                        // Cyberpunk icon container
+                        Box(
+                            modifier = Modifier
+                                .size(38.dp)
+                                .clip(RoundedCornerShape(11.dp))
+                                .background(accentColor.copy(alpha = if (isFocused) 0.30f else 0.18f))
+                                .border(1.dp, accentColor.copy(alpha = if (isFocused) 0.55f else 0.30f), RoundedCornerShape(11.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = icon,
+                                fontSize = 20.sp
+                            )
+                        }
+
+                        // LIVE micro-pill
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(999.dp))
+                                .background(Color(0xFF10B981).copy(alpha = 0.20f))
+                                .border(1.dp, Color(0xFF10B981).copy(alpha = 0.40f), RoundedCornerShape(999.dp))
+                                .padding(horizontal = 7.dp, vertical = 2.5.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(5.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFF10B981))
+                            )
+                            Text(
+                                text = stringResource(R.string.card_live_badge),
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 10.sp,
+                                    letterSpacing = 0.5.sp
+                                ),
+                                color = Color(0xFF34D399)
+                            )
+                        }
                     }
 
                     if (category.count > 0) {
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(999.dp))
-                                .background(Color.Black.copy(alpha = 0.40f))
-                                .padding(horizontal = 9.dp, vertical = 3.dp)
+                                .background(Color(0xFF0F172A).copy(alpha = 0.85f))
+                                .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(999.dp))
+                                .padding(
+                                    horizontal = if (isPortrait) 7.dp else 9.dp,
+                                    vertical = 3.dp
+                                )
                         ) {
+                            val countText = if (isPortrait) {
+                                "${category.count}"
+                            } else {
+                                stringResource(R.string.home_category_channel_count, category.count)
+                            }
                             Text(
-                                text = stringResource(R.string.home_category_channel_count, category.count),
+                                text = countText,
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 11.sp
+                                    fontSize = if (isPortrait) 10.sp else 11.sp
                                 ),
-                                color = Color.White.copy(alpha = 0.95f)
+                                color = Color(0xFFE2E8F0)
                             )
                         }
                     }
                 }
 
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                // Bottom Content: Category Name + Arrow + Accent Console Line
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Row(
+                        modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(
-                            text = category.name,
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = if (isPortrait) 18.sp else 21.sp,
-                                lineHeight = if (isPortrait) 22.sp else 25.sp
-                            ),
-                            color = Color.White,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
                             modifier = Modifier.weight(1f, fill = false)
-                        )
-                        if (isPinned) {
-                            Text(text = "📌", fontSize = 13.sp)
+                        ) {
+                            Text(
+                                text = category.name,
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = if (isPortrait) 18.sp else 21.sp,
+                                    lineHeight = if (isPortrait) 22.sp else 25.sp
+                                ),
+                                color = Color.White,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            if (isPinned) {
+                                Text(text = "📌", fontSize = 13.sp)
+                            }
+                            if (isLocked) {
+                                Text(text = "🔒", fontSize = 13.sp)
+                            }
                         }
-                        if (isLocked) {
-                            Text(text = "🔒", fontSize = 13.sp)
+
+                        if (isFocused) {
+                            Text(
+                                text = "→",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 18.sp
+                                ),
+                                color = FocusBorder
+                            )
                         }
                     }
+
+                    // Bottom ambient console accent line
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(2.5.dp)
+                            .clip(RoundedCornerShape(999.dp))
+                            .background(
+                                Brush.horizontalGradient(
+                                    colors = listOf(
+                                        accentColor.copy(alpha = if (isFocused) 0.95f else 0.50f),
+                                        FocusBorder.copy(alpha = if (isFocused) 0.85f else 0.25f),
+                                        Color.Transparent
+                                    )
+                                )
+                            )
+                    )
                 }
             }
         }

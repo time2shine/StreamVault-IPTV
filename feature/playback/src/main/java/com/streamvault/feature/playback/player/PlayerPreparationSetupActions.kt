@@ -144,7 +144,9 @@ internal fun PlayerViewModel.applyPrepareSessionState(
             val movie = if (internalChannelId > 0L) playerContentResolver.getMovie(internalChannelId) else null
             val targetCatId = if (categoryId > 0) categoryId else (movie?.categoryId ?: -1L)
             val isKids = movie?.categoryName?.trim().equals("Kids Songs", ignoreCase = true) ||
+                movie?.categoryName?.trim().equals("Kids songs", ignoreCase = true) ||
                 movie?.categoryName?.contains("song", ignoreCase = true) == true ||
+                movie?.categoryName?.contains("kids", ignoreCase = true) == true ||
                 title.contains("kids", ignoreCase = true) ||
                 title.contains("song", ignoreCase = true)
             val isMovieChannel = movie?.categoryName?.trim().equals("Movie Channels", ignoreCase = true) ||
@@ -152,7 +154,7 @@ internal fun PlayerViewModel.applyPrepareSessionState(
                 title.contains("channel", ignoreCase = true)
             setIsSongPlayback(isKids)
             setIsMovieChannelPlayback(isMovieChannel)
-            setLooping(isKids)
+            setLooping(false)
             if ((isKids || isMovieChannel) && targetCatId > 0) {
                 playerContentResolver.getMoviesByCategory(providerId, targetCatId).collect { movies ->
                     currentCategoryMovies.value = movies

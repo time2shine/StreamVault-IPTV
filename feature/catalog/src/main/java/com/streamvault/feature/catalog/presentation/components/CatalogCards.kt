@@ -376,6 +376,8 @@ fun MovieCard(
     isLocked: Boolean = false,
     showTypeBadge: Boolean = false,
     useTypeBadgeIcon: Boolean = false,
+    showRating: Boolean = true,
+    showNewBadge: Boolean? = null,
     watchProgress: Float = 0f,
     isReorderMode: Boolean = false,
     isDragging: Boolean = false,
@@ -451,8 +453,17 @@ fun MovieCard(
                 )
             }
 
-            val hasRating = movie.rating > 0f
-            val hasNewTag = movie.hasNewBadge
+            val hasRating = showRating && movie.rating > 0f
+            val isRecent = remember(movie.addedAt) {
+                if (movie.addedAt > 0L) {
+                    val nowSec = System.currentTimeMillis() / 1000L
+                    val thirtyDaysSec = 30L * 24 * 3600L
+                    val cutoffSec = nowSec - thirtyDaysSec
+                    val cutoffMillis = System.currentTimeMillis() - (30L * 24 * 3600 * 1000L)
+                    (movie.addedAt in cutoffSec..100_000_000_000L) || (movie.addedAt >= cutoffMillis)
+                } else false
+            }
+            val hasNewTag = showNewBadge ?: (movie.hasNewBadge || isRecent)
 
             if (hasRating || hasNewTag) {
                 Row(

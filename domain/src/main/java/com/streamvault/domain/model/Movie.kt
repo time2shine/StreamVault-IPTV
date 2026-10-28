@@ -1,6 +1,6 @@
 package com.streamvault.domain.model
 
-private val NEW_EMOJI_PATTERN = Regex("""(?i)(?:\s*\bnew\b\s*)?[🆕\uD83C\uDD95\uFE0F]+(?:\s*\bnew\b\s*)?""")
+private val NEW_EMOJI_PATTERN = Regex("""(?i)(?:\s*\[\s*new\s*\]|\s*\(\s*new\s*\)|(?:\s*\bnew\b\s*)?[🆕\uD83C\uDD95\uFE0F]+(?:\s*\bnew\b\s*)?)""")
 private val EMPTY_BRACKETS_PATTERN = Regex("""[\[\(]\s*[\]\)]""")
 private val MULTI_SPACE_PATTERN = Regex("""\s+""")
 
@@ -38,7 +38,8 @@ data class Movie(
     val duplicateConfidence: VodDuplicateConfidence = VodDuplicateConfidence.NONE,
     val variantLabel: String? = null
 ) {
-    val hasNewBadge: Boolean = name.contains("🆕") || name.contains("\uD83C\uDD95")
+    val hasNewBadge: Boolean = name.contains("🆕") || name.contains("\uD83C\uDD95") ||
+        name.contains("[NEW]", ignoreCase = true) || name.contains("(NEW)", ignoreCase = true)
 
     val displayTitle: String = if (!hasNewBadge) {
         name

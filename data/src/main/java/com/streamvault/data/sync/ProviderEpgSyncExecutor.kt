@@ -55,6 +55,7 @@ internal class ProviderEpgSyncExecutor(
         if (shouldUseProviderGuide(provider.guideSourcePolicy) &&
             (force || ContentCachePolicy.shouldRefresh(metadata.lastEpgSuccess, ContentCachePolicy.EPG_TTL_MILLIS, now))
         ) {
+            val isCustomEpgUrl = provider.epgUrl.isNotBlank()
             try {
                 progress(provider.id, onProgress, "Downloading EPG...")
                 val xmltvUrl = provider.epgUrl.ifBlank {
@@ -72,13 +73,25 @@ internal class ProviderEpgSyncExecutor(
                 syncMetadataRepository.updateMetadata(
                     metadata.copy(lastEpgSync = now, lastEpgSuccess = now, epgCount = epgCount)
                 )
-                if (epgCount == 0) warnings += "EPG imported zero programs; live guide may require provider fallback."
+                if (epgCount == 0 && isCustomEpgUrl) {
+                    warnings += "EPG imported zero programs; live guide may require provider fallback."
+                }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Log.e(TAG, "EPG sync failed (non-fatal): ${sanitizeThrowableMessage(e)}")
-                retryable = isRetryableEpgException(e)
-                warnings += "EPG XMLTV sync failed."
+                val is404OrNotFound = e.message?.contains("404") == true ||
+                    e.message?.contains("not found", ignoreCase = true) == true
+                if (isCustomEpgUrl || !is404OrNotFound) {
+                    Log.e(TAG, "EPG sync failed (non-fatal): ${sanitizeThrowableMessage(e)}")
+                    retryable = isRetryableEpgException(e)
+                    warnings += "EPG XMLTV sync failed."
+                } else {
+                    Log.i(TAG, "Optional XMLTV EPG endpoint not found on server (${provider.serverUrl}): ${sanitizeThrowableMessage(e)}")
+                    retryable = false
+                    syncMetadataRepository.updateMetadata(
+                        metadata.copy(lastEpgSync = now, lastEpgSuccess = now, epgCount = 0)
+                    )
+                }
             }
         }
         retryable

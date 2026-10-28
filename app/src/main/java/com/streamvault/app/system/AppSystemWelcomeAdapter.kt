@@ -48,23 +48,27 @@ class AppSystemWelcomeAdapter private constructor(
     companion object {
         internal fun resolveDevProviderConfig(context: Context): WelcomeDevProviderConfig {
             val alreadySeeded = ForkPreferences.hasEverSeededDefaultProvider(context)
-            val defaultUrl = if (alreadySeeded) "" else ForkConfig.DEFAULT_M3U_URL
-            val defaultName = if (alreadySeeded) "" else ForkConfig.DEFAULT_M3U_NAME
+            val defaultXtreamServer = if (alreadySeeded) "" else ForkConfig.DEFAULT_XTREAM_URL
+            val defaultXtreamUsername = if (alreadySeeded) "" else ForkConfig.DEFAULT_XTREAM_USERNAME
+            val defaultXtreamPassword = if (alreadySeeded) "" else ForkConfig.DEFAULT_XTREAM_PASSWORD
+            val defaultXtreamName = if (alreadySeeded) "" else ForkConfig.DEFAULT_XTREAM_NAME
 
-            val m3uUrl = BuildConfig.M3U_DEV_URL.ifBlank { defaultUrl }
-            val m3uName = BuildConfig.M3U_DEV_NAME.ifBlank { defaultName }
+            val xtreamServer = BuildConfig.XTREAM_DEV_SERVER.ifBlank { defaultXtreamServer }
+            val xtreamUsername = BuildConfig.XTREAM_DEV_USERNAME.ifBlank { defaultXtreamUsername }
+            val xtreamPassword = BuildConfig.XTREAM_DEV_PASSWORD.ifBlank { defaultXtreamPassword }
+            val xtreamName = BuildConfig.XTREAM_DEV_NAME.ifBlank { defaultXtreamName }
 
-            if (!alreadySeeded && m3uUrl == ForkConfig.DEFAULT_M3U_URL) {
+            if (!alreadySeeded && xtreamServer == ForkConfig.DEFAULT_XTREAM_URL) {
                 ForkPreferences.setHasEverSeededDefaultProvider(context, true)
             }
 
             return WelcomeDevProviderConfig(
-                xtreamServer = BuildConfig.XTREAM_DEV_SERVER,
-                xtreamUsername = BuildConfig.XTREAM_DEV_USERNAME,
-                xtreamPassword = BuildConfig.XTREAM_DEV_PASSWORD,
-                xtreamName = BuildConfig.XTREAM_DEV_NAME,
-                m3uUrl = m3uUrl,
-                m3uName = m3uName,
+                xtreamServer = xtreamServer,
+                xtreamUsername = xtreamUsername,
+                xtreamPassword = xtreamPassword,
+                xtreamName = xtreamName,
+                m3uUrl = BuildConfig.M3U_DEV_URL,
+                m3uName = BuildConfig.M3U_DEV_NAME,
                 m3uVodClassificationEnabled = ForkConfig.DEFAULT_M3U_VOD_CLASSIFICATION_ENABLED,
             )
         }

@@ -44,6 +44,10 @@ internal fun PlayerViewModel.handlePlaybackEnded() {
         playerEngine.play()
         return
     }
+    if (isSongPlayback.value) {
+        playNext()
+        return
+    }
     val requestVersion = prepareRequestVersion
     playbackSessionScope(requestVersion)?.launch {
         persistPlaybackCompletion()

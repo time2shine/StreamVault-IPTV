@@ -5,7 +5,13 @@ package com.streamvault.app.custom
  * Kept isolated from upstream code to avoid merge conflicts.
  */
 object ForkConfig {
-    /** Complete playlist containing live channels and full VOD movies & series catalog (compressed gzip) */
+    /** Xtream Codes Edge API endpoint hosted on Cloudflare Worker */
+    const val DEFAULT_XTREAM_URL = "https://streamvault-api.allmybooks1991.workers.dev"
+    const val DEFAULT_XTREAM_USERNAME = "rokon"
+    const val DEFAULT_XTREAM_PASSWORD = "123"
+    const val DEFAULT_XTREAM_NAME = "Rokon IPTV"
+
+    /** Legacy playlist kept for reference or fallback */
     const val DEFAULT_M3U_URL = "https://tinyurl.com/rokon-iptv3"
     const val DEFAULT_M3U_NAME = "Rokon IPTV"
     const val DEFAULT_M3U_VOD_CLASSIFICATION_ENABLED = true

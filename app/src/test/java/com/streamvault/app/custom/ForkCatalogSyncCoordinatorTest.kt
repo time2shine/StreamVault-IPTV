@@ -18,12 +18,15 @@ import com.streamvault.domain.repository.ProviderDeleteProgress
 import com.streamvault.domain.repository.ProviderRepository
 import com.streamvault.domain.repository.ProviderSetupRequest
 import com.streamvault.domain.sync.AutomaticSyncActivity
+import com.streamvault.domain.usecase.ValidateAndAddProvider
+import com.streamvault.domain.usecase.ValidateAndAddProviderResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
@@ -34,6 +37,7 @@ class ForkCatalogSyncCoordinatorTest {
     private val editor: SharedPreferences.Editor = mock()
     private val channelRepository: ChannelRepository = mock()
     private val movieRepository: MovieRepository = mock()
+    private val validateAndAddProvider: ValidateAndAddProvider = mock()
 
     private var storedLastSync = 0L
 
@@ -59,15 +63,15 @@ class ForkCatalogSyncCoordinatorTest {
     fun `manual sync triggers refresh on active provider and records completion`() = runTest {
         val provider = LegacyProvider(
             id = 42L,
-            name = ForkConfig.DEFAULT_M3U_NAME,
-            type = ProviderType.M3U,
-            serverUrl = ForkConfig.DEFAULT_M3U_URL,
-            m3uUrl = ForkConfig.DEFAULT_M3U_URL,
-            m3uVodClassificationEnabled = true
+            name = ForkConfig.DEFAULT_XTREAM_NAME,
+            type = ProviderType.XTREAM_CODES,
+            serverUrl = ForkConfig.DEFAULT_XTREAM_URL,
+            username = ForkConfig.DEFAULT_XTREAM_USERNAME,
+            password = ForkConfig.DEFAULT_XTREAM_PASSWORD
         )
 
         val repository = TestProviderRepository(providersList = listOf(provider))
-        val coordinator = ForkCatalogSyncCoordinator(context, repository, channelRepository, movieRepository)
+        val coordinator = ForkCatalogSyncCoordinator(context, repository, channelRepository, movieRepository, validateAndAddProvider)
         val success = coordinator.executeManualSync()
 
         assertThat(success).isTrue()
@@ -77,23 +81,36 @@ class ForkCatalogSyncCoordinatorTest {
     }
 
     @Test
-    fun `manual sync automatically migrates legacy provider URL to latest default URL`() = runTest {
+    fun `manual sync automatically migrates legacy provider to Xtream Codes API`() = runTest {
         val legacyProvider = LegacyProvider(
             id = 42L,
-            name = ForkConfig.DEFAULT_M3U_NAME,
+            name = "Rokon IPTV",
             type = ProviderType.M3U,
             serverUrl = "https://tinyurl.com/rokon-iptv2",
             m3uUrl = "https://tinyurl.com/rokon-iptv2",
             m3uVodClassificationEnabled = false
         )
+        val xtreamProvider = LegacyProvider(
+            id = 99L,
+            name = ForkConfig.DEFAULT_XTREAM_NAME,
+            type = ProviderType.XTREAM_CODES,
+            serverUrl = ForkConfig.DEFAULT_XTREAM_URL,
+            username = ForkConfig.DEFAULT_XTREAM_USERNAME,
+            password = ForkConfig.DEFAULT_XTREAM_PASSWORD
+        )
 
         val repository = TestProviderRepository(providersList = listOf(legacyProvider))
-        val coordinator = ForkCatalogSyncCoordinator(context, repository, channelRepository, movieRepository)
+        whenever(validateAndAddProvider.loginXtream(any(), anyOrNull())).thenReturn(
+            ValidateAndAddProviderResult.Success(xtreamProvider)
+        )
+
+        val coordinator = ForkCatalogSyncCoordinator(context, repository, channelRepository, movieRepository, validateAndAddProvider)
         val success = coordinator.executeManualSync()
 
         assertThat(success).isTrue()
-        assertThat(repository.updatedProvider?.m3uUrl).isEqualTo(ForkConfig.DEFAULT_M3U_URL)
-        assertThat(repository.updatedProvider?.m3uVodClassificationEnabled).isTrue()
+        assertThat(repository.deletedProviderId).isEqualTo(42L)
+        assertThat(repository.activeProviderId).isEqualTo(99L)
+        assertThat(repository.refreshedProviderId).isEqualTo(99L)
     }
 
     @Test
@@ -102,15 +119,15 @@ class ForkCatalogSyncCoordinatorTest {
 
         val fullProvider = LegacyProvider(
             id = 42L,
-            name = ForkConfig.DEFAULT_M3U_NAME,
-            type = ProviderType.M3U,
-            serverUrl = ForkConfig.DEFAULT_M3U_URL,
-            m3uUrl = ForkConfig.DEFAULT_M3U_URL,
-            m3uVodClassificationEnabled = true
+            name = ForkConfig.DEFAULT_XTREAM_NAME,
+            type = ProviderType.XTREAM_CODES,
+            serverUrl = ForkConfig.DEFAULT_XTREAM_URL,
+            username = ForkConfig.DEFAULT_XTREAM_USERNAME,
+            password = ForkConfig.DEFAULT_XTREAM_PASSWORD
         )
 
         val repository = TestProviderRepository(providersList = listOf(fullProvider))
-        val coordinator = ForkCatalogSyncCoordinator(context, repository, channelRepository, movieRepository)
+        val coordinator = ForkCatalogSyncCoordinator(context, repository, channelRepository, movieRepository, validateAndAddProvider)
         coordinator.checkAndTriggerSync(isStartupCheck = false)
 
         assertThat(repository.refreshedProviderId).isNull()
@@ -122,15 +139,15 @@ class ForkCatalogSyncCoordinatorTest {
 
         val fullProvider = LegacyProvider(
             id = 42L,
-            name = ForkConfig.DEFAULT_M3U_NAME,
-            type = ProviderType.M3U,
-            serverUrl = ForkConfig.DEFAULT_M3U_URL,
-            m3uUrl = ForkConfig.DEFAULT_M3U_URL,
-            m3uVodClassificationEnabled = true
+            name = ForkConfig.DEFAULT_XTREAM_NAME,
+            type = ProviderType.XTREAM_CODES,
+            serverUrl = ForkConfig.DEFAULT_XTREAM_URL,
+            username = ForkConfig.DEFAULT_XTREAM_USERNAME,
+            password = ForkConfig.DEFAULT_XTREAM_PASSWORD
         )
 
         val repository = TestProviderRepository(providersList = listOf(fullProvider))
-        val coordinator = ForkCatalogSyncCoordinator(context, repository, channelRepository, movieRepository)
+        val coordinator = ForkCatalogSyncCoordinator(context, repository, channelRepository, movieRepository, validateAndAddProvider)
         coordinator.checkAndTriggerSync(isStartupCheck = false)
 
         assertThat(repository.refreshedProviderId).isEqualTo(42L)
@@ -147,15 +164,15 @@ class ForkCatalogSyncCoordinatorTest {
         try {
             val fullProvider = LegacyProvider(
                 id = 42L,
-                name = ForkConfig.DEFAULT_M3U_NAME,
-                type = ProviderType.M3U,
-                serverUrl = ForkConfig.DEFAULT_M3U_URL,
-                m3uUrl = ForkConfig.DEFAULT_M3U_URL,
-                m3uVodClassificationEnabled = true
+                name = ForkConfig.DEFAULT_XTREAM_NAME,
+                type = ProviderType.XTREAM_CODES,
+                serverUrl = ForkConfig.DEFAULT_XTREAM_URL,
+                username = ForkConfig.DEFAULT_XTREAM_USERNAME,
+                password = ForkConfig.DEFAULT_XTREAM_PASSWORD
             )
 
             val repository = TestProviderRepository(providersList = listOf(fullProvider))
-            val coordinator = ForkCatalogSyncCoordinator(context, repository, channelRepository, movieRepository)
+            val coordinator = ForkCatalogSyncCoordinator(context, repository, channelRepository, movieRepository, validateAndAddProvider)
             coordinator.checkAndTriggerSync(isStartupCheck = false)
 
             assertThat(repository.refreshedProviderId).isNull()
@@ -171,6 +188,8 @@ class ForkCatalogSyncCoordinatorTest {
         var updatedProvider: LegacyProvider? = null
         var refreshedProviderId: Long? = null
         var refreshedForce: Boolean? = null
+        var deletedProviderId: Long? = null
+        var activeProviderId: Long? = null
 
         override fun getProviders(): Flow<List<LegacyProvider>> = flowOf(providersList)
         override fun getActiveProvider(): Flow<LegacyProvider?> = flowOf(providersList.firstOrNull())
@@ -180,10 +199,17 @@ class ForkCatalogSyncCoordinatorTest {
             updatedProvider = provider
             return Result.success(Unit)
         }
-        override suspend fun deleteProvider(id: Long, onProgress: ((ProviderDeleteProgress) -> Unit)?): Result<ProviderDeleteOutcome> = error("unused")
+        override suspend fun deleteProvider(id: Long, onProgress: ((ProviderDeleteProgress) -> Unit)?): Result<ProviderDeleteOutcome> {
+            deletedProviderId = id
+            providersList = providersList.filterNot { it.id == id }
+            return Result.success(ProviderDeleteOutcome(id, 0, false))
+        }
         override suspend fun getAllProviderCredentials(): List<ProviderCredentials> = emptyList()
         override suspend fun updateProviderPassword(serverUrl: String, username: String, cleartextPassword: String): Boolean = false
-        override suspend fun setActiveProvider(id: Long): Result<Unit> = Result.success(Unit)
+        override suspend fun setActiveProvider(id: Long): Result<Unit> {
+            activeProviderId = id
+            return Result.success(Unit)
+        }
         override suspend fun setupProvider(request: ProviderSetupRequest, onProgress: ((String) -> Unit)?, onCode: ((String) -> Unit)?): Result<LegacyProvider> = error("unused")
         override suspend fun refreshProviderData(
             providerId: Long,

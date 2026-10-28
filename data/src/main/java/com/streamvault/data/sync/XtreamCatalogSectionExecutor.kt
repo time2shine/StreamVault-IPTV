@@ -44,7 +44,9 @@ internal class XtreamCatalogSectionExecutor(
         syncCatalogStore.upsertCategories(
             providerId = provider.id,
             type = contentType.name,
-            categories = categories.map { category -> category.toEntity(provider.id) }
+            categories = categories.mapIndexed { index, category ->
+                category.copy(providerOrder = index).toEntity(provider.id)
+            }
         )
         markIndexQueued(provider.id, contentType, now, categories.size)
         categories.size

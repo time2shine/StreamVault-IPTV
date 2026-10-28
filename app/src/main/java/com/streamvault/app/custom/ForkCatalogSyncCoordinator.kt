@@ -3,6 +3,7 @@ package com.streamvault.app.custom
 import android.content.Context
 import android.widget.Toast
 import com.streamvault.app.R
+import com.streamvault.domain.model.GuideSourcePolicy
 import com.streamvault.domain.model.LegacyProvider
 import com.streamvault.domain.model.ProviderType
 import com.streamvault.domain.model.Result
@@ -10,6 +11,9 @@ import com.streamvault.domain.repository.ChannelRepository
 import com.streamvault.domain.repository.MovieRepository
 import com.streamvault.domain.repository.ProviderRepository
 import com.streamvault.domain.sync.AutomaticSyncActivity
+import com.streamvault.domain.usecase.ValidateAndAddProvider
+import com.streamvault.domain.usecase.ValidateAndAddProviderResult
+import com.streamvault.domain.usecase.XtreamProviderSetupCommand
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,7 +35,8 @@ class ForkCatalogSyncCoordinator @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val providerRepository: ProviderRepository,
     private val channelRepository: ChannelRepository,
-    private val movieRepository: MovieRepository
+    private val movieRepository: MovieRepository,
+    private val validateAndAddProvider: ValidateAndAddProvider
 ) {
     companion object {
         private val logger: Logger = Logger.getLogger("ForkCatalogSyncCoordinator")
@@ -178,7 +183,7 @@ class ForkCatalogSyncCoordinator @Inject constructor(
             val targetProvider = resolveTargetProvider()
 
             if (targetProvider == null) {
-                logger.fine("No eligible M3U provider found for background sync")
+                logger.fine("No eligible provider found for background sync")
                 return
             }
 
@@ -229,28 +234,106 @@ class ForkCatalogSyncCoordinator @Inject constructor(
     private suspend fun resolveTargetProvider(): LegacyProvider? {
         val providers = providerRepository.getProviders().first()
         val candidate = providerRepository.getActiveProvider().first()
+
+        // 1. Look for existing Xtream provider matching default URL or name
+        val defaultXtream = providers.firstOrNull {
+            it.type == ProviderType.XTREAM_CODES &&
+                (it.serverUrl == ForkConfig.DEFAULT_XTREAM_URL ||
+                    it.name == ForkConfig.DEFAULT_XTREAM_NAME)
+        }
+        if (defaultXtream != null) {
+            if (defaultXtream.guideSourcePolicy != GuideSourcePolicy.DISABLED) {
+                logger.info("Migrating default Xtream provider ${defaultXtream.id} guideSourcePolicy to DISABLED to suppress missing EPG warning")
+                val updated = defaultXtream.copy(guideSourcePolicy = GuideSourcePolicy.DISABLED)
+                providerRepository.updateProvider(updated)
+                return updated
+            }
+            return defaultXtream
+        }
+
+        // 2. Look for any active Xtream provider
+        if (candidate?.type == ProviderType.XTREAM_CODES) {
+            return candidate
+        }
+
+        // 3. Look for any other Xtream provider in the repository
+        val anyXtream = providers.firstOrNull { it.type == ProviderType.XTREAM_CODES }
+        if (anyXtream != null) {
+            return anyXtream
+        }
+
+        // 4. Migrate existing legacy M3U provider to the high-performance Xtream Codes API
+        val legacyM3u = candidate?.takeIf { it.type == ProviderType.M3U }
             ?: providers.firstOrNull {
                 it.type == ProviderType.M3U &&
                     (it.m3uUrl == ForkConfig.DEFAULT_M3U_URL ||
                         it.serverUrl == ForkConfig.DEFAULT_M3U_URL ||
                         it.name == ForkConfig.DEFAULT_M3U_NAME ||
-                        it.m3uUrl.contains("rokon-iptv"))
+                        it.m3uUrl.contains("rokon-iptv") ||
+                        it.serverUrl.contains("rokon-iptv"))
             }
             ?: providers.firstOrNull { it.type == ProviderType.M3U }
 
-        if (candidate != null &&
-            (candidate.name == ForkConfig.DEFAULT_M3U_NAME || candidate.m3uUrl.contains("rokon-iptv")) &&
-            (candidate.m3uUrl != ForkConfig.DEFAULT_M3U_URL || !candidate.m3uVodClassificationEnabled)
-        ) {
-            logger.info("Migrating provider ${candidate.id} URL to ${ForkConfig.DEFAULT_M3U_URL}")
-            val updated = candidate.copy(
-                m3uUrl = ForkConfig.DEFAULT_M3U_URL,
-                serverUrl = ForkConfig.DEFAULT_M3U_URL,
-                m3uVodClassificationEnabled = true
+        if (legacyM3u != null) {
+            logger.info("Migrating legacy M3U provider ${legacyM3u.id} to Xtream Codes Edge API ${ForkConfig.DEFAULT_XTREAM_URL}")
+            val loginResult = validateAndAddProvider.loginXtream(
+                XtreamProviderSetupCommand(
+                    serverUrl = ForkConfig.DEFAULT_XTREAM_URL,
+                    username = ForkConfig.DEFAULT_XTREAM_USERNAME,
+                    password = ForkConfig.DEFAULT_XTREAM_PASSWORD,
+                    name = ForkConfig.DEFAULT_XTREAM_NAME,
+                    xtreamFastSyncEnabled = true,
+                    guideSourcePolicy = GuideSourcePolicy.DISABLED
+                )
             )
-            providerRepository.updateProvider(updated)
-            return updated
+            when (loginResult) {
+                is ValidateAndAddProviderResult.Success -> {
+                    val newProvider = loginResult.provider
+                    logger.info("Successfully migrated to Xtream provider id=${newProvider.id}. Deleting legacy M3U provider ${legacyM3u.id}")
+                    providerRepository.setActiveProvider(newProvider.id)
+                    providerRepository.deleteProvider(legacyM3u.id)
+                    return newProvider
+                }
+                is ValidateAndAddProviderResult.SavedWithWarning -> {
+                    val newProvider = loginResult.provider
+                    logger.info("Successfully migrated (with warning) to Xtream provider id=${newProvider.id}. Deleting legacy M3U provider ${legacyM3u.id}")
+                    providerRepository.setActiveProvider(newProvider.id)
+                    providerRepository.deleteProvider(legacyM3u.id)
+                    return newProvider
+                }
+                else -> {
+                    logger.warning("Failed to migrate to Xtream provider: $loginResult, keeping legacy M3U for now")
+                    return legacyM3u
+                }
+            }
         }
+
+        // 5. If no providers exist at all, bootstrap default Xtream provider
+        if (providers.isEmpty()) {
+            logger.info("No providers found, bootstrapping default Xtream provider")
+            val loginResult = validateAndAddProvider.loginXtream(
+                XtreamProviderSetupCommand(
+                    serverUrl = ForkConfig.DEFAULT_XTREAM_URL,
+                    username = ForkConfig.DEFAULT_XTREAM_USERNAME,
+                    password = ForkConfig.DEFAULT_XTREAM_PASSWORD,
+                    name = ForkConfig.DEFAULT_XTREAM_NAME,
+                    xtreamFastSyncEnabled = true,
+                    guideSourcePolicy = GuideSourcePolicy.DISABLED
+                )
+            )
+            when (loginResult) {
+                is ValidateAndAddProviderResult.Success -> {
+                    providerRepository.setActiveProvider(loginResult.provider.id)
+                    return loginResult.provider
+                }
+                is ValidateAndAddProviderResult.SavedWithWarning -> {
+                    providerRepository.setActiveProvider(loginResult.provider.id)
+                    return loginResult.provider
+                }
+                else -> return null
+            }
+        }
+
         return candidate
     }
 }

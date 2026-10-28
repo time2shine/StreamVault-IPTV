@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ClosedCaption
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.RepeatOne
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.Settings
@@ -73,6 +74,7 @@ internal fun VodPlayerControlsOverlay(
     onOpenAudioTracks: () -> Unit,
     onOpenSettings: () -> Unit,
     isLoopEnabled: Boolean = false,
+    isSongPlayback: Boolean = false,
     onToggleLoop: () -> Unit = {},
     onSeekToPosition: (Long) -> Unit,
     onSetScrubbingMode: (Boolean) -> Unit,
@@ -233,7 +235,7 @@ internal fun VodPlayerControlsOverlay(
                         }
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Repeat,
+                            imageVector = if (isSongPlayback && isLoopEnabled) Icons.Default.RepeatOne else Icons.Default.Repeat,
                             contentDescription = null,
                             tint = if (isLoopEnabled) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.72f)
                         )

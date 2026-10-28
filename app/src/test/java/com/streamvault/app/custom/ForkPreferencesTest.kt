@@ -47,12 +47,13 @@ class ForkPreferencesTest {
     }
 
     @Test
-    fun `first launch seeds bootstrap M3U provider and marks as seeded`() {
+    fun `first launch seeds bootstrap Xtream provider and marks as seeded`() {
         val config = AppSystemWelcomeAdapter.resolveDevProviderConfig(context)
 
-        assertThat(config.m3uUrl).isEqualTo(ForkConfig.DEFAULT_M3U_URL)
-        assertThat(config.m3uName).isEqualTo(ForkConfig.DEFAULT_M3U_NAME)
-        assertThat(config.m3uVodClassificationEnabled).isTrue()
+        assertThat(config.xtreamServer).isEqualTo(ForkConfig.DEFAULT_XTREAM_URL)
+        assertThat(config.xtreamUsername).isEqualTo(ForkConfig.DEFAULT_XTREAM_USERNAME)
+        assertThat(config.xtreamPassword).isEqualTo(ForkConfig.DEFAULT_XTREAM_PASSWORD)
+        assertThat(config.xtreamName).isEqualTo(ForkConfig.DEFAULT_XTREAM_NAME)
         assertThat(storedSeeded).isTrue()
     }
 
@@ -62,8 +63,10 @@ class ForkPreferencesTest {
 
         val config = AppSystemWelcomeAdapter.resolveDevProviderConfig(context)
 
-        assertThat(config.m3uUrl).isEmpty()
-        assertThat(config.m3uName).isEmpty()
+        assertThat(config.xtreamServer).isEmpty()
+        assertThat(config.xtreamUsername).isEmpty()
+        assertThat(config.xtreamPassword).isEmpty()
+        assertThat(config.xtreamName).isEmpty()
     }
 
     @Test

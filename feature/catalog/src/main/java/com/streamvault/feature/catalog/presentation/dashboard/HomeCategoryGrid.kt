@@ -275,7 +275,7 @@ fun HomeCategoryChannelListView(
                             overflow = TextOverflow.Ellipsis
                         )
                         Text(
-                            text = stringResource(R.string.home_category_channel_count, channels.size),
+                            text = if (isPortrait) "${channels.size}" else stringResource(R.string.home_category_channel_count, channels.size),
                             style = MaterialTheme.typography.bodySmall,
                             color = OnSurfaceDim
                         )

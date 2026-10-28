@@ -22,6 +22,7 @@ import com.streamvault.domain.model.ProviderType
 import com.streamvault.domain.model.Series
 import com.streamvault.domain.model.SyncState
 import com.streamvault.domain.model.VirtualCategoryIds
+import com.streamvault.domain.policy.sortLiveCategoriesByPreferredOrder
 import com.streamvault.domain.repository.ChannelRepository
 import com.streamvault.domain.repository.CombinedM3uRepository
 import com.streamvault.domain.repository.FavoriteRepository
@@ -45,6 +46,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.LocalDate
 import java.time.Year
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -105,6 +107,14 @@ class DashboardViewModel @Inject constructor(
     private val _isCategoryChannelsLoading = MutableStateFlow(false)
     private val _channelSearchQuery = MutableStateFlow("")
     private var categoryChannelsJob: kotlinx.coroutines.Job? = null
+    private var combinedMovieCategoryIds = listOf<Long>()
+
+    private fun isMovieCategoryToCombine(name: String): Boolean {
+        val lower = name.trim().lowercase(Locale.ROOT)
+        return lower == "movies" || lower == "movie" ||
+               lower == "movie channels" || lower == "movies channels" ||
+               lower == "movie channel" || lower == "movies channel"
+    }
 
     init {
         viewModelScope.launch {
@@ -1022,6 +1032,25 @@ class DashboardViewModel @Inject constructor(
             count = allChannelsCount
         )
 
+        // Combine Movies and Movies Channels on the main tab
+        val movieCatsToCombine = visibleProviderCats.filter { isMovieCategoryToCombine(it.name) }
+        val combinedProviderCats: List<Category> = if (movieCatsToCombine.size > 1) {
+            combinedMovieCategoryIds = movieCatsToCombine.map { it.id }
+            val primaryMovieCat = movieCatsToCombine.find {
+                it.name.trim().equals("movies", ignoreCase = true)
+            } ?: movieCatsToCombine.first()
+            val combinedCount = movieCatsToCombine.sumOf { it.count }
+            val combinedCategory = primaryMovieCat.copy(
+                name = "Movies",
+                count = combinedCount
+            )
+            val nonMovieCats = visibleProviderCats.filterNot { isMovieCategoryToCombine(it.name) }
+            nonMovieCats + combinedCategory
+        } else {
+            combinedMovieCategoryIds = movieCatsToCombine.map { it.id }
+            visibleProviderCats
+        }
+
         val result = mutableListOf<Category>()
         if (allChannelsCount > 0) {
             result.add(allChannelsCategory)
@@ -1029,9 +1058,11 @@ class DashboardViewModel @Inject constructor(
         customCats.filter { it.count > 0 && it.id !in hiddenCategoryIds }.forEach {
             result.add(it)
         }
-        val (pinned, unpinned) = visibleProviderCats.partition { it.id in pinnedCategoryIds }
-        result.addAll(pinned)
-        result.addAll(unpinned)
+        val (pinned, unpinned) = combinedProviderCats.partition { 
+            it.id in pinnedCategoryIds || (movieCatsToCombine.size > 1 && it.id in combinedMovieCategoryIds && movieCatsToCombine.any { m -> m.id in pinnedCategoryIds })
+        }
+        result.addAll(sortLiveCategoriesByPreferredOrder(pinned))
+        result.addAll(sortLiveCategoriesByPreferredOrder(unpinned))
         result
     }
 
@@ -1048,7 +1079,17 @@ class DashboardViewModel @Inject constructor(
         _isCategoryChannelsLoading.value = true
         categoryChannelsJob = viewModelScope.launch {
             try {
-                val flow: Flow<List<Channel>> = if (category.isVirtual) {
+                val isCombinedMovies = combinedMovieCategoryIds.size > 1 &&
+                    (category.id in combinedMovieCategoryIds || isMovieCategoryToCombine(category.name))
+
+                val flow: Flow<List<Channel>> = if (isCombinedMovies) {
+                    val catFlows = combinedMovieCategoryIds.map { catId ->
+                        channelRepository.getChannelsByCategory(providerId, catId)
+                    }
+                    combine(catFlows) { channelArrays ->
+                        channelArrays.flatMap { it }.distinctBy { it.id }
+                    }
+                } else if (category.isVirtual) {
                     when (category.id) {
                         VirtualCategoryIds.FAVORITES -> {
                             favoriteRepository.getFavorites(providerId, ContentType.LIVE)
