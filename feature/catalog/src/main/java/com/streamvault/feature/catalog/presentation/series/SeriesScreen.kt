@@ -440,23 +440,29 @@ private fun SeriesVodContent(
     val visibleCategoryNameSet = remember(visibleCategoryNames) {
         visibleCategoryNames.toSet()
     }
-    val catEntries = remember(uiState.seriesByCategory, visibleCategoryNameSet, uiState.favoriteCategoryName) {
-        uiState.seriesByCategory.entries
-            .filter { (name, items) ->
-                name != uiState.favoriteCategoryName && name in visibleCategoryNameSet && items.isNotEmpty()
-            }
-            .toList()
-    }
-    val pinnedCatEntries = remember(catEntries, uiState.pinnedCategoryIds, categoryByName) {
-        catEntries.filter { (name, _) ->
-            val category = categoryByName[name]
-            category != null && category.id in uiState.pinnedCategoryIds
+    val catEntries by remember(uiState.seriesByCategory, visibleCategoryNameSet, uiState.favoriteCategoryName) {
+        derivedStateOf {
+            uiState.seriesByCategory.entries
+                .filter { (name, items) ->
+                    name != uiState.favoriteCategoryName && name in visibleCategoryNameSet && items.isNotEmpty()
+                }
+                .toList()
         }
     }
-    val unpinnedCatEntries = remember(catEntries, uiState.pinnedCategoryIds, categoryByName) {
-        catEntries.filter { (name, _) ->
-            val category = categoryByName[name]
-            category == null || category.id !in uiState.pinnedCategoryIds
+    val pinnedCatEntries by remember(catEntries, uiState.pinnedCategoryIds, categoryByName) {
+        derivedStateOf {
+            catEntries.filter { (name, _) ->
+                val category = categoryByName[name]
+                category != null && category.id in uiState.pinnedCategoryIds
+            }
+        }
+    }
+    val unpinnedCatEntries by remember(catEntries, uiState.pinnedCategoryIds, categoryByName) {
+        derivedStateOf {
+            catEntries.filter { (name, _) ->
+                val category = categoryByName[name]
+                category == null || category.id !in uiState.pinnedCategoryIds
+            }
         }
     }
     val fallbackSeriesId = if (heroSeries == null) {
@@ -729,7 +735,7 @@ private fun SeriesVodContent(
             }
             }
             if (pinnedCatEntries.isNotEmpty()) {
-            items(pinnedCatEntries, key = { it.key }) { entry ->
+            items(pinnedCatEntries, key = { it.key }, contentType = { "category_row" }) { entry ->
                 val categoryName = entry.key
                 val seriesList = entry.value
                 val matchedCategory = categoryByName[categoryName]
@@ -794,7 +800,7 @@ private fun SeriesVodContent(
                 }
             }
             }
-            items(unpinnedCatEntries, key = { it.key }) { entry ->
+            items(unpinnedCatEntries, key = { it.key }, contentType = { "category_row" }) { entry ->
                 val categoryName = entry.key
                 val seriesList = entry.value
                 val matchedCategory = categoryByName[categoryName]

@@ -74,6 +74,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.first
@@ -170,7 +171,7 @@ class MovieRepositoryImpl @Inject constructor(
             preferredVariants = preferredVariants,
             observations = observations
         )
-    }
+    }.distinctUntilChanged() // Suppress re-emissions when settings haven't actually changed
 
     override fun getMovies(providerId: Long): Flow<List<Movie>> =
         preferencesRepository.parentalControlLevel.flatMapLatest { level ->
@@ -313,7 +314,8 @@ class MovieRepositoryImpl @Inject constructor(
                     moviePresentationSettingsFlow
                 ) { previews, settings ->
                     previews.mapValues { (_, movies) -> buildPresentedMovies(movies, settings).take(limitPerCategory) }
-                }.flowOn(Dispatchers.Default).collect { previews ->
+                }.distinctUntilChanged() // Skip downstream collection when movie lists haven't changed
+                    .flowOn(Dispatchers.Default).collect { previews ->
                     send(previews)
                 }
             }

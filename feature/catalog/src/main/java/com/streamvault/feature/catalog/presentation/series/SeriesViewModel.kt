@@ -1,4 +1,4 @@
-﻿package com.streamvault.feature.catalog.presentation.series
+package com.streamvault.feature.catalog.presentation.series
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
@@ -381,6 +381,13 @@ class SeriesViewModel @Inject constructor(
                             selected in providerCategoryNames ||
                             selected in customCategoryNames
                     }
+                    val current = _uiState.value
+                    if (current.seriesByCategory == snapshot.grouped &&
+                        current.categoryNames == snapshot.categoryNames &&
+                        current.isLoadingPreviewRows == result.isLoadingPreviewRows &&
+                        current.hasMorePreviewRows == result.hasMorePreviewRows &&
+                        current.selectedCategory == resolvedSelected
+                    ) return@collect
                     _uiState.update {
                         it.copy(
                             seriesByCategory = snapshot.grouped,

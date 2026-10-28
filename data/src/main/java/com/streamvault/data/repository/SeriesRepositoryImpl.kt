@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -142,7 +143,7 @@ class SeriesRepositoryImpl @Inject constructor(
             preferredVariants = preferredVariants,
             observations = observations
         )
-    }
+    }.distinctUntilChanged()
 
     override fun getSeries(providerId: Long): Flow<List<Series>> =
         combine(
@@ -293,7 +294,8 @@ class SeriesRepositoryImpl @Inject constructor(
                     seriesPresentationSettingsFlow
                 ) { previews, settings ->
                     previews.mapValues { (_, items) -> buildPresentedSeries(items, settings).take(limitPerCategory) }
-                }.flowOn(Dispatchers.Default).collect { previews ->
+                }.distinctUntilChanged()
+                    .flowOn(Dispatchers.Default).collect { previews ->
                     send(previews)
                 }
             }

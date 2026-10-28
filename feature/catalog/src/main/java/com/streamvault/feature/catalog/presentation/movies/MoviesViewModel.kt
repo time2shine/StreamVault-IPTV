@@ -394,6 +394,17 @@ class MoviesViewModel @Inject constructor(
                             selected in providerCategoryNames ||
                             selected in customCategoryNames
                     }
+                    // Guard: skip the full state update when the movie content and loading flags
+                    // are identical to what we already have — prevents spurious Compose recompositions
+                    // caused by combine() re-firing with structurally identical data (e.g. after
+                    // hydration tick or settings re-emission that didn't change any values).
+                    val current = _uiState.value
+                    if (current.moviesByCategory == snapshot.grouped &&
+                        current.categoryNames == snapshot.categoryNames &&
+                        current.isLoadingPreviewRows == result.isLoadingPreviewRows &&
+                        current.hasMorePreviewRows == result.hasMorePreviewRows &&
+                        current.selectedCategory == resolvedSelected
+                    ) return@collect
                     _uiState.update {
                         it.copy(
                             moviesByCategory = snapshot.grouped,

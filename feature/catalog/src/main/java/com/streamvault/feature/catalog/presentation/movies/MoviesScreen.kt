@@ -509,23 +509,29 @@ private fun MoviesVodContent(
     val visibleCategoryNameSet = remember(visibleCategoryNames) {
         visibleCategoryNames.toSet()
     }
-    val catEntries = remember(uiState.moviesByCategory, visibleCategoryNameSet, uiState.favoriteCategoryName) {
-        uiState.moviesByCategory.entries
-            .filter { (name, items) ->
-                name != uiState.favoriteCategoryName && name in visibleCategoryNameSet && items.isNotEmpty()
-            }
-            .toList()
-    }
-    val pinnedCatEntries = remember(catEntries, uiState.pinnedCategoryIds, categoryByName) {
-        catEntries.filter { (name, _) ->
-            val category = categoryByName[name]
-            category != null && category.id in uiState.pinnedCategoryIds
+    val catEntries by remember(uiState.moviesByCategory, visibleCategoryNameSet, uiState.favoriteCategoryName) {
+        derivedStateOf {
+            uiState.moviesByCategory.entries
+                .filter { (name, items) ->
+                    name != uiState.favoriteCategoryName && name in visibleCategoryNameSet && items.isNotEmpty()
+                }
+                .toList()
         }
     }
-    val unpinnedCatEntries = remember(catEntries, uiState.pinnedCategoryIds, categoryByName) {
-        catEntries.filter { (name, _) ->
-            val category = categoryByName[name]
-            category == null || category.id !in uiState.pinnedCategoryIds
+    val pinnedCatEntries by remember(catEntries, uiState.pinnedCategoryIds, categoryByName) {
+        derivedStateOf {
+            catEntries.filter { (name, _) ->
+                val category = categoryByName[name]
+                category != null && category.id in uiState.pinnedCategoryIds
+            }
+        }
+    }
+    val unpinnedCatEntries by remember(catEntries, uiState.pinnedCategoryIds, categoryByName) {
+        derivedStateOf {
+            catEntries.filter { (name, _) ->
+                val category = categoryByName[name]
+                category == null || category.id !in uiState.pinnedCategoryIds
+            }
         }
     }
     val firstItemMovieId = continueWatching.firstOrNull()?.contentId
@@ -695,7 +701,7 @@ private fun MoviesVodContent(
             }
             }
             if (pinnedCatEntries.isNotEmpty()) {
-            items(pinnedCatEntries, key = { it.key }) { entry ->
+            items(pinnedCatEntries, key = { it.key }, contentType = { "category_row" }) { entry ->
                 val categoryName = entry.key
                 val movies = entry.value
                 val matchedCategory = categoryByName[categoryName]
@@ -722,7 +728,7 @@ private fun MoviesVodContent(
                 }
             }
             }
-            items(unpinnedCatEntries, key = { it.key }) { entry ->
+            items(unpinnedCatEntries, key = { it.key }, contentType = { "category_row" }) { entry ->
                 val categoryName = entry.key
                 val movies = entry.value
                 val matchedCategory = categoryByName[categoryName]
