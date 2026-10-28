@@ -81,9 +81,13 @@ fun <T : Any> CategoryRow(
         modifier = modifier
             .fillMaxWidth()
             .suppressParentVerticalScroll()
-            .onFocusChanged { focusState ->
-                focusDebouncer.onFocusChanged(focusState.hasFocus, onRowFocused)
-            }
+            .then(
+                if (onRowFocused != null) {
+                    Modifier.onFocusChanged { focusState ->
+                        focusDebouncer.onFocusChanged(focusState.hasFocus, onRowFocused)
+                    }
+                } else Modifier
+            )
     ) {
         if (onSeeAll != null) {
             val seeAllFocusRequester = remember { FocusRequester() }

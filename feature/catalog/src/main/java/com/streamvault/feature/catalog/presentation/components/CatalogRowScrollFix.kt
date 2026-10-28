@@ -1,14 +1,11 @@
-﻿@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION")
 
 package com.streamvault.feature.catalog.presentation.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.relocation.BringIntoViewResponder
 import androidx.compose.foundation.relocation.bringIntoViewResponder
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.Rect
@@ -23,17 +20,21 @@ import androidx.compose.ui.layout.onSizeChanged
  */
 @OptIn(ExperimentalFoundationApi::class)
 fun Modifier.suppressParentVerticalScroll(): Modifier = composed {
-    var height by remember { mutableFloatStateOf(0f) }
+    val responder = remember {
+        object : BringIntoViewResponder {
+            var height: Float = 0f
 
-    this
-        .onSizeChanged { height = it.height.toFloat() }
-        .bringIntoViewResponder(object : BringIntoViewResponder {
             override fun calculateRectForParent(localRect: Rect): Rect =
                 Rect(localRect.left, 0f, localRect.right, height)
 
             override suspend fun bringChildIntoView(localRect: () -> Rect?) {
                 // No-op: horizontal scrolling is handled by the inner LazyRow.
             }
-        })
+        }
+    }
+
+    this
+        .onSizeChanged { responder.height = it.height.toFloat() }
+        .bringIntoViewResponder(responder)
 }
 

@@ -1,4 +1,4 @@
-﻿package com.streamvault.feature.catalog.presentation.series
+package com.streamvault.feature.catalog.presentation.series
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
@@ -714,7 +714,8 @@ private fun SeriesVodContent(
                         title = stringResource(R.string.favorites_title),
                         items = favoriteSeries,
                         onSeeAll = { onSelectCategory(uiState.favoriteCategoryName) },
-                        keySelector = { it.id }
+                        keySelector = { it.id },
+                        contentTypeSelector = { "series_card" }
                     ) { series ->
                         val isLocked = isSeriesLocked(series)
                         SeriesCard(
@@ -741,7 +742,8 @@ private fun SeriesVodContent(
                     },
                     onPinToggle = matchedCategory?.let { { onToggleCategoryPinned(it) } },
                     isPinned = matchedCategory?.id in uiState.pinnedCategoryIds,
-                    keySelector = { it.id }
+                    keySelector = { it.id },
+                    contentTypeSelector = { "series_card" }
                 ) { series ->
                     val isLocked = isSeriesLocked(series)
                     SeriesCard(
@@ -760,7 +762,8 @@ private fun SeriesVodContent(
                         title = stringResource(R.string.library_lens_fresh_series),
                         items = freshSeries,
                         onSeeAll = null,
-                        keySelector = { it.id }
+                        keySelector = { it.id },
+                        contentTypeSelector = { "series_card" }
                     ) { series ->
                         val isLocked = isSeriesLocked(series)
                         SeriesCard(
@@ -778,7 +781,8 @@ private fun SeriesVodContent(
                         title = stringResource(R.string.library_lens_top_rated),
                         items = topRatedSeries,
                         onSeeAll = null,
-                        keySelector = { it.id }
+                        keySelector = { it.id },
+                        contentTypeSelector = { "series_card" }
                     ) { series ->
                         val isLocked = isSeriesLocked(series)
                         SeriesCard(
@@ -803,7 +807,8 @@ private fun SeriesVodContent(
                     },
                     onPinToggle = matchedCategory?.let { { onToggleCategoryPinned(it) } },
                     isPinned = matchedCategory?.id in uiState.pinnedCategoryIds,
-                    keySelector = { it.id }
+                    keySelector = { it.id },
+                    contentTypeSelector = { "series_card" }
                 ) { series ->
                     val isLocked = isSeriesLocked(series)
                     SeriesCard(

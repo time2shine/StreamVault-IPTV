@@ -78,8 +78,6 @@ import com.streamvault.core.ui.design.browse.TextTertiary
 import com.streamvault.domain.model.Channel
 import com.streamvault.domain.model.Movie
 import com.streamvault.domain.model.Series
-import com.streamvault.domain.model.displayTitle
-import com.streamvault.domain.model.hasNewBadge
 import androidx.compose.ui.text.font.FontWeight
 import com.streamvault.core.ui.design.BrowseFocusSpec as FocusSpec
 import com.streamvault.core.ui.interaction.mouseClickable

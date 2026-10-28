@@ -1,5 +1,9 @@
 package com.streamvault.domain.model
 
+private val SERIES_NEW_EMOJI_PATTERN = Regex("""(?i)(?:\s*\bnew\b\s*)?[🆕\uD83C\uDD95\uFE0F]+(?:\s*\bnew\b\s*)?""")
+private val SERIES_EMPTY_BRACKETS_PATTERN = Regex("""[\[\(]\s*[\]\)]""")
+private val SERIES_MULTI_SPACE_PATTERN = Regex("""\s+""")
+
 data class Series(
     val id: Long,
     val name: String,
@@ -33,26 +37,21 @@ data class Series(
     /** Provider-neutral logical playback URL used when episode rows do not carry their own command. */
     val episodePlaybackTemplateUrl: String? = null
 ) {
+    val hasNewBadge: Boolean = name.contains("🆕") || name.contains("\uD83C\uDD95")
+
+    val displayTitle: String = if (!hasNewBadge) {
+        name
+    } else {
+        val stripped = name.replace(SERIES_NEW_EMOJI_PATTERN, " ")
+        val withoutEmptyBrackets = stripped.replace(SERIES_EMPTY_BRACKETS_PATTERN, " ")
+        withoutEmptyBrackets.replace(SERIES_MULTI_SPACE_PATTERN, " ").trim()
+    }
+
     init {
         require(rating in 0f..10f) { "rating must be between 0 and 10" }
         require(lastModified >= 0) { "lastModified must be non-negative" }
     }
 }
-
-private val SERIES_NEW_EMOJI_PATTERN = Regex("""(?i)(?:\s*\bnew\b\s*)?[🆕\uD83C\uDD95\uFE0F]+(?:\s*\bnew\b\s*)?""")
-private val SERIES_EMPTY_BRACKETS_PATTERN = Regex("""[\[\(]\s*[\]\)]""")
-private val SERIES_MULTI_SPACE_PATTERN = Regex("""\s+""")
-
-val Series.hasNewBadge: Boolean
-    get() = name.contains("🆕") || name.contains("\uD83C\uDD95")
-
-val Series.displayTitle: String
-    get() {
-        if (!hasNewBadge) return name
-        val stripped = name.replace(SERIES_NEW_EMOJI_PATTERN, " ")
-        val withoutEmptyBrackets = stripped.replace(SERIES_EMPTY_BRACKETS_PATTERN, " ")
-        return withoutEmptyBrackets.replace(SERIES_MULTI_SPACE_PATTERN, " ").trim()
-    }
 
 
 enum class SeriesCatalogOrigin {

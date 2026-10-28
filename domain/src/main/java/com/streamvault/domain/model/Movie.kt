@@ -1,5 +1,9 @@
 package com.streamvault.domain.model
 
+private val NEW_EMOJI_PATTERN = Regex("""(?i)(?:\s*\bnew\b\s*)?[🆕\uD83C\uDD95\uFE0F]+(?:\s*\bnew\b\s*)?""")
+private val EMPTY_BRACKETS_PATTERN = Regex("""[\[\(]\s*[\]\)]""")
+private val MULTI_SPACE_PATTERN = Regex("""\s+""")
+
 data class Movie(
     val id: Long,
     val name: String,
@@ -34,6 +38,16 @@ data class Movie(
     val duplicateConfidence: VodDuplicateConfidence = VodDuplicateConfidence.NONE,
     val variantLabel: String? = null
 ) {
+    val hasNewBadge: Boolean = name.contains("🆕") || name.contains("\uD83C\uDD95")
+
+    val displayTitle: String = if (!hasNewBadge) {
+        name
+    } else {
+        val stripped = name.replace(NEW_EMOJI_PATTERN, " ")
+        val withoutEmptyBrackets = stripped.replace(EMPTY_BRACKETS_PATTERN, " ")
+        withoutEmptyBrackets.replace(MULTI_SPACE_PATTERN, " ").trim()
+    }
+
     init {
         require(durationSeconds >= 0) { "durationSeconds must be non-negative" }
         require(rating in 0f..10f) { "rating must be between 0 and 10" }
@@ -41,19 +55,4 @@ data class Movie(
         require(lastWatchedAt >= 0) { "lastWatchedAt must be non-negative" }
     }
 }
-
-private val NEW_EMOJI_PATTERN = Regex("""(?i)(?:\s*\bnew\b\s*)?[🆕\uD83C\uDD95\uFE0F]+(?:\s*\bnew\b\s*)?""")
-private val EMPTY_BRACKETS_PATTERN = Regex("""[\[\(]\s*[\]\)]""")
-private val MULTI_SPACE_PATTERN = Regex("""\s+""")
-
-val Movie.hasNewBadge: Boolean
-    get() = name.contains("🆕") || name.contains("\uD83C\uDD95")
-
-val Movie.displayTitle: String
-    get() {
-        if (!hasNewBadge) return name
-        val stripped = name.replace(NEW_EMOJI_PATTERN, " ")
-        val withoutEmptyBrackets = stripped.replace(EMPTY_BRACKETS_PATTERN, " ")
-        return withoutEmptyBrackets.replace(MULTI_SPACE_PATTERN, " ").trim()
-    }
 

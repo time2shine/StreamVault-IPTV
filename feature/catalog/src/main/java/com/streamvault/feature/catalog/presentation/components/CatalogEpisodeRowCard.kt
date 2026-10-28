@@ -48,7 +48,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
-import com.streamvault.domain.model.displayTitle
 import androidx.tv.material3.Border
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.MaterialTheme
@@ -72,6 +71,16 @@ import com.streamvault.domain.model.Channel
 import com.streamvault.domain.model.Episode
 import com.streamvault.domain.model.Movie
 import com.streamvault.domain.model.Series
+
+private val PosterArtworkBackdropBrush = Brush.linearGradient(
+    listOf(AppColors.SurfaceEmphasis, AppColors.Surface, AppColors.Brand.copy(alpha = 0.18f))
+)
+private val PosterArtworkScrimBrush = Brush.verticalGradient(
+    listOf(Color.Transparent, AppColors.HeroBottom)
+)
+private val EpisodeArtworkBackdropBrush = Brush.horizontalGradient(
+    listOf(AppColors.SurfaceElevated, AppColors.Surface)
+)
 
 @Composable
 fun LiveChannelRowCard(
@@ -389,11 +398,7 @@ fun EpisodeRowCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(BrowseShapes.Panel)
-            .background(
-                Brush.horizontalGradient(
-                    listOf(AppColors.SurfaceElevated, AppColors.Surface)
-                )
-            )
+            .background(EpisodeArtworkBackdropBrush)
             .border(1.dp, AppColors.Outline, BrowseShapes.Panel)
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -475,27 +480,22 @@ private fun PosterCard(
     modifier: Modifier = Modifier
 ) {
     val posterShape = BrowseShapes.Artwork
-    var imageLoaded by remember(imageUrl) { mutableStateOf(false) }
-    var imageFailed by remember(imageUrl) { mutableStateOf(false) }
-    val showFallback = imageUrl.isNullOrBlank() || imageFailed || !imageLoaded
 
     Box(
         modifier = modifier
             .clip(posterShape)
-            .background(Brush.linearGradient(listOf(AppColors.SurfaceEmphasis, AppColors.Surface, AppColors.Brand.copy(alpha = 0.18f))))
+            .background(PosterArtworkBackdropBrush)
     ) {
-        // Fallback letter: only shown while no URL, still loading, or load failed
-        if (showFallback) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = title.take(1).uppercase(),
-                    style = MaterialTheme.typography.displayLarge,
-                    color = AppColors.TextSecondary
-                )
-            }
+        // Fallback letter underneath: shown while image is null, loading, or failed
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = title.take(1).uppercase(),
+                style = MaterialTheme.typography.displayLarge,
+                color = AppColors.TextSecondary
+            )
         }
         if (!imageUrl.isNullOrBlank()) {
             AsyncImage(
@@ -504,9 +504,7 @@ private fun PosterCard(
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(posterShape),
-                contentScale = ContentScale.Crop,
-                onSuccess = { imageLoaded = true },
-                onError = { imageFailed = true }
+                contentScale = ContentScale.Crop
             )
         }
 
@@ -515,11 +513,7 @@ private fun PosterCard(
                 .fillMaxWidth()
                 .fillMaxHeight(0.52f)
                 .align(Alignment.BottomCenter)
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(Color.Transparent, AppColors.HeroBottom)
-                    )
-                )
+                .background(PosterArtworkScrimBrush)
         )
 
         Column(

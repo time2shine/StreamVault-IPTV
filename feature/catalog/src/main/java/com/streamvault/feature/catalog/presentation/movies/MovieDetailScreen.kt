@@ -81,8 +81,6 @@ import com.streamvault.core.ui.design.requestFocusSafely
 import com.streamvault.domain.model.ExternalRatings
 import com.streamvault.domain.model.Movie
 import com.streamvault.domain.model.VodMovieVariant
-import com.streamvault.domain.model.displayTitle
-import com.streamvault.domain.model.hasNewBadge
 import com.streamvault.domain.trakt.TraktCustomListItem
 import com.streamvault.domain.trakt.TraktCustomListItemIdentity
 import com.streamvault.domain.trakt.TraktCustomListItemType
