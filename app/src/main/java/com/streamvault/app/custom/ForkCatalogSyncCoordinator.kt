@@ -293,9 +293,9 @@ class ForkCatalogSyncCoordinator @Inject constructor(
                     it.name == ForkConfig.DEFAULT_XTREAM_NAME)
         }
         if (defaultXtream != null) {
-            if (defaultXtream.guideSourcePolicy != GuideSourcePolicy.DISABLED) {
-                logger.info("Migrating default Xtream provider ${defaultXtream.id} guideSourcePolicy to DISABLED to suppress missing EPG warning")
-                val updated = defaultXtream.copy(guideSourcePolicy = GuideSourcePolicy.DISABLED)
+            if (defaultXtream.guideSourcePolicy != GuideSourcePolicy.EXTERNAL_ONLY) {
+                logger.info("Setting default Xtream provider ${defaultXtream.id} guideSourcePolicy to EXTERNAL_ONLY to enable external EPG without provider XMLTV 404")
+                val updated = defaultXtream.copy(guideSourcePolicy = GuideSourcePolicy.EXTERNAL_ONLY)
                 providerRepository.updateProvider(updated)
                 return updated
             }
@@ -334,7 +334,7 @@ class ForkCatalogSyncCoordinator @Inject constructor(
                     password = ForkConfig.DEFAULT_XTREAM_PASSWORD,
                     name = ForkConfig.DEFAULT_XTREAM_NAME,
                     xtreamFastSyncEnabled = true,
-                    guideSourcePolicy = GuideSourcePolicy.DISABLED
+                    guideSourcePolicy = GuideSourcePolicy.EXTERNAL_ONLY
                 )
             )
             when (loginResult) {
@@ -369,7 +369,7 @@ class ForkCatalogSyncCoordinator @Inject constructor(
                     password = ForkConfig.DEFAULT_XTREAM_PASSWORD,
                     name = ForkConfig.DEFAULT_XTREAM_NAME,
                     xtreamFastSyncEnabled = true,
-                    guideSourcePolicy = GuideSourcePolicy.DISABLED
+                    guideSourcePolicy = GuideSourcePolicy.EXTERNAL_ONLY
                 )
             )
             when (loginResult) {

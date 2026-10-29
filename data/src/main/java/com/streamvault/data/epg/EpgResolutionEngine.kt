@@ -90,19 +90,26 @@ class EpgResolutionEngine @Inject constructor(
         // Build lookup indexes for fast matching
         // sourceId -> set of trimmed xmltvChannelIds for existence checks
         val exactIdIndex = mutableMapOf<Long, Set<String>>()
+        // sourceId -> (normalized xmltvChannelId -> original xmltvChannelId)
+        val normalizedIdIndex = mutableMapOf<Long, Map<String, String>>()
         // sourceId -> (normalizedName -> xmltvChannelId)
         val nameIndex = mutableMapOf<Long, Map<String, String>>()
 
         for ((sourceId, epgChannels) in epgChannelsBySource) {
             exactIdIndex[sourceId] = epgChannels.map { it.xmltvChannelId.trim() }.toHashSet()
-            // For name index, first occurrence wins (avoids ambiguity)
+            val normIdMap = mutableMapOf<String, String>()
             val nameMap = mutableMapOf<String, String>()
             for (ch in epgChannels) {
+                val normId = EpgNameNormalizer.normalize(ch.xmltvChannelId)
+                if (normId.isNotEmpty() && normId !in normIdMap) {
+                    normIdMap[normId] = ch.xmltvChannelId
+                }
                 val normalized = ch.normalizedName
                 if (normalized.isNotEmpty() && normalized !in nameMap) {
                     nameMap[normalized] = ch.xmltvChannelId
                 }
             }
+            normalizedIdIndex[sourceId] = normIdMap
             nameIndex[sourceId] = nameMap
         }
 
@@ -173,13 +180,48 @@ class EpgResolutionEngine @Inject constructor(
                 }
             }
 
-            // 3. Try external sources — normalized name match
+            // 2b. Try external sources — normalized ID match (e.g. starsports1hd.in <-> STAR.SPORTS.1.HD.in)
+            if (channelEpgId != null) {
+                val normalizedChannelEpgId = EpgNameNormalizer.normalize(channelEpgId)
+                if (normalizedChannelEpgId.isNotEmpty()) {
+                    for (assignment in enabledAssignments) {
+                        val sid = assignment.epgSourceId
+                        val nIdIndex = normalizedIdIndex[sid] ?: continue
+                        val matchedXmltvId = nIdIndex[normalizedChannelEpgId]
+                        if (matchedXmltvId != null) {
+                            exactIdMatches++
+                            return@map ChannelEpgMappingEntity(
+                                providerChannelId = channel.id,
+                                providerId = providerId,
+                                sourceType = EpgSourceType.EXTERNAL.name,
+                                epgSourceId = sid,
+                                xmltvChannelId = matchedXmltvId,
+                                matchType = EpgMatchType.EXACT_ID.name,
+                                confidence = 0.95f,
+                                matchedAt = now,
+                                failedAttempts = 0,
+                                source = "tvg_id_norm",
+                                updatedAt = now
+                            )
+                        }
+                    }
+                }
+            }
+
+            // 3. Try external sources — normalized name match (supporting raw and cleaned IPTV prefixes)
             val channelNormalizedName = EpgNameNormalizer.normalize(channel.name)
-            if (channelNormalizedName.isNotEmpty()) {
+            val cleanedNormalizedName = EpgNameNormalizer.normalize(EpgNameNormalizer.cleanChannelName(channel.name))
+            val nameCandidates = if (cleanedNormalizedName.isNotEmpty() && cleanedNormalizedName != channelNormalizedName) {
+                listOf(channelNormalizedName, cleanedNormalizedName)
+            } else {
+                listOf(channelNormalizedName)
+            }
+            for (candidate in nameCandidates) {
+                if (candidate.isEmpty()) continue
                 for (assignment in enabledAssignments) {
                     val sid = assignment.epgSourceId
                     val nIndex = nameIndex[sid] ?: continue
-                    val matchedXmltvId = nIndex[channelNormalizedName]
+                    val matchedXmltvId = nIndex[candidate]
                     if (matchedXmltvId != null) {
                         normalizedNameMatches++
                         return@map ChannelEpgMappingEntity(
@@ -189,7 +231,7 @@ class EpgResolutionEngine @Inject constructor(
                             epgSourceId = sid,
                             xmltvChannelId = matchedXmltvId,
                             matchType = EpgMatchType.NORMALIZED_NAME.name,
-                            confidence = 0.7f,
+                            confidence = if (candidate == channelNormalizedName) 0.7f else 0.65f,
                             matchedAt = now,
                             failedAttempts = 0,
                             source = "name_match",

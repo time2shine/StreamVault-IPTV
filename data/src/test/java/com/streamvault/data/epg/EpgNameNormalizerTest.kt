@@ -50,4 +50,12 @@ class EpgNameNormalizerTest {
     fun `normalize_frenchCedilla_stripped`() {
         assertThat(EpgNameNormalizer.normalize("Garçon")).isEqualTo("garcon")
     }
+
+    @Test
+    fun `cleanChannelName_stripsLiveWrapperAndCategoryPrefixes`() {
+        assertThat(EpgNameNormalizer.cleanChannelName("---Live(Star Sports 1 HD)---")).isEqualTo("Star Sports 1 HD")
+        assertThat(EpgNameNormalizer.cleanChannelName("--Live(Star Sports 2 Hindi)--")).isEqualTo("Star Sports 2 Hindi")
+        assertThat(EpgNameNormalizer.cleanChannelName("CR | Star Sports 1 Hindi")).isEqualTo("Star Sports 1 Hindi")
+        assertThat(EpgNameNormalizer.cleanChannelName("FB | BeIN Sports 1")).isEqualTo("BeIN Sports 1")
+    }
 }

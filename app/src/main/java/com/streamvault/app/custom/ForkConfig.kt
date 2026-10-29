@@ -12,8 +12,8 @@ object ForkConfig {
     const val DEFAULT_XTREAM_NAME = "Rokon IPTV"
 
     /** Default EPG source URL */
-    const val DEFAULT_EPG_URL = "https://epgshare01.online/epgshare01/epg_ripper_IN1.xml.gz"
-    const val DEFAULT_EPG_NAME = "India & Sports Guide"
+    const val DEFAULT_EPG_URL = "https://epgshare01.online/epgshare01/epg_ripper_IN4.xml.gz"
+    const val DEFAULT_EPG_NAME = "India Sports & TV Guide"
 
     /** Legacy playlist kept for reference or fallback */
     const val DEFAULT_M3U_URL = "https://tinyurl.com/rokon-iptv3"
