@@ -7,7 +7,6 @@ import com.streamvault.feature.catalog.api.CatalogCastPlaybackEvent
 import com.streamvault.feature.catalog.api.CatalogCastPort
 import com.streamvault.feature.catalog.api.CatalogCastRequest
 import com.streamvault.feature.catalog.api.CatalogCastStartResult
-import com.streamvault.feature.catalog.api.CatalogDownloadStarter
 import com.streamvault.feature.catalog.api.CatalogMessage
 import com.streamvault.feature.catalog.api.CatalogStreamPreparer
 import com.streamvault.feature.catalog.api.CatalogUiEvent
@@ -15,14 +14,11 @@ import com.streamvault.feature.catalog.navigation.CatalogRoutePatterns
 import com.streamvault.domain.playback.isPlaybackComplete
 import com.streamvault.data.preferences.PreferencesRepository
 import com.streamvault.domain.model.ContentType
-import com.streamvault.domain.model.DownloadContentType
-import com.streamvault.domain.model.DownloadRequest
 import com.streamvault.domain.model.ExternalRatings
 import com.streamvault.domain.model.ExternalRatingsLookup
 import com.streamvault.domain.model.MovieDetailPresentationHint
 import com.streamvault.domain.model.Movie
 import com.streamvault.domain.model.Result
-import com.streamvault.domain.repository.DownloadManager
 import com.streamvault.domain.repository.ExternalRatingsRepository
 import com.streamvault.domain.repository.FavoriteRepository
 import com.streamvault.domain.repository.MovieRepository
@@ -64,8 +60,6 @@ class MovieDetailViewModel @Inject constructor(
     private val favoriteRepository: FavoriteRepository,
     private val preferencesRepository: PreferencesRepository,
     private val streamPreparer: CatalogStreamPreparer,
-    private val downloadManager: DownloadManager,
-    private val downloadStarter: CatalogDownloadStarter,
     private val castPort: CatalogCastPort,
     private val traktWatchlist: TraktWatchlist,
     private val traktFavorites: TraktFavorites,
@@ -264,41 +258,6 @@ class MovieDetailViewModel @Inject constructor(
                 ?: Result.error("Could not resolve stream URL")
             is Result.Error -> Result.error(prepared.message, prepared.exception)
             Result.Loading -> Result.error("Could not resolve stream URL")
-        }
-    }
-
-    fun downloadMovie() {
-        val movie = _uiState.value.movie ?: return
-        viewModelScope.launch {
-            val resolvedUrl = resolveCopyStreamUrl()
-            when (resolvedUrl) {
-                is Result.Success -> {
-                    val request = DownloadRequest(
-                        providerId = movie.providerId,
-                        contentType = DownloadContentType.MOVIE,
-                        contentId = movie.id,
-                        contentName = movie.name,
-                        streamUrl = resolvedUrl.data,
-                        sourceStreamUrl = movie.streamUrl,
-                        sourceStreamId = movie.streamId.takeIf { it > 0L },
-                        containerExtension = movie.containerExtension,
-                        posterUrl = movie.posterUrl
-                    )
-                    val result = downloadManager.enqueueDownload(request)
-                    when (result) {
-                        is Result.Success -> {
-                            downloadStarter.startDownload(result.data.id)
-                            _uiEvents.emit(CatalogUiEvent.ShowMessage(CatalogMessage.DownloadStarted))
-                        }
-                        is Result.Error ->
-                            _uiEvents.emit(CatalogUiEvent.ShowMessage(CatalogMessage.DownloadFailed))
-                        Result.Loading -> Unit
-                    }
-                }
-                is Result.Error ->
-                    _uiEvents.emit(CatalogUiEvent.ShowMessage(CatalogMessage.DownloadUrlUnavailable))
-                Result.Loading -> Unit
-            }
         }
     }
 

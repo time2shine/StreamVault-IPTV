@@ -69,8 +69,8 @@ class CatalogFeatureContractsTest {
         assertThat(cancelled).isEqualTo(CatalogCastPlaybackEvent.RouteSelectionCancelled)
         assertThat(CatalogUiEvent.OpenCastRouteChooser)
             .isEqualTo(CatalogUiEvent.OpenCastRouteChooser)
-        assertThat(CatalogUiEvent.ShowMessage(CatalogMessage.DownloadStarted).message)
-            .isEqualTo(CatalogMessage.DownloadStarted)
+        assertThat(CatalogUiEvent.ShowMessage(CatalogMessage.CastStarted).message)
+            .isEqualTo(CatalogMessage.CastStarted)
     }
 
     @Test
@@ -101,14 +101,6 @@ class CatalogFeatureContractsTest {
     private class FakeStreamPreparer : CatalogStreamPreparer {
         override suspend fun prepare(streamInfo: StreamInfo): Result<StreamInfo> =
             Result.Success(streamInfo)
-    }
-
-    private class FakeDownloadStarter : CatalogDownloadStarter {
-        val startedIds = mutableListOf<String>()
-
-        override fun startDownload(downloadId: String) {
-            startedIds += downloadId
-        }
     }
 
     private class FakeCastPort : CatalogCastPort {

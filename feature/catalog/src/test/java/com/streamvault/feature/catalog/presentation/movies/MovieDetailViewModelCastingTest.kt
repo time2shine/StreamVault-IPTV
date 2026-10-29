@@ -291,10 +291,6 @@ class MovieDetailViewModelCastingTest {
                 override suspend fun prepare(streamInfo: StreamInfo): Result<StreamInfo> =
                     Result.success(streamInfo)
             },
-            downloadManager = mock<DownloadManager>(),
-            downloadStarter = object : com.streamvault.feature.catalog.api.CatalogDownloadStarter {
-                override fun startDownload(downloadId: String) = Unit
-            },
             castPort = castPort,
             traktWatchlist = com.streamvault.feature.catalog.presentation.NoopTraktWatchlist(),
             traktFavorites = traktFavorites,

@@ -37,18 +37,6 @@ class AppCatalogAdaptersTest {
     }
 
     @Test
-    fun `download starter forwards string id to injected service launcher`() {
-        val calls = mutableListOf<String>()
-        val adapter = AppCatalogDownloadStarter { downloadId ->
-            calls += downloadId
-        }
-
-        adapter.startDownload("download-42")
-
-        assertThat(calls).containsExactly("download-42")
-    }
-
-    @Test
     fun `cast adapter preserves request fields and maps start results`() = runTest {
         val input = CatalogCastRequest(
             streamInfo = StreamInfo(url = "https://example.test/movie.m3u8"),

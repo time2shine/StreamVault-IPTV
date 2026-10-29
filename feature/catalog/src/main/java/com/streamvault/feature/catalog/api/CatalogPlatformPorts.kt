@@ -13,10 +13,6 @@ interface CatalogStreamPreparer {
     suspend fun prepare(streamInfo: StreamInfo): Result<StreamInfo>
 }
 
-interface CatalogDownloadStarter {
-    fun startDownload(downloadId: String)
-}
-
 data class CatalogChannelPlaybackContext(
     val categoryId: Long?,
     val providerId: Long,
@@ -40,9 +36,6 @@ enum class CatalogMessage {
     CastItemUnavailable,
     CastSessionFailed,
     CastLoadFailed,
-    DownloadStarted,
-    DownloadFailed,
-    DownloadUrlUnavailable,
     TraktWatchlistFailed,
     TraktFavoriteSyncFailed,
     TraktRatingSaved,

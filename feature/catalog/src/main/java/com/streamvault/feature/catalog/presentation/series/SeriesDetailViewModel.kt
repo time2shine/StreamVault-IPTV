@@ -7,15 +7,12 @@ import com.streamvault.feature.catalog.api.CatalogCastPlaybackEvent
 import com.streamvault.feature.catalog.api.CatalogCastPort
 import com.streamvault.feature.catalog.api.CatalogCastRequest
 import com.streamvault.feature.catalog.api.CatalogCastStartResult
-import com.streamvault.feature.catalog.api.CatalogDownloadStarter
 import com.streamvault.feature.catalog.api.CatalogMessage
 import com.streamvault.feature.catalog.api.CatalogStreamPreparer
 import com.streamvault.feature.catalog.api.CatalogUiEvent
 import com.streamvault.feature.catalog.navigation.CatalogRoutePatterns
 import com.streamvault.data.preferences.PreferencesRepository
 import com.streamvault.domain.model.ContentType
-import com.streamvault.domain.model.DownloadContentType
-import com.streamvault.domain.model.DownloadRequest
 import com.streamvault.domain.model.Episode
 import com.streamvault.domain.model.ExternalRatings
 import com.streamvault.domain.model.ExternalRatingsLookup
@@ -24,7 +21,6 @@ import com.streamvault.domain.model.Season
 import com.streamvault.domain.model.Series
 import com.streamvault.domain.model.SeriesDetailPresentationHint
 import com.streamvault.domain.model.VodSeriesVariant
-import com.streamvault.domain.repository.DownloadManager
 import com.streamvault.domain.repository.ExternalRatingsRepository
 import com.streamvault.domain.repository.FavoriteRepository
 import com.streamvault.domain.repository.PlaybackHistoryRepository
@@ -70,8 +66,6 @@ class SeriesDetailViewModel @Inject constructor(
     private val favoriteRepository: FavoriteRepository,
     private val preferencesRepository: PreferencesRepository,
     private val streamPreparer: CatalogStreamPreparer,
-    private val downloadManager: DownloadManager,
-    private val downloadStarter: CatalogDownloadStarter,
     private val castPort: CatalogCastPort,
     private val traktWatchlist: TraktWatchlist,
     private val traktFavorites: TraktFavorites,
@@ -372,44 +366,6 @@ class SeriesDetailViewModel @Inject constructor(
 
     fun selectSeason(season: Season) {
         _uiState.update { it.copy(selectedSeason = season) }
-    }
-
-    fun downloadEpisode(episode: Episode) {
-        val series = _uiState.value.series ?: return
-        viewModelScope.launch {
-            val resolvedUrl = resolveCopyStreamUrl(episode)
-            when (resolvedUrl) {
-                is Result.Success -> {
-                    val request = DownloadRequest(
-                        providerId = episode.providerId,
-                        contentType = DownloadContentType.SERIES_EPISODE,
-                        contentId = episode.id,
-                        contentName = episode.title,
-                        streamUrl = resolvedUrl.data,
-                        sourceStreamUrl = episode.streamUrl,
-                        sourceStreamId = episode.episodeId.takeIf { it > 0L } ?: episode.id,
-                        containerExtension = episode.containerExtension,
-                        posterUrl = episode.coverUrl,
-                        seriesId = series.id,
-                        seasonNumber = episode.seasonNumber,
-                        episodeNumber = episode.episodeNumber
-                    )
-                    val result = downloadManager.enqueueDownload(request)
-                    when (result) {
-                        is Result.Success -> {
-                            downloadStarter.startDownload(result.data.id)
-                            _uiEvents.emit(CatalogUiEvent.ShowMessage(CatalogMessage.DownloadStarted))
-                        }
-                        is Result.Error ->
-                            _uiEvents.emit(CatalogUiEvent.ShowMessage(CatalogMessage.DownloadFailed))
-                        Result.Loading -> Unit
-                    }
-                }
-                is Result.Error ->
-                    _uiEvents.emit(CatalogUiEvent.ShowMessage(CatalogMessage.DownloadUrlUnavailable))
-                Result.Loading -> Unit
-            }
-        }
     }
 
     fun castResumeEpisode() {

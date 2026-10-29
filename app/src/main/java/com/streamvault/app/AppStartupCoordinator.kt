@@ -10,7 +10,6 @@ import com.streamvault.app.tv.WatchNextManager
 import com.streamvault.data.manager.PendingBackupRestoreCoordinator
 import com.streamvault.data.sync.ProviderSyncLifecycle
 import com.streamvault.domain.manager.ProgramReminderManager
-import com.streamvault.domain.repository.DownloadManager
 import com.streamvault.player.timeshift.TimeshiftDiskManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.concurrent.atomic.AtomicBoolean
@@ -58,7 +57,6 @@ internal class AppStartupCoordinator internal constructor(
     constructor(
         @ApplicationContext context: Context,
         startupWorkRegistry: Provider<StartupWorkRegistry>,
-        downloadManager: Provider<DownloadManager>,
         streamVaultPluginManager: Provider<StreamVaultPluginManager>,
         programReminderManager: Provider<ProgramReminderManager>,
         providerSyncLifecycle: Provider<ProviderSyncLifecycle>,
@@ -72,9 +70,6 @@ internal class AppStartupCoordinator internal constructor(
             AppStartupTask("stale-timeshift-cleanup") {
                 TimeshiftDiskManager(context.applicationContext)
                     .cleanupStaleDirectories(activeSessionDir = null)
-            },
-            providerTask("interrupted-download-recovery", downloadManager) {
-                it.recoverInterruptedDownloads()
             },
             providerTask("plugin-provider-reconciliation", streamVaultPluginManager) {
                 it.reconcilePluginProviders()
