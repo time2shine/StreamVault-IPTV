@@ -294,4 +294,9 @@
     <string name="fork_catalog_sync_completed_added">Synchronizace dokončena! Bylo přidáno %1$d nových kanálů a %2$d nových filmů.</string>
     <string name="fork_catalog_sync_failed">Obnovení playlistu se nezdařilo</string>
     <string name="fork_catalog_sync_in_progress">Synchronizace playlistu již probíhá…</string>
+
+    <string name="player_quick_channel_switcher_title">Rychlé kanály</string>
+    <string name="player_quick_channel_switcher_now_playing">HRAJE</string>
+    <string name="player_quick_channel_switcher_open_list">Všechny kanály</string>
+    <string name="player_quick_channel_switcher_open_epg">TV program</string>
 </resources>

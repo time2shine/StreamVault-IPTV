@@ -30,6 +30,7 @@ internal data class PlayerInputState(
     val isSongPlayback: Boolean = false,
     val isMovieChannelPlayback: Boolean = false,
     val nextEpisodeCountdownVisible: Boolean = false,
+    val showZapOverlay: Boolean = false,
     val showChannelListOverlay: Boolean = false,
     val showCategoryListOverlay: Boolean = false,
     val showEpgOverlay: Boolean = false,
@@ -75,6 +76,7 @@ internal sealed interface PlayerInputAction {
     data object CloseVariantSelection : PlayerInputAction
     data object CloseStopIdleTimersAndTrackSelection : PlayerInputAction
     data object CommitNumericChannelInput : PlayerInputAction
+    data object OpenQuickChannelSwitcher : PlayerInputAction
     data object OpenChannelInfo : PlayerInputAction
     data object CloseChannelInfo : PlayerInputAction
     data object OpenChannelList : PlayerInputAction
@@ -105,6 +107,7 @@ internal fun playerPreviewInputDecision(
         return PlayerInputDecision(PlayerInputAction.Pass)
     }
     if (
+        state.showZapOverlay ||
         state.showChannelListOverlay ||
         state.showCategoryListOverlay ||
         state.showEpgOverlay ||
@@ -128,14 +131,14 @@ internal fun playerPreviewInputDecision(
 
     val isLive = state.contentType == "LIVE"
     val isSongOrChannelMovie = state.contentType == "MOVIE" && (state.isSongPlayback || state.isMovieChannelPlayback)
-    val notifyInteraction = state.showChannelInfoOverlay || state.showDiagnostics
+    val notifyInteraction = state.showZapOverlay || state.showChannelInfoOverlay || state.showDiagnostics
     val isForward = !state.isRtl
 
     return when (key) {
         PlayerInputKey.DpadUp,
         PlayerInputKey.DpadDown -> {
             if (isLive) {
-                PlayerInputDecision(PlayerInputAction.OpenChannelList, notifyInteraction)
+                PlayerInputDecision(PlayerInputAction.OpenQuickChannelSwitcher, notifyInteraction)
             } else {
                 PlayerInputDecision(PlayerInputAction.Pass)
             }
@@ -204,11 +207,13 @@ internal fun playerInputDecision(
     return when (key) {
         PlayerInputKey.DpadCenter,
         PlayerInputKey.Enter -> {
-            val notifyInteraction = state.showChannelListOverlay ||
+            val notifyInteraction = state.showZapOverlay ||
+                state.showChannelListOverlay ||
                 state.showEpgOverlay ||
                 state.showChannelInfoOverlay ||
                 state.showDiagnostics
             val action = when {
+                state.showZapOverlay -> PlayerInputAction.Pass
                 state.contentType == "LIVE" && !state.isCatchUpPlayback && state.hasPendingNumericChannelInput ->
                     PlayerInputAction.CommitNumericChannelInput
                 state.contentType == "LIVE" && !state.isCatchUpPlayback ->
@@ -299,13 +304,15 @@ private fun directionalInputDecision(
     isLeft: Boolean
 ): PlayerInputDecision {
     val notifyInteraction = if (isLeft) {
-        state.showChannelListOverlay ||
+        state.showZapOverlay ||
+            state.showChannelListOverlay ||
             state.showCategoryListOverlay ||
             state.showEpgOverlay ||
             state.showChannelInfoOverlay ||
             state.showDiagnostics
     } else {
-        state.showChannelListOverlay ||
+        state.showZapOverlay ||
+            state.showChannelListOverlay ||
             state.showEpgOverlay ||
             state.showChannelInfoOverlay ||
             state.showDiagnostics
@@ -319,7 +326,8 @@ private fun directionalInputDecision(
         return PlayerInputDecision(PlayerInputAction.OpenCategoryList, notifyInteraction)
     }
 
-    val hasBlockingOverlay = state.showChannelListOverlay ||
+    val hasBlockingOverlay = state.showZapOverlay ||
+        state.showChannelListOverlay ||
         state.showCategoryListOverlay ||
         state.showEpgOverlay ||
         state.showChannelInfoOverlay ||
@@ -365,7 +373,8 @@ private fun verticalInputDecision(
     state: PlayerInputState,
     isUp: Boolean
 ): PlayerInputDecision {
-    val notifyInteraction = state.showChannelListOverlay ||
+    val notifyInteraction = state.showZapOverlay ||
+        state.showChannelListOverlay ||
         state.showCategoryListOverlay ||
         state.showEpgOverlay ||
         state.showChannelInfoOverlay ||
@@ -376,7 +385,8 @@ private fun verticalInputDecision(
     if (state.showControls) {
         return PlayerInputDecision(PlayerInputAction.Pass, notifyInteraction)
     }
-    val blocksVerticalNavigation = state.showChannelListOverlay ||
+    val blocksVerticalNavigation = state.showZapOverlay ||
+        state.showChannelListOverlay ||
         state.showCategoryListOverlay ||
         state.showEpgOverlay ||
         state.showDiagnostics ||
@@ -385,7 +395,7 @@ private fun verticalInputDecision(
         return PlayerInputDecision(PlayerInputAction.Pass, notifyInteraction)
     }
     val action = if (state.contentType == "LIVE" && !state.isCatchUpPlayback) {
-        PlayerInputAction.OpenChannelList
+        PlayerInputAction.OpenQuickChannelSwitcher
     } else if (isUp && state.canOpenEpisodePicker) {
         PlayerInputAction.ShowEpisodePicker
     } else {

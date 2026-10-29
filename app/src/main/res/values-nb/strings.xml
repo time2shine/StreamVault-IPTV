@@ -294,4 +294,9 @@
     <string name="fork_catalog_sync_completed_added">Synkronisering fullført! %1$d nye kanaler og %2$d nye filmer lagt til.</string>
     <string name="fork_catalog_sync_failed">Oppdatering av spilleliste mislyktes</string>
     <string name="fork_catalog_sync_in_progress">Spillelistesynkronisering kjører allerede…</string>
+
+    <string name="player_quick_channel_switcher_title">Hurtigkanaler</string>
+    <string name="player_quick_channel_switcher_now_playing">SPILLER</string>
+    <string name="player_quick_channel_switcher_open_list">Alle kanaler</string>
+    <string name="player_quick_channel_switcher_open_epg">TV-guide</string>
 </resources>

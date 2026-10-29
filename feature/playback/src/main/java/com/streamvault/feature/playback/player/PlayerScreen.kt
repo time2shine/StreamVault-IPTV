@@ -184,6 +184,7 @@ fun PlayerScreen(
     val isSongPlayback by viewModel.isSongPlayback.collectAsStateWithLifecycle()
     val isMovieChannelPlayback by viewModel.isMovieChannelPlayback.collectAsStateWithLifecycle()
     val onlineSubtitleSearchAvailable = !isCatchUpPlayback && contentType in setOf("VOD", "MOVIE", "SERIES_EPISODE")
+    val showZapOverlay by viewModel.showZapOverlay.collectAsStateWithLifecycle()
     val showChannelListOverlay by viewModel.showChannelListOverlay.collectAsStateWithLifecycle()
     val showCategoryListOverlay by viewModel.showCategoryListOverlay.collectAsStateWithLifecycle()
     val showEpgOverlay by viewModel.showEpgOverlay.collectAsStateWithLifecycle()
@@ -223,6 +224,7 @@ fun PlayerScreen(
     }
     
     val focusRequester = remember { FocusRequester() }
+    val zapFocusRequester = remember { FocusRequester() }
     val channelListFocusRequester = remember { FocusRequester() }
     val categoryListFocusRequester = remember { FocusRequester() }
     val playButtonFocusRequester = remember { FocusRequester() }
@@ -297,7 +299,7 @@ fun PlayerScreen(
     )
 
     // Consolidated focus management for all overlays
-    val liveOverlayVisible = contentType == "LIVE" && (showChannelListOverlay || showCategoryListOverlay || showEpgOverlay || showChannelInfoOverlay)
+    val liveOverlayVisible = contentType == "LIVE" && (showZapOverlay || showChannelListOverlay || showCategoryListOverlay || showEpgOverlay || showChannelInfoOverlay)
     val channelInfoOverlayVisible = contentType == "LIVE" && showChannelInfoOverlay
     val nextEpisodeCountdownVisible = !isInPictureInPictureMode && autoPlayCountdown != null
     val anyOverlayVisible = liveOverlayVisible || nextEpisodeCountdownVisible || modalState.hasVisibleModal || showDiagnostics || showClosePlaybackConfirmation
@@ -317,11 +319,12 @@ fun PlayerScreen(
         channelInfoOverlayVisible = channelInfoOverlayVisible
     )
 
-    LaunchedEffect(contentType, showCategoryListOverlay, showChannelListOverlay, showEpgOverlay, showChannelInfoOverlay) {
-        if (contentType == "LIVE" && (showCategoryListOverlay || showChannelListOverlay || showEpgOverlay || showChannelInfoOverlay)) {
+    LaunchedEffect(contentType, showCategoryListOverlay, showChannelListOverlay, showEpgOverlay, showChannelInfoOverlay, showZapOverlay) {
+        if (contentType == "LIVE" && (showCategoryListOverlay || showChannelListOverlay || showEpgOverlay || showChannelInfoOverlay || showZapOverlay)) {
             // Give overlays a moment to animate in before requesting focus
             delay(150)
             when {
+                showZapOverlay -> zapFocusRequester.requestFocusSafely(tag = "PlayerScreen", target = "Quick channel switcher overlay")
                 showCategoryListOverlay -> categoryListFocusRequester.requestFocusSafely(tag = "PlayerScreen", target = "Category list overlay")
                 showChannelListOverlay -> channelListFocusRequester.requestFocusSafely(tag = "PlayerScreen", target = "Channel list overlay")
                 showChannelInfoOverlay -> channelInfoFocusRequester.requestFocusSafely(tag = "PlayerScreen", target = "Channel info overlay")
@@ -518,6 +521,7 @@ fun PlayerScreen(
                     showSubtitleSearch = modalState.showSubtitleSearch,
                     showVariantSelection = modalState.showVariantSelection,
                     showDiagnostics = showDiagnostics,
+                    showZapOverlay = showZapOverlay,
                     showChannelInfoOverlay = showChannelInfoOverlay,
                     showChannelListOverlay = showChannelListOverlay,
                     showCategoryListOverlay = showCategoryListOverlay,
@@ -576,6 +580,7 @@ fun PlayerScreen(
             isSongPlayback = isSongPlayback,
             isMovieChannelPlayback = isMovieChannelPlayback,
             nextEpisodeCountdownVisible = nextEpisodeCountdownVisible,
+            showZapOverlay = showZapOverlay,
             showChannelListOverlay = showChannelListOverlay,
             showCategoryListOverlay = showCategoryListOverlay,
             showEpgOverlay = showEpgOverlay,
@@ -647,6 +652,10 @@ fun PlayerScreen(
                     viewModel.onLiveOverlayInteraction()
                 }
                 when (decision.action) {
+                    PlayerInputAction.OpenQuickChannelSwitcher -> {
+                        viewModel.openQuickChannelSwitcherOverlay()
+                        true
+                    }
                     PlayerInputAction.OpenChannelList -> {
                         viewModel.openChannelListOverlay()
                         true
@@ -720,6 +729,10 @@ fun PlayerScreen(
                     }
                     PlayerInputAction.CloseChannelInfo -> {
                         viewModel.closeChannelInfoOverlay()
+                        true
+                    }
+                    PlayerInputAction.OpenQuickChannelSwitcher -> {
+                        viewModel.openQuickChannelSwitcherOverlay()
                         true
                     }
                     PlayerInputAction.OpenChannelList -> {
@@ -1115,6 +1128,7 @@ fun PlayerScreen(
                 isRtl = isRtl,
                 sideOverlayWidth = sideOverlayWidth,
                 epgOverlayWidth = epgOverlayWidth,
+                showZapOverlay = showZapOverlay,
                 showChannelListOverlay = showChannelListOverlay,
                 showCategoryListOverlay = showCategoryListOverlay,
                 showEpgOverlay = showEpgOverlay,
@@ -1124,6 +1138,7 @@ fun PlayerScreen(
                 currentChannel = currentChannel,
                 internalChannelId = internalChannelId,
                 displayChannelNumber = displayChannelNumber,
+                zapFocusRequester = zapFocusRequester,
                 channelListFocusRequester = channelListFocusRequester,
                 categoryListFocusRequester = categoryListFocusRequester,
                 channelInfoFocusRequester = channelInfoFocusRequester,

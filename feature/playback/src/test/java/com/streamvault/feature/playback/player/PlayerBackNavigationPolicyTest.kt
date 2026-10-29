@@ -59,6 +59,16 @@ class PlayerBackNavigationPolicyTest {
     }
 
     @Test
+    fun `quick channel switcher overlay closes before controls`() {
+        val state = PlayerBackNavigationState(
+            showZapOverlay = true,
+            showControls = true
+        )
+
+        assertThat(playerBackAction(state)).isEqualTo(PlayerBackAction.CLOSE_LIVE_OVERLAYS)
+    }
+
+    @Test
     fun `chapter sheet closes before controls`() {
         val state = PlayerBackNavigationState(
             showChapterSelection = true,

@@ -347,4 +347,9 @@
     <string name="fork_catalog_sync_completed_added">Sync complete! %1$d new channels and %2$d new movies added.</string>
     <string name="fork_catalog_sync_failed">Playlist refresh failed</string>
     <string name="fork_catalog_sync_in_progress">Playlist sync is already running…</string>
+
+    <string name="player_quick_channel_switcher_title">Quick Channels</string>
+    <string name="player_quick_channel_switcher_now_playing">PLAYING</string>
+    <string name="player_quick_channel_switcher_open_list">All Channels</string>
+    <string name="player_quick_channel_switcher_open_epg">TV Guide</string>
 </resources>

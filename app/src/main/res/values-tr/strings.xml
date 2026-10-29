@@ -294,4 +294,9 @@
     <string name="fork_catalog_sync_completed_added">Senkronizasyon tamamlandı! %1$d yeni kanal ve %2$d yeni film eklendi.</string>
     <string name="fork_catalog_sync_failed">Oynatma listesi yenilenemedi</string>
     <string name="fork_catalog_sync_in_progress">Oynatma listesi senkronizasyonu zaten çalışıyor…</string>
+
+    <string name="player_quick_channel_switcher_title">Hızlı Kanallar</string>
+    <string name="player_quick_channel_switcher_now_playing">OYNATILIYOR</string>
+    <string name="player_quick_channel_switcher_open_list">Tüm Kanallar</string>
+    <string name="player_quick_channel_switcher_open_epg">TV Rehberi</string>
 </resources>

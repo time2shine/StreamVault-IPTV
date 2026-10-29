@@ -294,4 +294,9 @@
     <string name="fork_catalog_sync_completed_added">Sincronizare finalizată! S-au adăugat %1$d canale noi și %2$d filme noi.</string>
     <string name="fork_catalog_sync_failed">Reîmprospătarea listei a eșuat</string>
     <string name="fork_catalog_sync_in_progress">Sincronizarea listei este deja în curs…</string>
+
+    <string name="player_quick_channel_switcher_title">Canale rapide</string>
+    <string name="player_quick_channel_switcher_now_playing">ÎN REDARE</string>
+    <string name="player_quick_channel_switcher_open_list">Toate canalele</string>
+    <string name="player_quick_channel_switcher_open_epg">Ghid TV</string>
 </resources>

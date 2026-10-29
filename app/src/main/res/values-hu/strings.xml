@@ -294,4 +294,9 @@
     <string name="fork_catalog_sync_completed_added">Szinkronizálás befejezve! %1$d új csatorna és %2$d új film hozzáadva.</string>
     <string name="fork_catalog_sync_failed">A lejátszási lista frissítése nem sikerült</string>
     <string name="fork_catalog_sync_in_progress">A lejátszási lista szinkronizálása már folyamatban van…</string>
+
+    <string name="player_quick_channel_switcher_title">Gyors csatornák</string>
+    <string name="player_quick_channel_switcher_now_playing">LEJÁTSZÁS</string>
+    <string name="player_quick_channel_switcher_open_list">Összes csatorna</string>
+    <string name="player_quick_channel_switcher_open_epg">TV-műsor</string>
 </resources>

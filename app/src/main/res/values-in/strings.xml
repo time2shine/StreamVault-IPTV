@@ -294,4 +294,9 @@
     <string name="fork_catalog_sync_completed_added">Sinkronisasi selesai! %1$d saluran baru dan %2$d film baru ditambahkan.</string>
     <string name="fork_catalog_sync_failed">Gagal menyegarkan daftar putar</string>
     <string name="fork_catalog_sync_in_progress">Sinkronisasi daftar putar sedang berjalan…</string>
+
+    <string name="player_quick_channel_switcher_title">Saluran Cepat</string>
+    <string name="player_quick_channel_switcher_now_playing">MEMUTAR</string>
+    <string name="player_quick_channel_switcher_open_list">Semua Saluran</string>
+    <string name="player_quick_channel_switcher_open_epg">Panduan TV</string>
 </resources>

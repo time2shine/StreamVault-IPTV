@@ -5,7 +5,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -25,6 +28,7 @@ import com.streamvault.feature.playback.player.overlay.ChannelListOverlay
 import com.streamvault.feature.playback.player.overlay.CategoryListOverlay
 import com.streamvault.feature.playback.player.overlay.EpgOverlay
 import com.streamvault.feature.playback.player.overlay.PlayerNumericInputOverlay
+import com.streamvault.feature.playback.player.overlay.PlayerQuickChannelSwitcherOverlay
 import com.streamvault.domain.model.Channel
 import com.streamvault.domain.model.Program
 import com.streamvault.domain.model.VideoFormat
@@ -58,6 +62,7 @@ internal fun BoxScope.PlayerLiveOverlayHost(
     isRtl: Boolean,
     sideOverlayWidth: Dp,
     epgOverlayWidth: Dp,
+    showZapOverlay: Boolean = false,
     showChannelListOverlay: Boolean,
     showCategoryListOverlay: Boolean,
     showEpgOverlay: Boolean,
@@ -67,6 +72,7 @@ internal fun BoxScope.PlayerLiveOverlayHost(
     currentChannel: Channel?,
     internalChannelId: Long,
     displayChannelNumber: Int,
+    zapFocusRequester: FocusRequester = remember { FocusRequester() },
     channelListFocusRequester: FocusRequester,
     categoryListFocusRequester: FocusRequester,
     channelInfoFocusRequester: FocusRequester,
@@ -92,6 +98,29 @@ internal fun BoxScope.PlayerLiveOverlayHost(
     val upcomingPrograms by viewModel.upcomingPrograms.collectAsStateWithLifecycle()
 
     BrowseVisualStyle {
+        AnimatedVisibility(
+            visible = showZapOverlay,
+            enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(),
+            exit = slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut(),
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .focusGroup()
+        ) {
+            PlayerQuickChannelSwitcherOverlay(
+                channels = currentChannelList,
+                currentChannelId = currentChannel?.id ?: internalChannelId,
+                currentProgram = currentProgram,
+                overlayFocusRequester = zapFocusRequester,
+                categoryName = lastVisitedCategory?.name,
+                onSelectChannel = viewModel::zapToChannel,
+                onOpenFullChannelList = viewModel::openChannelListOverlay,
+                onOpenEpg = viewModel::openEpgOverlay,
+                onDismiss = viewModel::closeQuickChannelSwitcherOverlay,
+                onOverlayInteracted = viewModel::onLiveOverlayInteraction
+            )
+        }
+
         AnimatedVisibility(
             visible = showChannelListOverlay,
             enter = slideInHorizontally(initialOffsetX = { if (isRtl) it else -it }),

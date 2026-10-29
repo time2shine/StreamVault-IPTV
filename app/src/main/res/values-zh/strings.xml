@@ -294,4 +294,9 @@
     <string name="fork_catalog_sync_completed_added">同步完成！已添加 %1$d 个新频道和 %2$d 部新电影。</string>
     <string name="fork_catalog_sync_failed">刷新播放列表失败</string>
     <string name="fork_catalog_sync_in_progress">播放列表同步已在运行…</string>
+
+    <string name="player_quick_channel_switcher_title">快速频道</string>
+    <string name="player_quick_channel_switcher_now_playing">正在播放</string>
+    <string name="player_quick_channel_switcher_open_list">所有频道</string>
+    <string name="player_quick_channel_switcher_open_epg">电视节目单</string>
 </resources>

@@ -294,4 +294,9 @@
     <string name="fork_catalog_sync_completed_added">¡Sincronización completada! Se añadieron %1$d canales y %2$d películas nuevas.</string>
     <string name="fork_catalog_sync_failed">Error al actualizar la lista de reproducción</string>
     <string name="fork_catalog_sync_in_progress">La sincronización de la lista ya está en curso…</string>
+
+    <string name="player_quick_channel_switcher_title">Canales rápidos</string>
+    <string name="player_quick_channel_switcher_now_playing">EN REPRODUCCIÓN</string>
+    <string name="player_quick_channel_switcher_open_list">Todos los canales</string>
+    <string name="player_quick_channel_switcher_open_epg">Guía de TV</string>
 </resources>

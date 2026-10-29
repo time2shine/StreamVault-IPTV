@@ -14,6 +14,7 @@ private const val DIAGNOSTICS_EXTRA_VISIBLE_MS = 10_000L
 fun PlayerViewModel.openChannelListOverlay() {
     clearNumericChannelInput()
     showChannelListOverlayFlow.value = true
+    showZapOverlayFlow.value = false
     showCategoryListOverlayFlow.value = false
     showEpgOverlayFlow.value = false
     showFullGuideOverlayFlow.value = false
@@ -22,10 +23,29 @@ fun PlayerViewModel.openChannelListOverlay() {
     scheduleLiveOverlayAutoHide()
 }
 
+fun PlayerViewModel.openQuickChannelSwitcherOverlay() {
+    if (currentContentType != ContentType.LIVE || channelList.isEmpty()) return
+    clearNumericChannelInput()
+    showZapOverlayFlow.value = true
+    showChannelListOverlayFlow.value = false
+    showCategoryListOverlayFlow.value = false
+    showEpgOverlayFlow.value = false
+    showFullGuideOverlayFlow.value = false
+    showChannelInfoOverlayFlow.value = false
+    showControlsFlow.value = false
+    scheduleLiveOverlayAutoHide()
+}
+
+fun PlayerViewModel.closeQuickChannelSwitcherOverlay() {
+    showZapOverlayFlow.value = false
+    if (!hasVisibleTransientLiveOverlay()) clearLiveOverlayAutoHide()
+}
+
 fun PlayerViewModel.openCategoryListOverlay() {
     if (currentProviderId <= 0 || availableCategoriesFlow.value.isEmpty()) return
     showCategoryListOverlayFlow.value = true
     showChannelListOverlayFlow.value = false
+    showZapOverlayFlow.value = false
     showFullGuideOverlayFlow.value = false
     scheduleLiveOverlayAutoHide()
 }
@@ -48,6 +68,7 @@ fun PlayerViewModel.openEpgOverlay() {
     clearNumericChannelInput()
     showEpgOverlayFlow.value = true
     showChannelListOverlayFlow.value = false
+    showZapOverlayFlow.value = false
     showFullGuideOverlayFlow.value = false
     showChannelInfoOverlayFlow.value = false
     showControlsFlow.value = false
@@ -120,6 +141,7 @@ fun PlayerViewModel.openChannelInfoOverlay() {
     clearNumericChannelInput()
     showChannelInfoOverlayFlow.value = true
     showChannelListOverlayFlow.value = false
+    showZapOverlayFlow.value = false
     showEpgOverlayFlow.value = false
     showFullGuideOverlayFlow.value = false
     showControlsFlow.value = false
@@ -135,6 +157,7 @@ fun PlayerViewModel.closeChannelInfoOverlay() {
 
 fun PlayerViewModel.closeOverlays() {
     clearNumericChannelInput()
+    showZapOverlayFlow.value = false
     showChannelListOverlayFlow.value = false
     showCategoryListOverlayFlow.value = false
     showEpgOverlayFlow.value = false
@@ -192,7 +215,8 @@ internal fun PlayerViewModel.hideZapOverlayAfterDelay() {
 }
 
 internal fun PlayerViewModel.hasVisibleTransientLiveOverlay(): Boolean =
-    showChannelInfoOverlayFlow.value ||
+    showZapOverlayFlow.value ||
+        showChannelInfoOverlayFlow.value ||
         showChannelListOverlayFlow.value ||
         showEpgOverlayFlow.value
 
@@ -214,6 +238,7 @@ internal fun PlayerViewModel.scheduleLiveOverlayAutoHide() {
     liveOverlayHideJob?.cancel()
     liveOverlayHideJob = viewModelScope.launch {
         delay(liveOverlayTimeoutMs)
+        showZapOverlayFlow.value = false
         showChannelInfoOverlayFlow.value = false
         showChannelListOverlayFlow.value = false
         showEpgOverlayFlow.value = false

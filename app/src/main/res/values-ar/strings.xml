@@ -296,4 +296,9 @@
     <string name="fork_catalog_sync_completed_added">اكتملت المزامنة! تمت إضافة %1$d قناة جديدة و%2$d فيلم جديد.</string>
     <string name="fork_catalog_sync_failed">فشل تحديث قائمة التشغيل</string>
     <string name="fork_catalog_sync_in_progress">مزامنة قائمة التشغيل قيد التشغيل بالفعل…</string>
+
+    <string name="player_quick_channel_switcher_title">القنوات السريعة</string>
+    <string name="player_quick_channel_switcher_now_playing">يعرض الآن</string>
+    <string name="player_quick_channel_switcher_open_list">جميع القنوات</string>
+    <string name="player_quick_channel_switcher_open_epg">دليل التلفزيون</string>
 </resources>

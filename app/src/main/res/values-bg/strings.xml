@@ -350,4 +350,9 @@
     <string name="fork_catalog_sync_completed_added">Синхронизирането завърши! Добавени са %1$d нови канала и %2$d нови филма.</string>
     <string name="fork_catalog_sync_failed">Неуспешно обновяване на плейлиста</string>
     <string name="fork_catalog_sync_in_progress">Синхронизирането на плейлиста вече се изпълнява…</string>
+
+    <string name="player_quick_channel_switcher_title">Бързи канали</string>
+    <string name="player_quick_channel_switcher_now_playing">В МОМЕНТА</string>
+    <string name="player_quick_channel_switcher_open_list">Всички канали</string>
+    <string name="player_quick_channel_switcher_open_epg">ТВ справочник</string>
 </resources>

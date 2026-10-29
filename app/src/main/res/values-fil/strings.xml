@@ -347,4 +347,9 @@
     <string name="fork_catalog_sync_completed_added">Kumpleto ang pag-sync! Naidagdag ang %1$d bagong channel at %2$d bagong pelikula.</string>
     <string name="fork_catalog_sync_failed">Nabigong i-refresh ang playlist</string>
     <string name="fork_catalog_sync_in_progress">Kasalukuyan nang tumatakbo ang pag-sync ng playlist…</string>
+
+    <string name="player_quick_channel_switcher_title">Mabilis na mga Channel</string>
+    <string name="player_quick_channel_switcher_now_playing">NAGLALARO</string>
+    <string name="player_quick_channel_switcher_open_list">Lahat ng Channel</string>
+    <string name="player_quick_channel_switcher_open_epg">Gabay sa TV</string>
 </resources>

@@ -19,7 +19,7 @@ class PlayerInputPolicyTest {
             state = liveState(showChannelInfoOverlay = true),
             key = PlayerInputKey.DpadUp
         )
-        assertThat(dpadDecision.action).isEqualTo(PlayerInputAction.OpenChannelList)
+        assertThat(dpadDecision.action).isEqualTo(PlayerInputAction.OpenQuickChannelSwitcher)
         assertThat(dpadDecision.notifyLiveOverlayInteraction).isTrue()
     }
 
@@ -194,7 +194,39 @@ class PlayerInputPolicyTest {
         assertThat(playerInputDecision(state, PlayerInputKey.DpadUp).action)
             .isEqualTo(PlayerInputAction.Pass)
         assertThat(playerInputDecision(state, PlayerInputKey.DpadDown).action)
-            .isEqualTo(PlayerInputAction.OpenChannelList)
+            .isEqualTo(PlayerInputAction.OpenQuickChannelSwitcher)
+    }
+
+    @Test
+    fun `dpad up and down open quick channel switcher during live playback`() {
+        val state = liveState()
+
+        assertThat(playerInputDecision(state, PlayerInputKey.DpadUp).action)
+            .isEqualTo(PlayerInputAction.OpenQuickChannelSwitcher)
+        assertThat(playerInputDecision(state, PlayerInputKey.DpadDown).action)
+            .isEqualTo(PlayerInputAction.OpenQuickChannelSwitcher)
+        assertThat(playerPreviewInputDecision(state, PlayerInputKey.DpadUp).action)
+            .isEqualTo(PlayerInputAction.OpenQuickChannelSwitcher)
+        assertThat(playerPreviewInputDecision(state, PlayerInputKey.DpadDown).action)
+            .isEqualTo(PlayerInputAction.OpenQuickChannelSwitcher)
+    }
+
+    @Test
+    fun `quick channel switcher passes horizontal and center keys to carousel`() {
+        val state = liveState(showZapOverlay = true)
+
+        assertThat(playerPreviewInputDecision(state, PlayerInputKey.DpadUp).action)
+            .isEqualTo(PlayerInputAction.Pass)
+        assertThat(playerPreviewInputDecision(state, PlayerInputKey.DpadDown).action)
+            .isEqualTo(PlayerInputAction.Pass)
+        assertThat(playerInputDecision(state, PlayerInputKey.DpadLeft).action)
+            .isEqualTo(PlayerInputAction.Pass)
+        assertThat(playerInputDecision(state, PlayerInputKey.DpadRight).action)
+            .isEqualTo(PlayerInputAction.Pass)
+        assertThat(playerInputDecision(state, PlayerInputKey.DpadCenter).action)
+            .isEqualTo(PlayerInputAction.Pass)
+        assertThat(playerInputDecision(state, PlayerInputKey.Enter).action)
+            .isEqualTo(PlayerInputAction.Pass)
     }
 
     @Test
@@ -341,6 +373,7 @@ class PlayerInputPolicyTest {
         isSongPlayback: Boolean = false,
         isMovieChannelPlayback: Boolean = false,
         nextEpisodeCountdownVisible: Boolean = false,
+        showZapOverlay: Boolean = false,
         showChannelListOverlay: Boolean = false,
         showCategoryListOverlay: Boolean = false,
         showEpgOverlay: Boolean = false,
@@ -368,6 +401,7 @@ class PlayerInputPolicyTest {
         isSongPlayback = isSongPlayback,
         isMovieChannelPlayback = isMovieChannelPlayback,
         nextEpisodeCountdownVisible = nextEpisodeCountdownVisible,
+        showZapOverlay = showZapOverlay,
         showChannelListOverlay = showChannelListOverlay,
         showCategoryListOverlay = showCategoryListOverlay,
         showEpgOverlay = showEpgOverlay,

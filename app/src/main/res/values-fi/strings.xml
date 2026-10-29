@@ -294,4 +294,9 @@
     <string name="fork_catalog_sync_completed_added">Synkronointi valmis! Lisättiin %1$d uutta kanavaa ja %2$d uutta elokuvaa.</string>
     <string name="fork_catalog_sync_failed">Soittolistan päivitys epäonnistui</string>
     <string name="fork_catalog_sync_in_progress">Soittolistan synkronointi on jo käynnissä…</string>
+
+    <string name="player_quick_channel_switcher_title">Pikakanavat</string>
+    <string name="player_quick_channel_switcher_now_playing">TOISTETAAN</string>
+    <string name="player_quick_channel_switcher_open_list">Kaikki kanavat</string>
+    <string name="player_quick_channel_switcher_open_epg">TV-opas</string>
 </resources>

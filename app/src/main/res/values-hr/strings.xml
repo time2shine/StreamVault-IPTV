@@ -347,4 +347,9 @@
     <string name="fork_catalog_sync_completed_added">Sinkronizacija dovršena! Dodano %1$d novih kanala i %2$d novih filmova.</string>
     <string name="fork_catalog_sync_failed">Ažuriranje popisa za reprodukciju nije uspjelo</string>
     <string name="fork_catalog_sync_in_progress">Sinkronizacija popisa za reprodukciju već je u tijeku…</string>
+
+    <string name="player_quick_channel_switcher_title">Brzi kanali</string>
+    <string name="player_quick_channel_switcher_now_playing">REPRODUCIRA SE</string>
+    <string name="player_quick_channel_switcher_open_list">Svi kanali</string>
+    <string name="player_quick_channel_switcher_open_epg">TV vodič</string>
 </resources>

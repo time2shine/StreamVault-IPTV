@@ -347,4 +347,9 @@
     <string name="fork_catalog_sync_completed_added">सिंक पूरा हुआ! %1$d नए चैनल और %2$d नई फ़िल्में जोड़ी गईं।</string>
     <string name="fork_catalog_sync_failed">प्लेलिस्ट रीफ़्रेश विफल रहा</string>
     <string name="fork_catalog_sync_in_progress">प्लेलिस्ट सिंक पहले से चल रहा है…</string>
+
+    <string name="player_quick_channel_switcher_title">त्वरित चैनल</string>
+    <string name="player_quick_channel_switcher_now_playing">चल रहा है</string>
+    <string name="player_quick_channel_switcher_open_list">सभी चैनल</string>
+    <string name="player_quick_channel_switcher_open_epg">टीवी गाइड</string>
 </resources>

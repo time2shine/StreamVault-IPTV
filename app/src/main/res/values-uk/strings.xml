@@ -294,4 +294,9 @@
     <string name="fork_catalog_sync_completed_added">Синхронізацію завершено! Додано %1$d нових каналів та %2$d нових фільмів.</string>
     <string name="fork_catalog_sync_failed">Не вдалося оновити список відтворення</string>
     <string name="fork_catalog_sync_in_progress">Синхронізація списку відтворення вже виконується…</string>
+
+    <string name="player_quick_channel_switcher_title">Швидкі канали</string>
+    <string name="player_quick_channel_switcher_now_playing">В ЕФІРІ</string>
+    <string name="player_quick_channel_switcher_open_list">Усі канали</string>
+    <string name="player_quick_channel_switcher_open_epg">Телепрограма</string>
 </resources>

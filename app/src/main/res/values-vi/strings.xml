@@ -294,4 +294,9 @@
     <string name="fork_catalog_sync_completed_added">Đồng bộ hóa hoàn tất! Đã thêm %1$d kênh mới và %2$d phim mới.</string>
     <string name="fork_catalog_sync_failed">Làm mới danh sách phát thất bại</string>
     <string name="fork_catalog_sync_in_progress">Đang đồng bộ hóa danh sách phát…</string>
+
+    <string name="player_quick_channel_switcher_title">Kênh nhanh</string>
+    <string name="player_quick_channel_switcher_now_playing">ĐANG PHÁT</string>
+    <string name="player_quick_channel_switcher_open_list">Tất cả các kênh</string>
+    <string name="player_quick_channel_switcher_open_epg">Lịch phát sóng</string>
 </resources>

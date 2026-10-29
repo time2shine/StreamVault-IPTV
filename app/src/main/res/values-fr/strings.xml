@@ -306,4 +306,9 @@
     <string name="fork_catalog_sync_completed_added">Synchronisation terminée ! %1$d nouvelles chaînes et %2$d nouveaux films ajoutés.</string>
     <string name="fork_catalog_sync_failed">Échec de l\'actualisation de la playlist</string>
     <string name="fork_catalog_sync_in_progress">La synchronisation de la playlist est déjà en cours…</string>
+
+    <string name="player_quick_channel_switcher_title">Chaînes rapides</string>
+    <string name="player_quick_channel_switcher_now_playing">EN LECTURE</string>
+    <string name="player_quick_channel_switcher_open_list">Toutes les chaînes</string>
+    <string name="player_quick_channel_switcher_open_epg">Guide TV</string>
 </resources>

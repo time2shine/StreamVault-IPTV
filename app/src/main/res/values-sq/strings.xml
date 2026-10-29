@@ -347,4 +347,9 @@
     <string name="fork_catalog_sync_completed_added">Sinkronizimi përfundoi! U shtuan %1$d kanale të reja dhe %2$d filma të rinj.</string>
     <string name="fork_catalog_sync_failed">Rifreskimi i listës dështoi</string>
     <string name="fork_catalog_sync_in_progress">Sinkronizimi i listës po ekzekutohet tashmë…</string>
+
+    <string name="player_quick_channel_switcher_title">Kanale të shpejta</string>
+    <string name="player_quick_channel_switcher_now_playing">DUKE LUAJTUR</string>
+    <string name="player_quick_channel_switcher_open_list">Të gjitha kanalet</string>
+    <string name="player_quick_channel_switcher_open_epg">Udhëzuesi TV</string>
 </resources>

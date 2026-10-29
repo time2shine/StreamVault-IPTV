@@ -294,4 +294,9 @@
     <string name="fork_catalog_sync_completed_added">הסנכרון הושלם! נוספו %1$d ערוצים חדשים ו-%2$d סרטים חדשים.</string>
     <string name="fork_catalog_sync_failed">רענון רשימת ההשמעה נכשל</string>
     <string name="fork_catalog_sync_in_progress">סנכרון רשימת ההשמעה כבר פועל…</string>
+
+    <string name="player_quick_channel_switcher_title">ערוצים מהירים</string>
+    <string name="player_quick_channel_switcher_now_playing">מתנגן</string>
+    <string name="player_quick_channel_switcher_open_list">כל הערוצים</string>
+    <string name="player_quick_channel_switcher_open_epg">מדריך שידורים</string>
 </resources>

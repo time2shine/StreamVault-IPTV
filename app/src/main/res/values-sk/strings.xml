@@ -347,4 +347,9 @@
     <string name="fork_catalog_sync_completed_added">Synchronizácia dokončená! Pridaných %1$d nových kanálov a %2$d nových filmov.</string>
     <string name="fork_catalog_sync_failed">Obnovenie zoznamu zlyhalo</string>
     <string name="fork_catalog_sync_in_progress">Synchronizácia zoznamu už prebieha…</string>
+
+    <string name="player_quick_channel_switcher_title">Rýchle kanály</string>
+    <string name="player_quick_channel_switcher_now_playing">PREHRÁVA SA</string>
+    <string name="player_quick_channel_switcher_open_list">Všetky kanály</string>
+    <string name="player_quick_channel_switcher_open_epg">TV program</string>
 </resources>

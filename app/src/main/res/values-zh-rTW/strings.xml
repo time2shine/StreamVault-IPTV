@@ -316,4 +316,9 @@
     <string name="fork_catalog_sync_completed_added">同步完成！已新增 %1$d 個新頻道和 %2$d 部新電影。</string>
     <string name="fork_catalog_sync_failed">重新整理播放清單失敗</string>
     <string name="fork_catalog_sync_in_progress">播放清單同步已在執行中…</string>
+
+    <string name="player_quick_channel_switcher_title">快速頻道</string>
+    <string name="player_quick_channel_switcher_now_playing">現正播放</string>
+    <string name="player_quick_channel_switcher_open_list">所有頻道</string>
+    <string name="player_quick_channel_switcher_open_epg">電視節目表</string>
 </resources>

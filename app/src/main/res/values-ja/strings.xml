@@ -295,4 +295,9 @@
     <string name="fork_catalog_sync_completed_added">同期が完了しました！ %1$d 件の新しいチャンネルと %2$d 件の新しい映画が追加されました。</string>
     <string name="fork_catalog_sync_failed">プレイリストの更新に失敗しました</string>
     <string name="fork_catalog_sync_in_progress">プレイリストの同期は既に実行中です…</string>
+
+    <string name="player_quick_channel_switcher_title">クイックチャンネル</string>
+    <string name="player_quick_channel_switcher_now_playing">再生中</string>
+    <string name="player_quick_channel_switcher_open_list">すべてのチャンネル</string>
+    <string name="player_quick_channel_switcher_open_epg">番組表</string>
 </resources>

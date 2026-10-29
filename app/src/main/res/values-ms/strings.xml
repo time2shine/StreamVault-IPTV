@@ -348,4 +348,9 @@
     <string name="fork_catalog_sync_completed_added">Penyegerakan selesai! %1$d saluran baharu dan %2$d filem baharu ditambah.</string>
     <string name="fork_catalog_sync_failed">Gagal menyegarkan senarai main</string>
     <string name="fork_catalog_sync_in_progress">Penyegerakan senarai main sudah berjalan…</string>
+
+    <string name="player_quick_channel_switcher_title">Saluran Pantas</string>
+    <string name="player_quick_channel_switcher_now_playing">DIMAINKAN</string>
+    <string name="player_quick_channel_switcher_open_list">Semua Saluran</string>
+    <string name="player_quick_channel_switcher_open_epg">Panduan TV</string>
 </resources>

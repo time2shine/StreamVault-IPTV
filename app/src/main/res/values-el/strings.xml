@@ -294,4 +294,9 @@
     <string name="fork_catalog_sync_completed_added">Ο συγχρονισμός ολοκληρώθηκε! Προστέθηκαν %1$d νέα κανάλια και %2$d νέες ταινίες.</string>
     <string name="fork_catalog_sync_failed">Η ανανέωση της λίστας αναπαραγωγής απέτυχε</string>
     <string name="fork_catalog_sync_in_progress">Ο συγχρονισμός της λίστας εκτελείται ήδη…</string>
+
+    <string name="player_quick_channel_switcher_title">Γρήγορα κανάλια</string>
+    <string name="player_quick_channel_switcher_now_playing">ΠΑΙΖΕΙ</string>
+    <string name="player_quick_channel_switcher_open_list">Όλα τα κανάλια</string>
+    <string name="player_quick_channel_switcher_open_epg">Οδηγός τηλεόρασης</string>
 </resources>

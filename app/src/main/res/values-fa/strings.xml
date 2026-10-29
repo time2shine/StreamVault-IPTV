@@ -350,4 +350,9 @@
     <string name="fork_catalog_sync_completed_added">همگام‌سازی انجام شد! %1$d کانال جدید و %2$d فیلم جدید اضافه شد.</string>
     <string name="fork_catalog_sync_failed">به‌روزرسانی لیست پخش ناموفق بود</string>
     <string name="fork_catalog_sync_in_progress">همگام‌سازی لیست پخش در حال اجرا است…</string>
+
+    <string name="player_quick_channel_switcher_title">کانال‌های سریع</string>
+    <string name="player_quick_channel_switcher_now_playing">در حال پخش</string>
+    <string name="player_quick_channel_switcher_open_list">همه کانال‌ها</string>
+    <string name="player_quick_channel_switcher_open_epg">راهنمای تلویزیون</string>
 </resources>

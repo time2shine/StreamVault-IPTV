@@ -294,4 +294,9 @@
     <string name="fork_catalog_sync_completed_added">동기화 완료! 새로운 채널 %1$d개와 영화 %2$d개가 추가되었습니다.</string>
     <string name="fork_catalog_sync_failed">재생목록 새로고침 실패</string>
     <string name="fork_catalog_sync_in_progress">재생목록 동기화가 이미 실행 중입니다…</string>
+
+    <string name="player_quick_channel_switcher_title">빠른 채널</string>
+    <string name="player_quick_channel_switcher_now_playing">재생 중</string>
+    <string name="player_quick_channel_switcher_open_list">모든 채널</string>
+    <string name="player_quick_channel_switcher_open_epg">TV 가이드</string>
 </resources>

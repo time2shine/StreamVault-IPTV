@@ -347,4 +347,9 @@
     <string name="fork_catalog_sync_completed_added">การซิงค์เสร็จสมบูรณ์! เพิ่มช่องใหม่ %1$d ช่อง และภาพยนตร์ใหม่ %2$d เรื่อง</string>
     <string name="fork_catalog_sync_failed">รีเฟรชเพลย์ลิสต์ไม่สำเร็จ</string>
     <string name="fork_catalog_sync_in_progress">การซิงค์เพลย์ลิสต์กำลังทำงานอยู่แล้ว…</string>
+
+    <string name="player_quick_channel_switcher_title">ช่องด่วน</string>
+    <string name="player_quick_channel_switcher_now_playing">กำลังเล่น</string>
+    <string name="player_quick_channel_switcher_open_list">ช่องทั้งหมด</string>
+    <string name="player_quick_channel_switcher_open_epg">ผังรายการทีวี</string>
 </resources>

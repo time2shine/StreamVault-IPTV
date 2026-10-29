@@ -52,6 +52,7 @@ internal data class PlayerBackNavigationState(
     val showSubtitleSearch: Boolean = false,
     val showVariantSelection: Boolean = false,
     val showDiagnostics: Boolean = false,
+    val showZapOverlay: Boolean = false,
     val showChannelInfoOverlay: Boolean = false,
     val showChannelListOverlay: Boolean = false,
     val showCategoryListOverlay: Boolean = false,
@@ -80,7 +81,7 @@ internal fun playerBackAction(state: PlayerBackNavigationState): PlayerBackActio
     state.hasTrackSelection -> PlayerBackAction.CLOSE_TRACK_SELECTION
     state.showDiagnostics -> PlayerBackAction.TOGGLE_DIAGNOSTICS
     state.showChannelInfoOverlay -> PlayerBackAction.CLOSE_CHANNEL_INFO
-    state.showChannelListOverlay || state.showCategoryListOverlay || state.showEpgOverlay ->
+    state.showZapOverlay || state.showChannelListOverlay || state.showCategoryListOverlay || state.showEpgOverlay ->
         PlayerBackAction.CLOSE_LIVE_OVERLAYS
     state.showControls -> PlayerBackAction.TOGGLE_CONTROLS
     else -> PlayerBackAction.NAVIGATE_BACK

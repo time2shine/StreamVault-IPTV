@@ -294,4 +294,9 @@
     <string name="fork_catalog_sync_completed_added">Synchronisatie voltooid! %1$d nieuwe kanalen en %2$d nieuwe films toegevoegd.</string>
     <string name="fork_catalog_sync_failed">Vernieuwen van afspeellijst mislukt</string>
     <string name="fork_catalog_sync_in_progress">Afspeellijstsynchronisatie wordt al uitgevoerd…</string>
+
+    <string name="player_quick_channel_switcher_title">Snelle kanalen</string>
+    <string name="player_quick_channel_switcher_now_playing">SPEELT</string>
+    <string name="player_quick_channel_switcher_open_list">Alle kanalen</string>
+    <string name="player_quick_channel_switcher_open_epg">TV-gids</string>
 </resources>

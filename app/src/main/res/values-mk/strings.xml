@@ -346,4 +346,9 @@
     <string name="fork_catalog_sync_completed_added">Синхронизацијата е завршена! Додадени се %1$d нови канали и %2$d нови филмови.</string>
     <string name="fork_catalog_sync_failed">Неуспешно освежување на плејлистата</string>
     <string name="fork_catalog_sync_in_progress">Синхронизацијата на плејлистата веќе се извршува…</string>
+
+    <string name="player_quick_channel_switcher_title">Брзи канали</string>
+    <string name="player_quick_channel_switcher_now_playing">СЕ ПУШТА</string>
+    <string name="player_quick_channel_switcher_open_list">Сите канали</string>
+    <string name="player_quick_channel_switcher_open_epg">ТВ водич</string>
 </resources>

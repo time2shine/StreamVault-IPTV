@@ -294,4 +294,9 @@
     <string name="fork_catalog_sync_completed_added">Sincronizzazione completata! Aggiunti %1$d nuovi canali e %2$d nuovi film.</string>
     <string name="fork_catalog_sync_failed">Aggiornamento playlist non riuscito</string>
     <string name="fork_catalog_sync_in_progress">La sincronizzazione della playlist è già in corso…</string>
+
+    <string name="player_quick_channel_switcher_title">Canali rapidi</string>
+    <string name="player_quick_channel_switcher_now_playing">IN RIPRODUZIONE</string>
+    <string name="player_quick_channel_switcher_open_list">Tutti i canali</string>
+    <string name="player_quick_channel_switcher_open_epg">Guida TV</string>
 </resources>
