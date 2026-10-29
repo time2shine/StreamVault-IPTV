@@ -123,6 +123,7 @@ fun NavGraphBuilder.registerCatalogGraph(
                     NavigationOptions(launchSingleTop = true)
                 )
             },
+            onContinueWatchingPlay = { history -> onPlayHistory(history, AppDestination.Series) },
             scaffold = scaffold,
         )
     }

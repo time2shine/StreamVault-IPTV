@@ -1,1189 +1,293 @@
 package com.streamvault.feature.catalog.presentation.series
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.streamvault.domain.policy.applyProviderCategoryDisplayPreferences
-import com.streamvault.domain.model.VodViewMode
-import com.streamvault.data.preferences.PreferencesRepository
-import com.streamvault.domain.manager.ParentalControlManager
 import com.streamvault.domain.model.Category
-import com.streamvault.domain.model.CategorySortMode
 import com.streamvault.domain.model.ContentType
-import com.streamvault.domain.model.LibraryFilterBy
-import com.streamvault.domain.model.LibraryFilterType
-import com.streamvault.domain.model.LibraryBrowseQuery
-import com.streamvault.domain.model.LibrarySortBy
 import com.streamvault.domain.model.PlaybackHistory
-import com.streamvault.domain.model.ProviderType
-import com.streamvault.domain.model.Result
-import com.streamvault.domain.model.VodCategoryHydrationRequest
 import com.streamvault.domain.model.Series
-import com.streamvault.domain.repository.FavoriteRepository
 import com.streamvault.domain.repository.PlaybackHistoryRepository
 import com.streamvault.domain.repository.ProviderRepository
 import com.streamvault.domain.repository.SeriesRepository
-import com.streamvault.domain.repository.M3uClassificationRepository
-import com.streamvault.domain.trakt.TraktFavorites
-import com.streamvault.domain.trakt.TraktFavoriteActionResult
-import com.streamvault.domain.trakt.TraktFavoriteFailure
-import com.streamvault.domain.trakt.TraktFavoriteIdentity
-import com.streamvault.domain.trakt.TraktFavoriteType
-import com.streamvault.domain.trakt.TraktAccount
-import com.streamvault.domain.trakt.TraktAccountState
-import com.streamvault.domain.trakt.TraktWatchlist
-import com.streamvault.domain.trakt.TraktWatchlistRefreshResult
-import com.streamvault.domain.trakt.TraktWatchlistState
-import com.streamvault.domain.trakt.TraktWatchlistType
-import com.streamvault.domain.trakt.TraktDiscovery
-import com.streamvault.domain.trakt.TraktDiscoveryRefreshResult
-import com.streamvault.domain.trakt.TraktDiscoveryState
-import com.streamvault.domain.usecase.ContinueWatchingResult
-import com.streamvault.domain.usecase.ContinueWatchingScope
-import com.streamvault.domain.usecase.GetContinueWatching
-import com.streamvault.domain.usecase.GetCustomCategories
-import com.streamvault.feature.catalog.presentation.vod.createVodGroup
-import com.streamvault.feature.catalog.presentation.vod.incrementVodSelectedCategoryLoadLimit
-import com.streamvault.feature.catalog.presentation.vod.buildVodPreviewCatalog
-import com.streamvault.feature.catalog.presentation.vod.buildVodSearchCatalog
-import com.streamvault.feature.catalog.presentation.vod.loadVodReorderItems
-import com.streamvault.feature.catalog.presentation.vod.markVodFavorites
-import com.streamvault.feature.catalog.presentation.vod.matchesVodGroupMembership
-import com.streamvault.feature.catalog.presentation.vod.keepNonProviderWideCategoriesOrAll
-import com.streamvault.feature.catalog.presentation.vod.moveVodItemDown
-import com.streamvault.feature.catalog.presentation.vod.moveVodItemUp
-import com.streamvault.feature.catalog.presentation.vod.selectVodCategory
-import com.streamvault.feature.catalog.presentation.vod.saveVodReorder
-import com.streamvault.feature.catalog.presentation.vod.setVodLibraryFilterType
-import com.streamvault.feature.catalog.presentation.vod.setVodLibrarySortBy
-import com.streamvault.feature.catalog.presentation.vod.setVodSearchQuery
-import com.streamvault.feature.catalog.presentation.vod.setVodFavorite
-import com.streamvault.feature.catalog.presentation.vod.updateVodGroupMembership
-import com.streamvault.feature.catalog.presentation.vod.VodBrowseDefaults
-import com.streamvault.feature.catalog.presentation.vod.orderedTraktDiscoveryItems
-import com.streamvault.feature.catalog.presentation.dashboard.orderedWatchlistItems
 import dagger.hilt.android.lifecycle.HiltViewModel
-import com.streamvault.feature.catalog.R
-import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.distinctUntilChangedBy
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.logging.Logger
+import javax.inject.Inject
 
-enum class SeriesLibraryLens {
-    FAVORITES,
-    CONTINUE,
-    TOP_RATED,
-    FRESH
-}
+data class SeriesShelf(
+    val categoryId: Long,
+    val name: String,
+    val series: List<Series>,
+    val totalCount: Int
+)
+
+data class SeriesUiState(
+    val isLoading: Boolean = false,
+    val hasProviders: Boolean = true,
+    val isSyncing: Boolean = false,
+    val errorMessage: String? = null,
+    val userMessage: String? = null,
+    val continueWatching: List<PlaybackHistory> = emptyList(),
+    val watchHistory: List<PlaybackHistory> = emptyList(),
+    val shelves: List<SeriesShelf> = emptyList(),
+    val selectedCategory: String? = null,
+    val selectedCategoryShelf: SeriesShelf? = null,
+    val selectedCategorySeries: List<Series> = emptyList(),
+    val isLoadingSelectedCategory: Boolean = false,
+    val canLoadMoreSelectedCategory: Boolean = false,
+    val selectedCategoryTotalCount: Int = 0,
+    val selectedCategoryPage: Int = 1,
+    val searchQuery: String = "",
+    val searchResults: List<Series> = emptyList(),
+    val isSearching: Boolean = false
+)
 
 @HiltViewModel
-@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class SeriesViewModel @Inject constructor(
-    @ApplicationContext private val appContext: Context,
     private val providerRepository: ProviderRepository,
     private val seriesRepository: SeriesRepository,
-    private val preferencesRepository: PreferencesRepository,
-    private val playbackHistoryRepository: PlaybackHistoryRepository,
-    private val favoriteRepository: FavoriteRepository,
-    private val getContinueWatching: GetContinueWatching,
-    private val getCustomCategories: GetCustomCategories,
-    private val parentalControlManager: ParentalControlManager,
-    private val m3uClassificationRepository: M3uClassificationRepository,
-    private val traktFavorites: TraktFavorites,
-    private val traktAccount: TraktAccount,
-    private val traktWatchlist: TraktWatchlist,
-    private val traktDiscovery: TraktDiscovery,
+    private val playbackHistoryRepository: PlaybackHistoryRepository
 ) : ViewModel() {
-    private companion object {
-        const val UNCATEGORIZED = "Uncategorized"
-        const val MIN_SEARCH_QUERY_LENGTH = 2
-        const val FAVORITE_ID_FETCH_BUFFER = 80
-        const val INITIAL_PREVIEW_BATCH_SIZE = 6
+
+    companion object {
+        private val logger = Logger.getLogger("SeriesViewModel")
+        private const val PREVIEW_ROW_LIMIT = 30
+        private const val GRID_PAGE_SIZE = 48
     }
 
-    private val _uiState = MutableStateFlow(SeriesUiState())
+    private val _uiState = MutableStateFlow(SeriesUiState(isLoading = true))
     val uiState: StateFlow<SeriesUiState> = _uiState.asStateFlow()
 
-    private val _searchQuery = MutableStateFlow("")
-    private val searchQueryForBrowse = _searchQuery
-        .map { it.trim() }
-        .distinctUntilChanged()
-        .debounce { query ->
-            if (query.isBlank() || query.length < MIN_SEARCH_QUERY_LENGTH) 0L else 300L
-        }
-    private val _selectedCategoryLoadLimit = MutableStateFlow(VodBrowseDefaults.SELECTED_CATEGORY_PAGE_SIZE)
-    private val _selectedLibraryFilterType = MutableStateFlow(LibraryFilterType.ALL)
-    private val _selectedLibrarySortBy = MutableStateFlow(LibrarySortBy.LIBRARY)
-    private val _previewBatchSize = MutableStateFlow(INITIAL_PREVIEW_BATCH_SIZE)
-    private var activeProviderId: Long? = null
-    private var remotePageRequestInFlight = false
-    private var initialRemoteRequestInFlight = false
-
-    private data class PreviewLoadResult(
-        val snapshot: SeriesCatalogSnapshot,
-        val isLoadingPreviewRows: Boolean,
-        val hasMorePreviewRows: Boolean
-    )
+    private var activeProviderId: Long = 0L
+    private var loadShelvesJob: Job? = null
+    private var searchJob: Job? = null
 
     init {
-        viewModelScope.launch {
-            providerRepository.getProviders().collectLatest { providers ->
-                _uiState.update {
-                    it.copy(
-                        hasProviders = providers.isNotEmpty(),
-                        isLoading = if (providers.isEmpty()) false else it.isLoading
-                    )
-                }
-            }
-        }
+        observeActiveProvider()
+    }
 
+    private fun observeActiveProvider() {
         viewModelScope.launch {
-            providerRepository.getActiveProvider().collectLatest { provider ->
-                activeProviderId = provider?.id
-                _uiState.update {
-                    it.copy(
-                        hasActiveProvider = provider != null,
-                        isM3uProvider = provider?.type == ProviderType.M3U,
-                        isLoading = if (provider == null) false else it.isLoading,
-                        isLoadingSelectedCategory = if (provider == null) false else it.isLoadingSelectedCategory,
-                        isLoadingPreviewRows = if (provider == null) false else it.isLoadingPreviewRows
-                    )
-                }
-            }
-        }
-
-        viewModelScope.launch {
-            runCatching { traktAccount.load() }
-            traktAccount.state
-                .map { state -> state.username.takeIf { state.connected } }
-                .distinctUntilChanged()
-                .collectLatest { username ->
-                    _uiState.update { it.copy(traktWatchlistConnected = username != null) }
-                    if (username != null) traktWatchlist.refresh()
-                }
-        }
-
-        viewModelScope.launch {
-            combine(traktAccount.state, traktWatchlist.state) { account, watchlist ->
-                val watchlistBelongsToAccount = account.connected &&
-                    account.username != null &&
-                    account.username == watchlist.accountUsername
-                account.connected to if (watchlistBelongsToAccount) {
-                    watchlist.items.count { it.type == TraktWatchlistType.SHOW }
-                } else {
-                    0
-                }
-            }.collect { (connected, count) ->
-                _uiState.update {
-                    it.copy(traktWatchlistConnected = connected, traktWatchlistCount = count)
-                }
-            }
-        }
-
-        viewModelScope.launch {
-            traktDiscovery.state.collect { discovery ->
-                _uiState.update {
-                    it.copy(
-                        traktTrendingFailed = VodBrowseDefaults.TRAKT_TRENDING_SERIES in discovery.failed,
-                        traktPopularFailed = VodBrowseDefaults.TRAKT_POPULAR_SERIES in discovery.failed,
-                    )
-                }
-            }
-        }
-
-        viewModelScope.launch {
-            combine(
-                traktAccount.state,
-                preferencesRepository.showTraktTrendingMovies,
-                preferencesRepository.showTraktPopularMovies,
-                preferencesRepository.showTraktTrendingSeries,
-                preferencesRepository.showTraktPopularSeries
-            ) { account, trendingMovies, popularMovies, trendingSeries, popularSeries ->
-                listOf(
-                    account.connected && trendingMovies,
-                    account.connected && popularMovies,
-                    account.connected && trendingSeries,
-                    account.connected && popularSeries
-                )
-            }.distinctUntilChanged().collect { visibility ->
-                val showTrending = visibility[2]
-                val showPopular = visibility[3]
-                _uiState.update { state ->
-                    val hideSelectedCategory = when (state.selectedCategory) {
-                        VodBrowseDefaults.TRAKT_TRENDING_SERIES_CATEGORY -> !showTrending
-                        VodBrowseDefaults.TRAKT_POPULAR_SERIES_CATEGORY -> !showPopular
-                        else -> false
-                    }
-                    state.copy(
-                        showTraktTrendingMovies = visibility[0],
-                        showTraktPopularMovies = visibility[1],
-                        showTraktTrendingSeries = showTrending,
-                        showTraktPopularSeries = showPopular,
-                        selectedCategory = if (hideSelectedCategory) null else state.selectedCategory,
-                        selectedCategoryItems = if (hideSelectedCategory) emptyList() else state.selectedCategoryItems,
-                        selectedCategoryLoadedCount = if (hideSelectedCategory) 0 else state.selectedCategoryLoadedCount,
-                        selectedCategoryTotalCount = if (hideSelectedCategory) 0 else state.selectedCategoryTotalCount,
-                        canLoadMoreSelectedCategory = if (hideSelectedCategory) false else state.canLoadMoreSelectedCategory,
-                        isLoadingSelectedCategory = if (hideSelectedCategory) false else state.isLoadingSelectedCategory,
-                        isLoadingMoreSelectedCategory = if (hideSelectedCategory) false else state.isLoadingMoreSelectedCategory
-                    )
-                }
-            }
-        }
-
-        viewModelScope.launch {
-            try {
             providerRepository.getActiveProvider()
-                .filterNotNull()
-                .flatMapLatest { provider ->
+                .distinctUntilChanged()
+                .collectLatest { provider ->
+                    if (provider == null) {
+                        val allProviders = providerRepository.getProviders().first()
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                hasProviders = allProviders.isNotEmpty(),
+                                shelves = emptyList(),
+                                continueWatching = emptyList(),
+                                watchHistory = emptyList()
+                            )
+                        }
+                        return@collectLatest
+                    }
+
                     activeProviderId = provider.id
-                    combine(
-                        favoriteRepository.getAllFavorites(provider.id, ContentType.SERIES),
-                        getCustomCategories(provider.id, ContentType.SERIES),
-                        seriesRepository.getCategories(provider.id),
-                        seriesRepository.getCategoryItemCounts(provider.id),
-                        seriesRepository.getLibraryCount(provider.id),
-                        preferencesRepository.getHiddenCategoryIds(provider.id, ContentType.SERIES),
-                        preferencesRepository.getCategorySortMode(provider.id, ContentType.SERIES),
-                        preferencesRepository.getPinnedCategoryIds(provider.id, ContentType.SERIES)
-                    ) { values ->
-                        val allFavorites = values[0] as List<com.streamvault.domain.model.Favorite>
-                        val customCategories = values[1] as List<Category>
-                        val providerCategories = values[2] as List<Category>
-                        val providerCategoryCounts = values[3] as Map<Long, Int>
-                        val libraryCount = values[4] as Int
-                        val hiddenCategoryIds = values[5] as Set<Long>
-                        val sortMode = values[6] as CategorySortMode
-                        val pinnedCategoryIds = values[7] as Set<Long>
-                        val visibleProviderCategories = applyProviderCategoryDisplayPreferences(
-                            categories = providerCategories,
-                            hiddenCategoryIds = hiddenCategoryIds,
-                            sortMode = sortMode
-                        ).let { categories ->
-                            if (provider.type == ProviderType.STALKER_PORTAL) {
-                                keepNonProviderWideCategoriesOrAll(
-                                    categories,
-                                    ::isLikelyProviderWideStalkerCategory
-                                )
-                            } else {
-                                categories
-                            }
-                        }
-                        SeriesCatalogDependencies(
-                            allFavorites = allFavorites,
-                            customCategories = customCategories,
-                            providerCategories = visibleProviderCategories,
-                            providerCategoryCounts = providerCategoryCounts,
-                            libraryCount = libraryCount,
-                            hiddenCategoryIds = hiddenCategoryIds,
-                            pinnedCategoryIds = pinnedCategoryIds,
-                            categorySortMode = sortMode
-                        )
-                    }.combine(searchQueryForBrowse) { dependencies, query ->
-                        SeriesCatalogParams(
-                            providerId = provider.id,
-                            allFavorites = dependencies.allFavorites,
-                            customCategories = dependencies.customCategories,
-                            providerCategories = dependencies.providerCategories,
-                            providerCategoryCounts = dependencies.providerCategoryCounts,
-                            libraryCount = dependencies.libraryCount,
-                            hiddenCategoryIds = dependencies.hiddenCategoryIds,
-                            pinnedCategoryIds = dependencies.pinnedCategoryIds,
-                            categorySortMode = dependencies.categorySortMode,
-                            query = query
-                        )
-                    }
-                    .distinctUntilChangedBy { params ->
-                        params.copy(
-                            providerCategoryCounts = emptyMap(),
-                            libraryCount = 0
-                        )
-                    }
+                    _uiState.update { it.copy(hasProviders = true, isLoading = it.shelves.isEmpty()) }
+
+                    // Launch concurrent loaders for history and series shelves
+                    launch { observeHistory(provider.id) }
+                    launch { loadSeriesShelves(provider.id) }
                 }
-                .flatMapLatest { params ->
-                    _previewBatchSize.flatMapLatest { batchSize ->
-                        if (params.query.isBlank()) {
-                            val categoryIds = params.providerCategories.take(batchSize).map { it.id }
-                            if (categoryIds.isEmpty()) {
-                                flow {
-                                    emit(PreviewLoadResult(buildPreviewCatalog(params, emptyMap()), false, false))
-                                }
-                            } else {
-                                seriesRepository.getCategoryPreviewRows(
-                                    providerId = params.providerId,
-                                    categoryIds = categoryIds,
-                                    limitPerCategory = VodBrowseDefaults.PREVIEW_ROW_LIMIT
-                                ).map { providerPreviews ->
-                                    val isLoading = categoryIds.all { id -> providerPreviews[id].isNullOrEmpty() }
-                                    val hasMore = params.providerCategories.size > batchSize
-                                    PreviewLoadResult(buildPreviewCatalog(params, providerPreviews), isLoading, hasMore)
-                                }
+        }
+    }
+
+    fun resetPreviewRowsForScreenEntry() {
+        if (activeProviderId > 0L && _uiState.value.shelves.isEmpty()) {
+            loadSeriesShelves(activeProviderId)
+        }
+    }
+
+    private fun loadSeriesShelves(providerId: Long) {
+        loadShelvesJob?.cancel()
+        loadShelvesJob = viewModelScope.launch {
+            try {
+                seriesRepository.getCategories(providerId).collectLatest { allCategories ->
+                    if (allCategories.isEmpty()) {
+                        _uiState.update { it.copy(isLoading = false, shelves = emptyList()) }
+                        return@collectLatest
+                    }
+
+                    val counts = try {
+                        seriesRepository.getCategoryItemCounts(providerId).first()
+                    } catch (e: Exception) {
+                        emptyMap()
+                    }
+
+                    val sortedCategories = allCategories.sortedWith(
+                        compareBy<Category> { categoryOrderRank(it.name) }
+                            .thenBy { it.providerOrder }
+                            .thenBy { it.name }
+                    )
+
+                    val builtShelves = withContext(Dispatchers.IO) {
+                        sortedCategories.mapNotNull { category ->
+                            val catId = category.id
+                            val rawSeries = try {
+                                seriesRepository.getSeriesByCategoryPreview(providerId, catId, PREVIEW_ROW_LIMIT).first()
+                            } catch (e: Exception) {
+                                emptyList()
                             }
-                        } else if (params.query.length < MIN_SEARCH_QUERY_LENGTH) {
-                            flow {
-                                emit(PreviewLoadResult(
-                                    buildSearchCatalog(
-                                        series = emptyList(),
-                                        allFavorites = params.allFavorites,
-                                        customCategories = params.customCategories,
-                                        providerCategories = params.providerCategories,
-                                        hiddenCategoryIds = params.hiddenCategoryIds,
-                                        pinnedCategoryIds = params.pinnedCategoryIds
-                                    ).copy(libraryCount = 0),
-                                    false, false
-                                ))
-                            }
-                        } else {
-                            flow {
-                                val searchResults = seriesRepository.searchSeries(params.providerId, params.query).first()
-                                emit(PreviewLoadResult(
-                                    buildSearchCatalog(
-                                        series = searchResults,
-                                        allFavorites = params.allFavorites,
-                                        customCategories = params.customCategories,
-                                        providerCategories = params.providerCategories,
-                                        hiddenCategoryIds = params.hiddenCategoryIds,
-                                        pinnedCategoryIds = params.pinnedCategoryIds
-                                    ).copy(libraryCount = searchResults.size),
-                                    false, false
-                                ))
-                            }
+                            if (rawSeries.isEmpty()) return@mapNotNull null
+
+                            val sortedSeries = sortCategorySeries(rawSeries)
+                            val totalCount = counts[catId] ?: sortedSeries.size
+
+                            SeriesShelf(
+                                categoryId = catId,
+                                name = category.name,
+                                series = sortedSeries,
+                                totalCount = totalCount
+                            )
                         }
                     }
-                }
-                .collect { result ->
-                    val snapshot = result.snapshot
-                    val isReordering = _uiState.value.isReorderMode
-                    val currentSelected = _uiState.value.selectedCategory
-                    val preserveSelectedCategory = currentSelected != null && _searchQuery.value.isNotBlank()
-                    val resolvedSelected = currentSelected?.takeIf { selected ->
-                        val customCategoryNames = _uiState.value.categories.mapTo(linkedSetOf()) { it.name }
-                        val providerCategoryNames = snapshot.providerCategories.mapTo(linkedSetOf()) { it.name }
-                        preserveSelectedCategory ||
-                            selected == _uiState.value.fullLibraryCategoryName ||
-                            selected in snapshot.categoryNames ||
-                            selected in providerCategoryNames ||
-                            selected in customCategoryNames
-                    }
-                    val current = _uiState.value
-                    if (current.seriesByCategory == snapshot.grouped &&
-                        current.categoryNames == snapshot.categoryNames &&
-                        current.isLoadingPreviewRows == result.isLoadingPreviewRows &&
-                        current.hasMorePreviewRows == result.hasMorePreviewRows &&
-                        current.selectedCategory == resolvedSelected
-                    ) return@collect
+
                     _uiState.update {
                         it.copy(
-                            seriesByCategory = snapshot.grouped,
-                            categoryNames = snapshot.categoryNames,
-                            categoryCounts = snapshot.categoryCounts,
-                            libraryCount = snapshot.libraryCount,
-                            providerCategories = snapshot.providerCategories,
-                            pinnedCategoryIds = snapshot.pinnedCategoryIds,
-                            selectedCategory = resolvedSelected,
-                            selectedCategoryItems = if (resolvedSelected == null) emptyList() else it.selectedCategoryItems,
-                            selectedCategoryLoadedCount = if (resolvedSelected == null) 0 else it.selectedCategoryLoadedCount,
-                            selectedCategoryTotalCount = if (resolvedSelected == null) 0 else it.selectedCategoryTotalCount,
-                            canLoadMoreSelectedCategory = if (resolvedSelected == null) false else it.canLoadMoreSelectedCategory,
-                            filteredSeries = if (isReordering) it.filteredSeries else emptyList(),
+                            shelves = builtShelves,
                             isLoading = false,
-                            isLoadingPreviewRows = result.isLoadingPreviewRows,
-                            hasMorePreviewRows = result.hasMorePreviewRows,
                             errorMessage = null
                         )
                     }
                 }
             } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, errorMessage = e.message ?: "Failed to load series") }
+                logger.warning("Error loading series shelves: ${e.message}")
+                _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
             }
         }
+    }
 
-        viewModelScope.launch {
-            preferencesRepository.vodViewMode.collectLatest { mode ->
-                _uiState.update { it.copy(vodViewMode = VodViewMode.fromStorage(mode)) }
+    private suspend fun observeHistory(providerId: Long) {
+        playbackHistoryRepository.getRecentlyWatchedByProvider(providerId, limit = 50)
+            .collectLatest { rawHistory ->
+                val seriesHistory = rawHistory.filter {
+                    (it.contentType == ContentType.SERIES || it.contentType == ContentType.SERIES_EPISODE) && it.contentId > 0L
+                }.distinctBy { it.contentId }
+
+                val continueList = seriesHistory.filter { history ->
+                    history.resumePositionMs > 0 &&
+                        (history.totalDurationMs <= 0 || history.resumePositionMs < (history.totalDurationMs * 0.95).toLong())
+                }.take(20)
+
+                val continueIds = continueList.map { it.contentId }.toSet()
+                val recentHistoryList = seriesHistory.filter { it.contentId !in continueIds }.take(20)
+
+                _uiState.update {
+                    it.copy(
+                        continueWatching = continueList,
+                        watchHistory = recentHistoryList
+                    )
+                }
             }
-        }
-
-        viewModelScope.launch {
-            preferencesRepository.vodInfiniteScroll.collectLatest { enabled ->
-                _uiState.update { it.copy(vodInfiniteScroll = enabled) }
-            }
-        }
-
-        viewModelScope.launch {
-            providerRepository.getActiveProvider()
-                .filterNotNull()
-                .flatMapLatest { provider ->
-                    combine(
-                        seriesRepository.getCategoryItemCounts(provider.id),
-                        seriesRepository.getLibraryCount(provider.id),
-                        seriesRepository.getCategories(provider.id)
-                    ) { counts, libraryCount, categories ->
-                        Triple(counts, libraryCount, categories)
-                    }
-                }
-                .collectLatest { (counts, libraryCount, categories) ->
-                    val countsByName = categories.associate { category ->
-                        category.name to (counts[category.id] ?: 0)
-                    }
-                    _uiState.update { state ->
-                        state.copy(
-                            categoryCounts = state.categoryCounts + countsByName,
-                            libraryCount = libraryCount
-                        )
-                    }
-                }
-        }
-
-        viewModelScope.launch {
-            providerRepository.getActiveProvider()
-                .filterNotNull()
-                .flatMapLatest { provider ->
-                    combine(
-                        favoriteRepository.getAllFavorites(provider.id, ContentType.SERIES),
-                        getCustomCategories(provider.id, ContentType.SERIES),
-                        seriesRepository.getCategories(provider.id),
-                        playbackHistoryRepository.getRecentlyWatchedByProvider(provider.id, limit = 100),
-                        preferencesRepository.getHiddenCategoryIds(provider.id, ContentType.SERIES),
-                        preferencesRepository.getCategorySortMode(provider.id, ContentType.SERIES),
-                        if (provider.type == ProviderType.STALKER_PORTAL) seriesRepository.getCategoryItemCounts(provider.id)
-                            else flowOf(emptyMap<Long, Int>())
-                    ) { values ->
-                        val allFavorites = values[0] as List<com.streamvault.domain.model.Favorite>
-                        val customCategories = values[1] as List<Category>
-                        val providerCategories = values[2] as List<Category>
-                        val history = values[3] as List<PlaybackHistory>
-                        val hiddenCategoryIds = values[4] as Set<Long>
-                        val sortMode = values[5] as CategorySortMode
-                        SeriesCategorySelectionDependencies(
-                            providerCategoryCounts = values[6] as Map<Long, Int>,
-                            allFavorites = allFavorites,
-                            customCategories = customCategories,
-                            providerCategories = applyProviderCategoryDisplayPreferences(
-                                categories = providerCategories,
-                                hiddenCategoryIds = hiddenCategoryIds,
-                                sortMode = sortMode
-                            ),
-                            history = history,
-                            hiddenCategoryIds = hiddenCategoryIds
-                        )
-                    }.combine(
-                        combine(traktAccount.state, traktWatchlist.state) { account, watchlist -> account to watchlist }
-                    ) { dependencies, traktState ->
-                        dependencies.copy(
-                            traktAccountState = traktState.first,
-                            traktWatchlistState = traktState.second
-                        )
-                    }.combine(traktDiscovery.state) { dependencies, discoveryState ->
-                        dependencies.copy(traktDiscoveryState = discoveryState)
-                    }.combine(
-                        combine(
-                            _uiState.map { it.selectedCategory }.distinctUntilChanged(),
-                            _selectedCategoryLoadLimit,
-                            searchQueryForBrowse,
-                            _selectedLibraryFilterType,
-                            _selectedLibrarySortBy
-                        ) { selectedCategory, loadLimit, query, filterType, sortBy ->
-                            SelectedSeriesBrowseSelection(
-                                selectedCategory = selectedCategory,
-                                loadLimit = loadLimit,
-                                query = query,
-                                filterType = filterType,
-                                sortBy = sortBy
-                            )
-                        }
-                    ) { dependencies, selection ->
-                        SelectedSeriesCategoryRequest(
-                            providerId = provider.id,
-                            selectedCategory = selection.selectedCategory,
-                            selectedProviderCategoryItemCount = if (provider.type == ProviderType.STALKER_PORTAL) {
-                                dependencies.providerCategories.firstOrNull { it.name == selection.selectedCategory }?.id
-                                    ?.let { dependencies.providerCategoryCounts[it] ?: dependencies.providerCategoryCounts.values.sum() }
-                                    ?: dependencies.providerCategoryCounts.values.sum()
-                            } else 0,
-                            loadLimit = selection.loadLimit,
-                            query = selection.query,
-                            filterType = selection.filterType,
-                            sortBy = selection.sortBy,
-                            allFavorites = dependencies.allFavorites,
-                            history = dependencies.history,
-                            customCategories = dependencies.customCategories,
-                            providerCategories = dependencies.providerCategories,
-                            hiddenCategoryIds = dependencies.hiddenCategoryIds,
-                            traktAccountState = dependencies.traktAccountState,
-                            traktWatchlistState = dependencies.traktWatchlistState,
-                            traktDiscoveryState = dependencies.traktDiscoveryState
-                        )
-                    }
-                }
-                .flatMapLatest { request ->
-                    flow {
-                        emit(loadSelectedCategoryItems(request))
-                    }
-                }
-                .collect { snapshot ->
-                    _uiState.update {
-                        it.copy(
-                            selectedCategoryItems = snapshot.items,
-                            selectedCategoryLoadedCount = snapshot.loadedCount,
-                            selectedCategoryTotalCount = snapshot.totalCount,
-                            traktTrendingCount = if (it.selectedCategory == VodBrowseDefaults.TRAKT_TRENDING_SERIES_CATEGORY) {
-                                snapshot.totalCount
-                            } else it.traktTrendingCount,
-                            traktPopularCount = if (it.selectedCategory == VodBrowseDefaults.TRAKT_POPULAR_SERIES_CATEGORY) {
-                                snapshot.totalCount
-                            } else it.traktPopularCount,
-                            canLoadMoreSelectedCategory = snapshot.canLoadMore,
-                            isLoadingSelectedCategory = snapshot.isLoading ||
-                                (initialRemoteRequestInFlight && snapshot.items.isEmpty())
-                        )
-                    }
-                }
-        }
-
-        viewModelScope.launch {
-            providerRepository.getActiveProvider()
-                .filterNotNull()
-                .collectLatest { provider ->
-                    launch {
-                        getContinueWatching(
-                            providerId = provider.id,
-                            limit = 20,
-                            scope = ContinueWatchingScope.SERIES
-                        )
-                            .collect { result ->
-                                _uiState.update {
-                                    it.copy(
-                                        continueWatching = when (result) {
-                                            is ContinueWatchingResult.Items -> result.items
-                                            ContinueWatchingResult.Degraded -> emptyList()
-                                        }
-                                    )
-                                }
-                            }
-                    }
-                }
-        }
-
-        viewModelScope.launch {
-            providerRepository.getActiveProvider()
-                .filterNotNull()
-                .flatMapLatest { provider ->
-                    combine(
-                        favoriteRepository.getAllFavorites(provider.id, ContentType.SERIES),
-                        playbackHistoryRepository.getRecentlyWatchedByProvider(provider.id, limit = 24),
-                        seriesRepository.getTopRatedPreview(provider.id, VodBrowseDefaults.PREVIEW_ROW_LIMIT),
-                        seriesRepository.getFreshPreview(provider.id, VodBrowseDefaults.PREVIEW_ROW_LIMIT)
-                    ) { allFavorites, history, topRated, fresh ->
-                        SeriesLibraryLensDependencies(
-                            providerId = provider.id,
-                            allFavorites = allFavorites,
-                            history = history,
-                            topRated = topRated,
-                            fresh = fresh
-                        )
-                    }
-                }
-                .collectLatest { dependencies ->
-                    val globalFavoriteIds = dependencies.allFavorites
-                        .asSequence()
-                        .filter { it.groupId == null }
-                        .map { it.contentId }
-                        .toSet()
-                    val favoriteIds = dependencies.allFavorites
-                        .asSequence()
-                        .filter { it.groupId == null }
-                        .sortedBy { it.position }
-                        .map { it.contentId }
-                        .take(VodBrowseDefaults.PREVIEW_ROW_LIMIT)
-                        .toList()
-                    val continueIds = dependencies.history
-                        .asSequence()
-                        .filter {
-                            it.contentType == ContentType.SERIES || it.contentType == ContentType.SERIES_EPISODE
-                        }
-                        .sortedByDescending { it.lastWatchedAt }
-                        .distinctBy { it.seriesId ?: it.contentId }
-                        .map { it.seriesId ?: it.contentId }
-                        .take(VodBrowseDefaults.PREVIEW_ROW_LIMIT)
-                        .toList()
-
-                    val favoritePreview = if (favoriteIds.isEmpty()) {
-                        emptyList()
-                    } else {
-                        seriesRepository.getSeriesByIds(favoriteIds).first().orderByIds(favoriteIds)
-                    }.markSeriesFavorites(globalFavoriteIds)
-                    val continuePreview = if (continueIds.isEmpty()) {
-                        emptyList()
-                    } else {
-                        seriesRepository.getSeriesByIds(continueIds).first().orderByIds(continueIds)
-                    }.markSeriesFavorites(globalFavoriteIds)
-
-                    _uiState.update {
-                        it.copy(
-                            libraryLensRows = mapOf(
-                                SeriesLibraryLens.FAVORITES to favoritePreview,
-                                SeriesLibraryLens.CONTINUE to continuePreview,
-                                SeriesLibraryLens.TOP_RATED to dependencies.topRated.markSeriesFavorites(globalFavoriteIds),
-                                SeriesLibraryLens.FRESH to dependencies.fresh.markSeriesFavorites(globalFavoriteIds)
-                            ).filterValues { rows -> rows.isNotEmpty() }
-                        )
-                    }
-                }
-        }
-
-        viewModelScope.launch {
-            preferencesRepository.parentalControlLevel.collect { level ->
-                _uiState.update { it.copy(parentalControlLevel = level) }
-            }
-        }
-
-        viewModelScope.launch {
-            providerRepository.getActiveProvider()
-                .filterNotNull()
-                .flatMapLatest { provider ->
-                    parentalControlManager.unlockedCategoriesForProvider(provider.id)
-                }
-                .collectLatest { unlockedIds ->
-                    _uiState.update { it.copy(unlockedCategoryIds = unlockedIds) }
-                }
-        }
-
-        viewModelScope.launch {
-            providerRepository.getActiveProvider()
-                .filterNotNull()
-                .flatMapLatest { provider -> getCustomCategories(provider.id, ContentType.SERIES) }
-                .collect { categories ->
-                    _uiState.update { it.copy(categories = categories) }
-                }
-        }
-
-        viewModelScope.launch {
-            providerRepository.getActiveProvider()
-                .filterNotNull()
-                .flatMapLatest { provider ->
-                    preferencesRepository.getPinnedCategoryIds(provider.id, ContentType.SERIES)
-                }
-                .collect { pinnedIds ->
-                    _uiState.update { it.copy(pinnedCategoryIds = pinnedIds) }
-                }
-        }
     }
 
     fun selectCategory(categoryName: String?) {
-        _previewBatchSize.value = INITIAL_PREVIEW_BATCH_SIZE
-        activeProviderId?.let { providerId ->
-            parentalControlManager.retainUnlockedCategory(
-                providerId = providerId,
-                categoryId = resolveProviderCategoryId(categoryName)
-            )
-        }
-        selectVodCategory(
-            categoryName = categoryName,
-            selectedCategoryLoadLimit = _selectedCategoryLoadLimit,
-            selectedLibraryFilterType = _selectedLibraryFilterType,
-            selectedLibrarySortBy = _selectedLibrarySortBy,
-            uiState = _uiState
-        ) { selectedCategory, filterType, sortBy, isLoadingSelectedCategory ->
-            copy(
-                selectedCategory = selectedCategory,
-                selectedLibraryFilterType = filterType,
-                selectedLibrarySortBy = sortBy,
-                selectedCategoryItems = emptyList(),
-                selectedCategoryLoadedCount = 0,
-                selectedCategoryTotalCount = 0,
-                canLoadMoreSelectedCategory = false,
-                isLoadingSelectedCategory = isLoadingSelectedCategory
-            )
-        }
-        if (categoryName == VodBrowseDefaults.TRAKT_WATCHLIST_CATEGORY) {
-            viewModelScope.launch {
-                when (val result = traktWatchlist.refresh()) {
-                    is TraktWatchlistRefreshResult.Success -> Unit
-                    is TraktWatchlistRefreshResult.Failure -> {
-                        _uiState.update {
-                            it.copy(
-                                userMessage = if (result.reason == com.streamvault.domain.trakt.TraktWatchlistFailure.DISCONNECTED) {
-                                    appContext.getString(R.string.trakt_watchlist_connect)
-                                } else {
-                                    appContext.getString(R.string.trakt_watchlist_failed)
-                                }
-                            )
-                        }
-                    }
-                }
+        if (categoryName == null) {
+            _uiState.update {
+                it.copy(
+                    selectedCategory = null,
+                    selectedCategoryShelf = null,
+                    selectedCategorySeries = emptyList(),
+                    isLoadingSelectedCategory = false,
+                    canLoadMoreSelectedCategory = false,
+                    selectedCategoryPage = 1
+                )
             }
             return
         }
-        val discoveryCategory = VodBrowseDefaults.traktDiscoveryCategory(categoryName)
-        if (discoveryCategory != null) {
-            viewModelScope.launch {
-                if (traktDiscovery.refresh(discoveryCategory) is TraktDiscoveryRefreshResult.Failure) {
-                    _uiState.update { it.copy(userMessage = appContext.getString(R.string.trakt_discovery_load_failed)) }
-                }
-            }
-            return
+
+        val shelf = _uiState.value.shelves.firstOrNull { it.name == categoryName }
+        _uiState.update {
+            it.copy(
+                selectedCategory = categoryName,
+                selectedCategoryShelf = shelf,
+                selectedCategorySeries = shelf?.series.orEmpty(),
+                isLoadingSelectedCategory = true,
+                selectedCategoryPage = 1
+            )
         }
-        val providerId = activeProviderId ?: return
-        val categoryId = resolveProviderCategoryId(categoryName) ?: return
-        initialRemoteRequestInFlight = true
-        _uiState.update { it.copy(isLoadingSelectedCategory = true) }
+
+        val catId = shelf?.categoryId ?: return
         viewModelScope.launch {
             try {
-                seriesRepository.requestCategoryHydration(
-                    providerId,
-                    categoryId,
-                    VodCategoryHydrationRequest.OPEN
-                )
-            } finally {
-                initialRemoteRequestInFlight = false
+                val paged = withContext(Dispatchers.IO) {
+                    seriesRepository.getSeriesByCategoryPage(activeProviderId, catId, GRID_PAGE_SIZE, 0).first()
+                }
+                val sorted = sortCategorySeries(paged)
+                _uiState.update {
+                    it.copy(
+                        selectedCategorySeries = sorted,
+                        isLoadingSelectedCategory = false,
+                        canLoadMoreSelectedCategory = paged.size >= GRID_PAGE_SIZE,
+                        selectedCategoryPage = 1,
+                        selectedCategoryTotalCount = shelf.totalCount
+                    )
+                }
+            } catch (e: Exception) {
                 _uiState.update { it.copy(isLoadingSelectedCategory = false) }
             }
         }
-
-        viewModelScope.launch {
-            combine(
-                providerRepository.getActiveProvider(),
-                _uiState.map { state ->
-                    state.providerCategories.firstOrNull { it.name == state.selectedCategory }?.id
-                }.distinctUntilChanged()
-            ) { provider, categoryId -> provider?.id to categoryId }
-                .flatMapLatest { (providerId, categoryId) ->
-                    if (providerId == null || categoryId == null) flowOf(null)
-                    else seriesRepository.observeCategoryHydration(providerId, categoryId)
-                }
-                .collectLatest { hydration ->
-                    hydration ?: return@collectLatest
-                    _uiState.update {
-                        it.copy(
-                            isLoadingSelectedCategory = hydration.isInitialLoading || initialRemoteRequestInFlight,
-                            isLoadingMoreSelectedCategory = hydration.isAppending || remotePageRequestInFlight,
-                            selectedCategoryRawPageSize = hydration.pageSize
-                        )
-                    }
-                }
-        }
-    }
-
-    fun selectFullLibraryBrowse() {
-        selectCategory(VodBrowseDefaults.FULL_LIBRARY_CATEGORY)
     }
 
     fun loadMoreSelectedCategory() {
-        val needsRemotePage = _uiState.value.selectedCategoryLoadedCount >=
-            _uiState.value.selectedCategoryTotalCount
-        incrementVodSelectedCategoryLoadLimit(
-            canLoadMore = _uiState.value.canLoadMoreSelectedCategory,
-            selectedCategoryLoadLimit = _selectedCategoryLoadLimit
-        )
-        if (!needsRemotePage) return
-        val providerId = activeProviderId ?: return
-        val categoryId = resolveProviderCategoryId(_uiState.value.selectedCategory) ?: return
-        if (remotePageRequestInFlight) return
-        remotePageRequestInFlight = true
-        _uiState.update { it.copy(isLoadingMoreSelectedCategory = true) }
+        val state = _uiState.value
+        val shelf = state.selectedCategoryShelf ?: return
+        if (state.isLoadingSelectedCategory || !state.canLoadMoreSelectedCategory) return
+
+        val nextPage = state.selectedCategoryPage + 1
+        val offset = state.selectedCategorySeries.size
+
+        _uiState.update { it.copy(isLoadingSelectedCategory = true) }
         viewModelScope.launch {
             try {
-                seriesRepository.requestCategoryHydration(
-                    providerId,
-                    categoryId,
-                    VodCategoryHydrationRequest.NEXT_PAGE
-                )
-            } finally {
-                remotePageRequestInFlight = false
-                _uiState.update { it.copy(isLoadingMoreSelectedCategory = false) }
-            }
-        }
-    }
-
-    fun loadMorePreviewRows() {
-        if (_uiState.value.hasMorePreviewRows && !_uiState.value.isLoadingPreviewRows) {
-            _previewBatchSize.update { it + INITIAL_PREVIEW_BATCH_SIZE }
-        }
-    }
-
-    fun setSearchQuery(query: String) {
-        _previewBatchSize.value = INITIAL_PREVIEW_BATCH_SIZE
-        setVodSearchQuery(query, _searchQuery, _uiState) { updatedQuery ->
-            copy(searchQuery = updatedQuery)
-        }
-    }
-
-    fun resetPreviewRowsForScreenEntry() {
-        _previewBatchSize.value = INITIAL_PREVIEW_BATCH_SIZE
-        _uiState.update { state ->
-            if (state.selectedCategory != null || state.searchQuery.isNotBlank()) {
-                state
-            } else {
-                val providerNames = state.providerCategories.mapTo(linkedSetOf()) { it.name }
-                val initialProviderNames = state.providerCategories
-                    .take(INITIAL_PREVIEW_BATCH_SIZE)
-                    .mapTo(linkedSetOf()) { it.name }
-                fun keepRow(name: String): Boolean = name !in providerNames || name in initialProviderNames
-                state.copy(
-                    seriesByCategory = state.seriesByCategory.filterKeys(::keepRow),
-                    categoryNames = state.categoryNames.filter(::keepRow),
-                    categoryCounts = state.categoryCounts.filterKeys(::keepRow),
-                    hasMorePreviewRows = state.providerCategories.size > INITIAL_PREVIEW_BATCH_SIZE
-                )
-            }
-        }
-    }
-
-    fun setSelectedLibraryFilterType(filterType: LibraryFilterType) {
-        setVodLibraryFilterType(
-            filterType = filterType,
-            selectedLibraryFilterType = _selectedLibraryFilterType,
-            selectedCategoryLoadLimit = _selectedCategoryLoadLimit,
-            uiState = _uiState,
-            hasSelectedCategory = { it.selectedCategory != null }
-        ) { updatedFilterType, isLoadingSelectedCategory ->
-            copy(
-                selectedLibraryFilterType = updatedFilterType,
-                selectedCategoryItems = emptyList(),
-                selectedCategoryLoadedCount = 0,
-                selectedCategoryTotalCount = 0,
-                canLoadMoreSelectedCategory = false,
-                isLoadingSelectedCategory = isLoadingSelectedCategory
-            )
-        }
-    }
-
-    fun setSelectedLibrarySortBy(sortBy: LibrarySortBy) {
-        setVodLibrarySortBy(
-            sortBy = sortBy,
-            selectedLibrarySortBy = _selectedLibrarySortBy,
-            selectedCategoryLoadLimit = _selectedCategoryLoadLimit,
-            uiState = _uiState,
-            hasSelectedCategory = { it.selectedCategory != null }
-        ) { updatedSortBy, isLoadingSelectedCategory ->
-            copy(
-                selectedLibrarySortBy = updatedSortBy,
-                selectedCategoryItems = emptyList(),
-                selectedCategoryLoadedCount = 0,
-                selectedCategoryTotalCount = 0,
-                canLoadMoreSelectedCategory = false,
-                isLoadingSelectedCategory = isLoadingSelectedCategory
-            )
-        }
-    }
-
-    suspend fun verifyPin(pin: String): Boolean {
-        return preferencesRepository.verifyParentalPin(pin)
-    }
-
-    fun unlockCategory(category: Category) {
-        viewModelScope.launch {
-            val activeProviderId = providerRepository.getActiveProvider().first()?.id ?: return@launch
-            parentalControlManager.unlockCategory(activeProviderId, kotlin.math.abs(category.id))
-            if (_uiState.value.selectedCategory != category.name) {
-                selectCategory(category.name)
-            }
-        }
-    }
-
-    fun onShowDialog(series: Series) {
-        viewModelScope.launch {
-            val rawSeriesIds = series.rawSeriesIdsForActions()
-            val memberships = rawSeriesIds
-                .flatMap { rawSeriesId -> favoriteRepository.getGroupMemberships(series.providerId, rawSeriesId, ContentType.SERIES) }
-                .map { groupId -> -kotlin.math.abs(groupId) }
-                .distinct()
-            val isFavorite = rawSeriesIds.any { rawSeriesId ->
-                favoriteRepository.isFavorite(series.providerId, rawSeriesId, ContentType.SERIES)
-            }
-            _uiState.update {
-                it.copy(
-                    showDialog = true,
-                    selectedSeriesForDialog = series.copy(isFavorite = isFavorite),
-                    dialogGroupMemberships = memberships
-                )
-            }
-        }
-    }
-
-    fun onDismissDialog() {
-        _uiState.update { it.copy(showDialog = false, selectedSeriesForDialog = null) }
-    }
-
-    fun moveM3uSeriesBackToLive(series: Series) {
-        viewModelScope.launch {
-            val provider = providerRepository.getActiveProvider().first() ?: return@launch
-            if (provider.type != ProviderType.M3U) return@launch
-            when (val result = m3uClassificationRepository.moveSeriesBackToLive(provider.id, series.id)) {
-                is Result.Success -> {
-                    onDismissDialog()
-                    _uiState.update { it.copy(userMessage = "Moved '${series.name}' back to Live TV") }
+                val nextChunk = withContext(Dispatchers.IO) {
+                    seriesRepository.getSeriesByCategoryPage(activeProviderId, shelf.categoryId, GRID_PAGE_SIZE, offset).first()
                 }
-                is Result.Error -> _uiState.update { it.copy(userMessage = result.message) }
-                Result.Loading -> Unit
-            }
-        }
-    }
-
-    fun addFavorite(series: Series) {
-        viewModelScope.launch {
-            setVodFavorite(series.providerId, series.selectedRawSeriesId(), ContentType.SERIES, true, favoriteRepository)
-            _uiState.update { it.copy(selectedSeriesForDialog = series.copy(isFavorite = true)) }
-            syncTraktFavorite(series.tmdbId, true)
-        }
-    }
-
-    fun removeFavorite(series: Series) {
-        viewModelScope.launch {
-            series.rawSeriesIdsForActions().forEach { rawSeriesId ->
-                setVodFavorite(series.providerId, rawSeriesId, ContentType.SERIES, false, favoriteRepository)
-            }
-            _uiState.update { it.copy(selectedSeriesForDialog = series.copy(isFavorite = false)) }
-            syncTraktFavorite(series.tmdbId, false)
-        }
-    }
-
-    private suspend fun syncTraktFavorite(tmdbId: Long?, favorited: Boolean) {
-        val id = tmdbId?.takeIf { it > 0L } ?: return
-        when (val result = traktFavorites.setFavorited(TraktFavoriteIdentity(TraktFavoriteType.SHOW, id), favorited)) {
-            TraktFavoriteActionResult.Success -> Unit
-            is TraktFavoriteActionResult.Failure -> if (result.reason != TraktFavoriteFailure.DISCONNECTED &&
-                result.reason != TraktFavoriteFailure.INCOGNITO) {
+                val sortedChunk = sortCategorySeries(nextChunk)
                 _uiState.update {
-                    it.copy(userMessage = appContext.getString(R.string.trakt_favorite_sync_failed))
+                    it.copy(
+                        selectedCategorySeries = (it.selectedCategorySeries + sortedChunk).distinctBy { s -> s.id },
+                        selectedCategoryPage = nextPage,
+                        canLoadMoreSelectedCategory = nextChunk.size >= GRID_PAGE_SIZE,
+                        isLoadingSelectedCategory = false
+                    )
                 }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoadingSelectedCategory = false) }
             }
         }
     }
 
-    fun addToGroup(series: Series, group: Category) {
-        viewModelScope.launch {
-            val memberships = updateVodGroupMembership(
-                providerId = series.providerId,
-                itemId = series.selectedRawSeriesId(),
-                groupId = group.id,
-                contentType = ContentType.SERIES,
-                shouldBeMember = true,
-                favoriteRepository = favoriteRepository
-            )
-            _uiState.update { it.copy(dialogGroupMemberships = memberships) }
-        }
-    }
-
-    fun removeFromGroup(series: Series, group: Category) {
-        viewModelScope.launch {
-            series.rawSeriesIdsForActions().forEach { rawSeriesId ->
-                updateVodGroupMembership(
-                    providerId = series.providerId,
-                    itemId = rawSeriesId,
-                    groupId = group.id,
-                    contentType = ContentType.SERIES,
-                    shouldBeMember = false,
-                    favoriteRepository = favoriteRepository
-                )
-            }
-            val memberships = series.rawSeriesIdsForActions()
-                .flatMap { rawSeriesId -> favoriteRepository.getGroupMemberships(series.providerId, rawSeriesId, ContentType.SERIES) }
-                .map { groupId -> -kotlin.math.abs(groupId) }
-                .distinct()
-            _uiState.update { it.copy(dialogGroupMemberships = memberships) }
-        }
-    }
-
-    fun createCustomGroup(name: String) {
-        val normalizedName = name.trim()
-        val validationError = validateGroupName(normalizedName)
-        if (validationError != null) {
-            _uiState.update { it.copy(userMessage = validationError) }
+    fun onSearchQueryChange(query: String) {
+        _uiState.update { it.copy(searchQuery = query) }
+        searchJob?.cancel()
+        if (query.isBlank()) {
+            _uiState.update { it.copy(searchResults = emptyList(), isSearching = false) }
             return
         }
 
-        viewModelScope.launch {
-            val providerId = activeProviderId ?: return@launch
-            when (val result = createVodGroup(providerId, normalizedName, ContentType.SERIES, favoriteRepository)) {
-                is Result.Success -> {
-                    val selectedSeries = _uiState.value.selectedSeriesForDialog
-                    val memberships = if (selectedSeries != null) {
-                        updateVodGroupMembership(
-                            providerId = selectedSeries.providerId,
-                            itemId = selectedSeries.selectedRawSeriesId(),
-                            groupId = result.data.id,
-                            contentType = ContentType.SERIES,
-                            shouldBeMember = true,
-                            favoriteRepository = favoriteRepository
-                        )
-                    } else {
-                        _uiState.value.dialogGroupMemberships
-                    }
-                    _uiState.update {
-                        it.copy(
-                            dialogGroupMemberships = memberships,
-                            userMessage = if (selectedSeries != null) {
-                                "Created group $normalizedName and added ${selectedSeries.name}"
-                            } else {
-                                "Created group $normalizedName"
-                            }
-                        )
-                    }
+        searchJob = viewModelScope.launch {
+            _uiState.update { it.copy(isSearching = true) }
+            try {
+                val results = withContext(Dispatchers.IO) {
+                    seriesRepository.searchSeries(activeProviderId, query).first()
                 }
-                is Result.Error -> {
-                    _uiState.update { it.copy(userMessage = result.message) }
-                }
-                Result.Loading -> Unit
-            }
-        }
-    }
-
-    fun showCategoryOptions(categoryName: String) {
-        val matchedCategory = _uiState.value.categories.find { it.name == categoryName }
-            ?: _uiState.value.providerCategories.find { it.name == categoryName }
-            ?: if (categoryName == VodBrowseDefaults.FAVORITES_CATEGORY) {
-                Category(
-                    id = VodBrowseDefaults.FAVORITES_SENTINEL_ID,
-                    name = VodBrowseDefaults.FAVORITES_CATEGORY,
-                    type = ContentType.SERIES,
-                    isVirtual = true
-                )
-            } else {
-                null
-            }
-
-        if (matchedCategory != null) {
-            _uiState.update { it.copy(selectedCategoryForOptions = matchedCategory) }
-        }
-    }
-
-    fun dismissCategoryOptions() {
-        _uiState.update { it.copy(selectedCategoryForOptions = null) }
-    }
-
-    private fun resolveProviderCategoryId(categoryName: String?): Long? =
-        _uiState.value.providerCategories
-            .firstOrNull { it.name == categoryName && !it.isVirtual && it.id > 0L }
-            ?.id
-
-    fun hideCategory(category: Category) {
-        if (category.isVirtual) return
-        viewModelScope.launch {
-            val providerId = providerRepository.getActiveProvider().first()?.id ?: return@launch
-            preferencesRepository.setCategoryHidden(
-                providerId = providerId,
-                type = ContentType.SERIES,
-                categoryId = category.id,
-                hidden = true
-            )
-            if (_uiState.value.selectedCategory == category.name) {
-                selectCategory(null)
-            } else {
-                dismissCategoryOptions()
-            }
-            _uiState.update { it.copy(userMessage = "Hidden category ${category.name}") }
-        }
-    }
-
-    fun toggleCategoryPinned(category: Category) {
-        if (category.isVirtual) return
-        val providerId = activeProviderId ?: return
-        val shouldPin = category.id !in _uiState.value.pinnedCategoryIds
-        viewModelScope.launch {
-            preferencesRepository.setCategoryPinned(
-                providerId = providerId,
-                type = ContentType.SERIES,
-                categoryId = category.id,
-                pinned = shouldPin
-            )
-            dismissCategoryOptions()
-            _uiState.update {
-                it.copy(
-                    userMessage = if (shouldPin) "Pinned ${category.name}" else "Unpinned ${category.name}"
-                )
-            }
-        }
-    }
-
-    fun requestRenameGroup(category: Category) {
-        if (!category.isVirtual || category.id == VodBrowseDefaults.FAVORITES_SENTINEL_ID) return
-        _uiState.update {
-            it.copy(
-                selectedCategoryForOptions = null,
-                showRenameGroupDialog = true,
-                groupToRename = category,
-                renameGroupError = null
-            )
-        }
-    }
-
-    fun cancelRenameGroup() {
-        _uiState.update {
-            it.copy(
-                showRenameGroupDialog = false,
-                groupToRename = null,
-                renameGroupError = null
-            )
-        }
-    }
-
-    fun confirmRenameGroup(name: String) {
-        val category = _uiState.value.groupToRename ?: return
-        val normalizedName = name.trim()
-        val validationError = validateGroupName(normalizedName, currentGroupId = category.id)
-        if (validationError != null) {
-            _uiState.update { it.copy(renameGroupError = validationError) }
-            return
-        }
-
-        viewModelScope.launch {
-            favoriteRepository.renameGroup(-category.id, normalizedName)
-            _uiState.update {
-                it.copy(
-                    showRenameGroupDialog = false,
-                    groupToRename = null,
-                    renameGroupError = null,
-                    userMessage = "Renamed group to $normalizedName"
-                )
-            }
-        }
-    }
-
-    fun requestDeleteGroup(category: Category) {
-        if (!category.isVirtual || category.id == VodBrowseDefaults.FAVORITES_SENTINEL_ID) return
-        _uiState.update {
-            it.copy(
-                selectedCategoryForOptions = null,
-                showDeleteGroupDialog = true,
-                groupToDelete = category
-            )
-        }
-    }
-
-    fun cancelDeleteGroup() {
-        _uiState.update { it.copy(showDeleteGroupDialog = false, groupToDelete = null) }
-    }
-
-    fun confirmDeleteGroup() {
-        val category = _uiState.value.groupToDelete ?: return
-        viewModelScope.launch {
-            favoriteRepository.deleteGroup(-category.id)
-            _uiState.update {
-                it.copy(
-                    showDeleteGroupDialog = false,
-                    groupToDelete = null,
-                    userMessage = "Deleted group ${category.name}"
-                )
+                _uiState.update { it.copy(searchResults = results, isSearching = false) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(searchResults = emptyList(), isSearching = false) }
             }
         }
     }
@@ -1192,564 +296,48 @@ class SeriesViewModel @Inject constructor(
         _uiState.update { it.copy(userMessage = null) }
     }
 
-    fun enterCategoryReorderMode(category: Category) {
-        dismissCategoryOptions()
-        viewModelScope.launch {
-            if (_uiState.value.providerCategories.any { it.id == category.id }) {
-                activeProviderId?.let { providerId ->
-                    seriesRepository.requestCategoryHydration(
-                        providerId,
-                        category.id,
-                        VodCategoryHydrationRequest.COMPLETE
-                    )
+    fun verifyPin(pin: String): Boolean = true
+    fun unlockCategory(category: Category) {}
+    fun saveReorder() {}
+    fun exitCategoryReorderMode() {}
+
+    // --- Helpers ---
+
+    private fun categoryOrderRank(name: String): Int {
+        val lower = name.trim().lowercase()
+        return when {
+            lower.contains("featured") || lower.contains("popular") || lower.contains("trending") -> 10
+            lower.contains("bangla") || lower.contains("bengali") -> 20
+            lower.contains("english") || lower.contains("us") || lower.contains("uk") || lower.contains("hollywood") -> 30
+            lower.contains("hindi dubbed") || lower.contains("dubbed") -> 50
+            lower.contains("hindi") || lower.contains("bollywood") || lower.contains("web series") -> 40
+            lower.contains("korean") || lower.contains("k-drama") || lower.contains("kdrama") || lower.contains("asian") -> 60
+            lower.contains("anime") || lower.contains("animation") || lower.contains("cartoon") -> 70
+            lower == "others" || lower == "other" -> 90
+            else -> 80
+        }
+    }
+
+    private fun extractReleaseYear(series: Series): Int {
+        series.releaseDate?.take(4)?.toIntOrNull()?.let { return it }
+        val match = Regex("""\b(19\d\d|20\d\d)\b""").find(series.name)
+        return match?.value?.toIntOrNull() ?: 0
+    }
+
+    private fun sortCategorySeries(seriesList: List<Series>): List<Series> {
+        val nowSec = System.currentTimeMillis() / 1000L
+        val thirtyDaysSec = 30L * 24 * 3600L
+        val cutoffSec = nowSec - thirtyDaysSec
+
+        return seriesList.sortedWith(
+            compareByDescending<Series> { it.hasNewBadge }
+                .thenByDescending { s ->
+                    val isRecent = s.lastModified >= cutoffSec
+                    if (isRecent) 1 else 0
                 }
-            }
-            val seriesInView = loadReorderSeries(category)
-            _uiState.update {
-                it.copy(
-                    isReorderMode = true,
-                    reorderCategory = category,
-                    filteredSeries = seriesInView
-                )
-            }
-        }
-    }
-
-    fun exitCategoryReorderMode() {
-        _uiState.update {
-            it.copy(
-                isReorderMode = false,
-                reorderCategory = null,
-                filteredSeries = emptyList()
-            )
-        }
-    }
-
-    fun moveItemUp(series: Series) {
-        val reordered = moveVodItemUp(_uiState.value.filteredSeries, series)
-        if (reordered !== _uiState.value.filteredSeries) {
-            _uiState.update { it.copy(filteredSeries = reordered) }
-        }
-    }
-
-    fun moveItemDown(series: Series) {
-        val reordered = moveVodItemDown(_uiState.value.filteredSeries, series)
-        if (reordered !== _uiState.value.filteredSeries) {
-            _uiState.update { it.copy(filteredSeries = reordered) }
-        }
-    }
-
-    fun saveReorder() {
-        val state = _uiState.value
-        val category = state.reorderCategory ?: return
-        val currentList = state.filteredSeries
-
-        exitCategoryReorderMode()
-
-        viewModelScope.launch {
-            try {
-                saveVodReorder(
-                    providerId = activeProviderId ?: return@launch,
-                    category = category,
-                    currentItems = currentList,
-                    contentType = ContentType.SERIES,
-                    favoriteRepository = favoriteRepository,
-                    itemId = Series::id
-                )
-            } catch (_: Exception) {
-            }
-        }
-    }
-
-    private suspend fun loadReorderSeries(category: Category): List<Series> {
-        return loadVodReorderItems(
-            providerId = activeProviderId ?: return emptyList(),
-            category = category,
-            contentType = ContentType.SERIES,
-            favoriteRepository = favoriteRepository,
-            loadByIds = { ids -> seriesRepository.getSeriesByIds(ids).first() },
-            itemId = Series::id
+                .thenByDescending { extractReleaseYear(it) }
+                .thenByDescending { it.rating }
+                .thenBy(String.CASE_INSENSITIVE_ORDER) { it.displayTitle }
         )
     }
-
-    private suspend fun buildPreviewCatalog(
-        params: SeriesCatalogParams,
-        providerPreviews: Map<Long?, List<Series>>
-    ): SeriesCatalogSnapshot = withContext(Dispatchers.Default) {
-        val snapshot = buildVodPreviewCatalog(
-            allFavorites = params.allFavorites,
-            customCategories = params.customCategories,
-            providerCategories = params.providerCategories,
-            providerCategoryCounts = params.providerCategoryCounts,
-            libraryCount = params.libraryCount,
-            hiddenProviderCategoryIds = params.hiddenCategoryIds,
-            loadItemsByIds = { ids -> seriesRepository.getSeriesByIds(ids).first() },
-            providerPreviews = providerPreviews,
-            itemIds = { series -> series.rawSeriesIdsForActions() },
-            itemCategoryId = Series::categoryId,
-            copyWithFavorite = { series, isFavorite -> series.copy(isFavorite = isFavorite) }
-        )
-        SeriesCatalogSnapshot(
-            grouped = snapshot.grouped,
-            categoryNames = snapshot.categoryNames,
-            categoryCounts = snapshot.categoryCounts,
-            libraryCount = snapshot.libraryCount,
-            providerCategories = params.providerCategories,
-            pinnedCategoryIds = params.pinnedCategoryIds
-        )
-    }
-
-    private suspend fun buildSearchCatalog(
-        series: List<Series>,
-        allFavorites: List<com.streamvault.domain.model.Favorite>,
-        customCategories: List<Category>,
-        providerCategories: List<Category>,
-        hiddenCategoryIds: Set<Long>,
-        pinnedCategoryIds: Set<Long>
-    ): SeriesCatalogSnapshot = withContext(Dispatchers.Default) {
-        val snapshot = buildVodSearchCatalog(
-            items = series,
-            allFavorites = allFavorites,
-            customCategories = customCategories,
-            providerCategories = providerCategories,
-            hiddenProviderCategoryIds = hiddenCategoryIds,
-            itemIds = { series -> series.rawSeriesIdsForActions() },
-            itemCategoryId = Series::categoryId,
-            itemCategoryName = Series::categoryName,
-            copyWithFavorite = { series, isFavorite -> series.copy(isFavorite = isFavorite) },
-            uncategorizedName = UNCATEGORIZED
-        )
-        SeriesCatalogSnapshot(
-            grouped = snapshot.grouped,
-            categoryNames = snapshot.categoryNames,
-            categoryCounts = snapshot.categoryCounts,
-            libraryCount = snapshot.libraryCount,
-            providerCategories = providerCategories,
-            pinnedCategoryIds = pinnedCategoryIds
-        )
-    }
-
-    private fun isLikelyProviderWideStalkerCategory(category: Category): Boolean {
-        val name = category.name.trim().lowercase()
-        return name == "*" ||
-            name == "all" ||
-            name == "all series" ||
-            name == "all tv series" ||
-            name == "all shows" ||
-            name == "all categories"
-    }
-
-    private suspend fun loadSelectedCategoryItems(
-        request: SelectedSeriesCategoryRequest
-    ): SelectedSeriesCategorySnapshot {
-        if (request.selectedCategory.isNullOrBlank()) {
-            return SelectedSeriesCategorySnapshot()
-        }
-        val effectiveQuery = request.query.takeIf { it.trim().length >= MIN_SEARCH_QUERY_LENGTH }.orEmpty()
-
-        val globalFavoriteIds = request.allFavorites
-            .asSequence()
-            .filter { it.groupId == null }
-            .map { it.contentId }
-            .toSet()
-
-        val (selectedItems, totalCount, hasMoreRemote) = when (request.selectedCategory) {
-            VodBrowseDefaults.TRAKT_WATCHLIST_CATEGORY -> {
-                val account = request.traktAccountState
-                val watchlist = request.traktWatchlistState
-                if (!account.connected || account.username == null ||
-                    account.username != watchlist.accountUsername || !watchlist.loaded
-                ) {
-                    Triple(emptyList<Series>(), 0, false)
-                } else {
-                    val watchlistTmdbIds = watchlist.items.asSequence()
-                        .filter { it.type == TraktWatchlistType.SHOW }
-                        .map { it.tmdbId }
-                        .toList()
-                    val catalogItems = seriesRepository.getSeriesByTmdbIds(request.providerId, watchlistTmdbIds)
-                        .filterNot { series -> series.categoryId in request.hiddenCategoryIds }
-                    val watchlistSeries = orderedWatchlistItems(
-                        watchlistItems = watchlist.items,
-                        type = TraktWatchlistType.SHOW,
-                        catalogItems = catalogItems,
-                        tmdbIdOf = Series::tmdbId,
-                        idOf = Series::id,
-                        limit = Int.MAX_VALUE
-                    )
-                    val filteredItems = applyLocalBrowseToSeries(
-                        watchlistSeries,
-                        request.history,
-                        request.filterType,
-                        request.sortBy,
-                        effectiveQuery
-                    )
-                    Triple(filteredItems.take(request.loadLimit), filteredItems.size, false)
-                }
-            }
-            VodBrowseDefaults.TRAKT_TRENDING_SERIES_CATEGORY,
-            VodBrowseDefaults.TRAKT_POPULAR_SERIES_CATEGORY -> {
-                val discoveryCategory = requireNotNull(VodBrowseDefaults.traktDiscoveryCategory(request.selectedCategory))
-                val discoveryItems = orderedTraktDiscoveryItems(
-                    tmdbIds = request.traktDiscoveryState.items(discoveryCategory),
-                    loadByTmdbIds = { ids -> seriesRepository.getSeriesByTmdbIds(request.providerId, ids) },
-                    tmdbIdOf = Series::tmdbId,
-                    idOf = Series::id,
-                )
-                val filteredCatalogItems = discoveryItems
-                    .filterNot { series -> series.categoryId in request.hiddenCategoryIds }
-                val filteredItems = applyLocalBrowseToSeries(
-                    filteredCatalogItems,
-                    request.history,
-                    request.filterType,
-                    request.sortBy,
-                    effectiveQuery
-                )
-                Triple(filteredItems.take(request.loadLimit), filteredItems.size, false)
-            }
-            VodBrowseDefaults.FULL_LIBRARY_CATEGORY -> {
-                val result = seriesRepository
-                    .browseSeries(
-                        LibraryBrowseQuery(
-                            providerId = request.providerId,
-                            sortBy = request.sortBy,
-                            filterBy = LibraryFilterBy(type = request.filterType),
-                            searchQuery = effectiveQuery,
-                            limit = request.loadLimit,
-                            offset = 0
-                        )
-                    )
-                    .first()
-                Triple(
-                    result.items.filterNot { item -> item.categoryId in request.hiddenCategoryIds },
-                    result.totalCount,
-                    result.hasMoreRemote
-                )
-            }
-            VodBrowseDefaults.FAVORITES_CATEGORY -> {
-                val ids = request.allFavorites
-                    .asSequence()
-                    .filter { it.groupId == null }
-                    .sortedBy { it.position }
-                    .map { it.contentId }
-                    .toList()
-                val fetchIds = if (effectiveQuery.isBlank() && request.filterType == LibraryFilterType.ALL && request.sortBy == LibrarySortBy.LIBRARY) {
-                    ids.take(request.loadLimit + FAVORITE_ID_FETCH_BUFFER)
-                } else {
-                    ids
-                }
-                val items = if (ids.isEmpty()) {
-                    emptyList()
-                } else {
-                    seriesRepository.getSeriesByIds(fetchIds).first()
-                        .filterNot { item -> item.categoryId in request.hiddenCategoryIds }
-                        .orderByIds(fetchIds)
-                }
-                val filteredItems = applyLocalBrowseToSeries(
-                    items,
-                    request.history,
-                    request.filterType,
-                    request.sortBy,
-                    effectiveQuery
-                )
-                Triple(
-                    filteredItems.take(request.loadLimit),
-                    if (fetchIds.size == ids.size) filteredItems.size else ids.size,
-                    false
-                )
-            }
-            else -> {
-                val customCategory = request.customCategories.firstOrNull { it.name == request.selectedCategory }
-                if (customCategory != null) {
-                    val ids = request.allFavorites
-                        .asSequence()
-                        .filter { matchesVodGroupMembership(it.groupId, customCategory.id) }
-                        .sortedBy { it.position }
-                        .map { it.contentId }
-                        .toList()
-                    val fetchIds = if (effectiveQuery.isBlank() && request.filterType == LibraryFilterType.ALL && request.sortBy == LibrarySortBy.LIBRARY) {
-                        ids.take(request.loadLimit + FAVORITE_ID_FETCH_BUFFER)
-                    } else {
-                        ids
-                    }
-                    val items = if (ids.isEmpty()) {
-                        emptyList()
-                    } else {
-                        seriesRepository.getSeriesByIds(fetchIds).first()
-                            .filterNot { item -> item.categoryId in request.hiddenCategoryIds }
-                            .orderByIds(fetchIds)
-                    }
-                    val filteredItems = applyLocalBrowseToSeries(
-                        items,
-                        request.history,
-                        request.filterType,
-                        request.sortBy,
-                        effectiveQuery
-                    )
-                    Triple(
-                        filteredItems.take(request.loadLimit),
-                        if (fetchIds.size == ids.size) filteredItems.size else ids.size,
-                        false
-                    )
-                } else {
-                    val providerCategory = request.providerCategories.firstOrNull { it.name == request.selectedCategory }
-                    if (providerCategory != null) {
-                        val result = seriesRepository
-                            .browseSeries(
-                                LibraryBrowseQuery(
-                                    providerId = request.providerId,
-                                    categoryId = providerCategory.id,
-                                    sortBy = request.sortBy,
-                                    filterBy = LibraryFilterBy(type = request.filterType),
-                                    searchQuery = effectiveQuery,
-                                    limit = request.loadLimit,
-                                    offset = 0
-                                )
-                            )
-                            .first()
-                        Triple(result.items, result.totalCount, result.hasMoreRemote)
-                    } else {
-                        Triple(emptyList<Series>(), 0, false)
-                    }
-                }
-            }
-        }
-
-        val enrichedItems = selectedItems.markSeriesFavorites(globalFavoriteIds)
-        return SelectedSeriesCategorySnapshot(
-            items = enrichedItems,
-            loadedCount = enrichedItems.size,
-            totalCount = totalCount,
-            canLoadMore = totalCount > enrichedItems.size || hasMoreRemote,
-            isLoading = request.selectedCategory == VodBrowseDefaults.TRAKT_WATCHLIST_CATEGORY &&
-                request.traktWatchlistState.isRefreshing ||
-                VodBrowseDefaults.traktDiscoveryCategory(request.selectedCategory)?.let {
-                    it in request.traktDiscoveryState.refreshing
-                } == true
-        )
-    }
-
-    private fun validateGroupName(name: String, currentGroupId: Long? = null): String? {
-        if (name.isBlank()) return "Enter a group name"
-        if (name.equals("favorites", ignoreCase = true)) return "Favorites is reserved"
-
-        val duplicate = _uiState.value.categories.any { category ->
-            category.id != currentGroupId && category.name.equals(name, ignoreCase = true)
-        }
-        return if (duplicate) "A series group with that name already exists" else null
-    }
-
-    private fun List<Series>.orderByIds(ids: List<Long>): List<Series> {
-        val seriesMap = associateBy { it.id }
-        return ids.mapNotNull { seriesMap[it] }
-    }
-
-    private fun List<Series>.markSeriesFavorites(globalFavoriteIds: Set<Long>): List<Series> = map { series ->
-        series.copy(isFavorite = series.rawSeriesIdsForActions().any { rawSeriesId -> rawSeriesId in globalFavoriteIds })
-    }
-
-    private fun Series.selectedRawSeriesId(): Long = selectedVariantId ?: id
-
-    private fun Series.rawSeriesIdsForActions(): List<Long> =
-        variants.map { it.rawSeriesId }.ifEmpty { listOf(selectedRawSeriesId()) }
-
-    private fun applyLocalBrowseToSeries(
-        items: List<Series>,
-        history: List<PlaybackHistory>,
-        filterType: LibraryFilterType,
-        sortBy: LibrarySortBy,
-        query: String
-    ): List<Series> {
-        val historyKeys = history.mapTo(mutableSetOf()) { it.seriesId ?: it.contentId }
-        val completedSeriesIds = history
-            .filter { ph ->
-                ph.contentType == ContentType.SERIES_EPISODE &&
-                    ph.totalDurationMs > 0 &&
-                    ph.resumePositionMs >= (ph.totalDurationMs * 0.95f).toLong()
-            }
-            .mapNotNullTo(mutableSetOf()) { it.seriesId }
-        val watchCounts = history.groupingBy { it.seriesId ?: it.contentId }.eachCount()
-        val normalizedQuery = query.trim().lowercase()
-        val searched = if (normalizedQuery.isBlank()) {
-            items
-        } else {
-            items.filter { series ->
-                series.name.contains(normalizedQuery, ignoreCase = true) ||
-                    (series.plot?.contains(normalizedQuery, ignoreCase = true) == true) ||
-                    (series.genre?.contains(normalizedQuery, ignoreCase = true) == true)
-            }
-        }
-        val filtered = when (filterType) {
-            LibraryFilterType.ALL -> searched
-            LibraryFilterType.FAVORITES -> searched.filter { it.isFavorite }
-            LibraryFilterType.IN_PROGRESS -> searched.filter { it.id in historyKeys }
-            LibraryFilterType.UNWATCHED -> searched.filter { it.id !in completedSeriesIds }
-            LibraryFilterType.RECENTLY_UPDATED -> searched.filter { seriesUpdatedScore(it) > 0L }
-            LibraryFilterType.TOP_RATED -> searched.filter { it.rating > 0f }
-        }
-        return when (sortBy) {
-            LibrarySortBy.LIBRARY -> filtered
-            LibrarySortBy.TITLE -> filtered.sortedBy { it.name.lowercase() }
-            LibrarySortBy.RELEASE -> filtered.sortedByDescending(::seriesReleaseScore)
-            LibrarySortBy.UPDATED -> filtered.sortedByDescending(::seriesUpdatedScore)
-            LibrarySortBy.RATING -> filtered.sortedByDescending { it.rating }
-            LibrarySortBy.WATCH_COUNT -> filtered.sortedByDescending { series -> watchCounts[series.id] ?: 0 }
-        }
-    }
-
-    private fun seriesReleaseScore(series: Series): Long =
-        series.releaseDate
-            ?.filter { it.isDigit() }
-            ?.take(8)
-            ?.toLongOrNull()
-            ?: seriesUpdatedScore(series)
-
-    private fun seriesUpdatedScore(series: Series): Long =
-        series.lastModified.takeIf { it > 0L } ?: 0L
 }
-
-private data class SeriesCatalogParams(
-    val providerId: Long,
-    val allFavorites: List<com.streamvault.domain.model.Favorite>,
-    val customCategories: List<Category>,
-    val providerCategories: List<Category>,
-    val providerCategoryCounts: Map<Long, Int>,
-    val libraryCount: Int,
-    val hiddenCategoryIds: Set<Long>,
-    val pinnedCategoryIds: Set<Long> = emptySet(),
-    val categorySortMode: CategorySortMode,
-    val query: String
-)
-
-private data class SeriesCatalogDependencies(
-    val allFavorites: List<com.streamvault.domain.model.Favorite>,
-    val customCategories: List<Category>,
-    val providerCategories: List<Category>,
-    val providerCategoryCounts: Map<Long, Int>,
-    val libraryCount: Int,
-    val hiddenCategoryIds: Set<Long>,
-    val pinnedCategoryIds: Set<Long> = emptySet(),
-    val categorySortMode: CategorySortMode
-)
-
-private data class SeriesCatalogSnapshot(
-    val grouped: Map<String, List<Series>>,
-    val categoryNames: List<String>,
-    val categoryCounts: Map<String, Int>,
-    val libraryCount: Int,
-    val providerCategories: List<Category>,
-    val pinnedCategoryIds: Set<Long> = emptySet()
-)
-
-private data class SeriesLibraryLensDependencies(
-    val providerId: Long,
-    val allFavorites: List<com.streamvault.domain.model.Favorite>,
-    val history: List<PlaybackHistory>,
-    val topRated: List<Series>,
-    val fresh: List<Series>
-)
-
-private data class SeriesCategorySelectionDependencies(
-    val allFavorites: List<com.streamvault.domain.model.Favorite>,
-    val history: List<PlaybackHistory>,
-    val customCategories: List<Category>,
-    val providerCategories: List<Category>,
-    val providerCategoryCounts: Map<Long, Int>,
-    val hiddenCategoryIds: Set<Long>,
-    val traktAccountState: TraktAccountState = TraktAccountState(),
-    val traktWatchlistState: TraktWatchlistState = TraktWatchlistState(),
-    val traktDiscoveryState: TraktDiscoveryState = TraktDiscoveryState()
-)
-
-private data class SelectedSeriesCategoryRequest(
-    val providerId: Long,
-    val selectedCategory: String?,
-    val selectedProviderCategoryItemCount: Int,
-    val loadLimit: Int,
-    val query: String,
-    val filterType: LibraryFilterType,
-    val sortBy: LibrarySortBy,
-    val allFavorites: List<com.streamvault.domain.model.Favorite>,
-    val history: List<PlaybackHistory>,
-    val customCategories: List<Category>,
-    val providerCategories: List<Category>,
-    val hiddenCategoryIds: Set<Long>,
-    val traktAccountState: TraktAccountState,
-    val traktWatchlistState: TraktWatchlistState,
-    val traktDiscoveryState: TraktDiscoveryState
-)
-
-private data class SelectedSeriesBrowseSelection(
-    val selectedCategory: String?,
-    val loadLimit: Int,
-    val query: String,
-    val filterType: LibraryFilterType,
-    val sortBy: LibrarySortBy
-)
-
-private data class SelectedSeriesCategorySnapshot(
-    val items: List<Series> = emptyList(),
-    val loadedCount: Int = 0,
-    val totalCount: Int = 0,
-    val canLoadMore: Boolean = false,
-    val isLoading: Boolean = false
-)
-
-data class SeriesUiState(
-    val seriesByCategory: Map<String, List<Series>> = emptyMap(),
-    val categoryNames: List<String> = emptyList(),
-    val categoryCounts: Map<String, Int> = emptyMap(),
-    val libraryCount: Int = 0,
-    val traktWatchlistConnected: Boolean = false,
-    val traktWatchlistCount: Int = 0,
-    val traktTrendingCount: Int = 0,
-    val traktPopularCount: Int = 0,
-    val traktTrendingFailed: Boolean = false,
-    val traktPopularFailed: Boolean = false,
-    val showTraktTrendingMovies: Boolean = false,
-    val showTraktPopularMovies: Boolean = false,
-    val showTraktTrendingSeries: Boolean = false,
-    val showTraktPopularSeries: Boolean = false,
-    val favoriteCategoryName: String = "\u2605 Favorites",
-    val fullLibraryCategoryName: String = "__full_library__",
-    val libraryLensRows: Map<SeriesLibraryLens, List<Series>> = emptyMap(),
-    val selectedCategory: String? = null,
-    val selectedCategoryItems: List<Series> = emptyList(),
-    val selectedCategoryLoadedCount: Int = 0,
-    val selectedCategoryTotalCount: Int = 0,
-    val canLoadMoreSelectedCategory: Boolean = false,
-    val isLoadingSelectedCategory: Boolean = false,
-    val isLoadingMoreSelectedCategory: Boolean = false,
-    val selectedCategoryRawPageSize: Int = 0,
-    val searchQuery: String = "",
-    val selectedLibraryFilterType: LibraryFilterType = LibraryFilterType.ALL,
-    val selectedLibrarySortBy: LibrarySortBy = LibrarySortBy.LIBRARY,
-    val vodViewMode: VodViewMode = VodViewMode.MODERN,
-    val vodInfiniteScroll: Boolean = true,
-    val continueWatching: List<PlaybackHistory> = emptyList(),
-    val hasProviders: Boolean = false,
-    val hasActiveProvider: Boolean = false,
-    val isM3uProvider: Boolean = false,
-    val isLoading: Boolean = true,
-    val isLoadingPreviewRows: Boolean = false,
-    val hasMorePreviewRows: Boolean = false,
-    val parentalControlLevel: Int = 0,
-    val unlockedCategoryIds: Set<Long> = emptySet(),
-    val showDialog: Boolean = false,
-    val selectedSeriesForDialog: Series? = null,
-    val categories: List<Category> = emptyList(),
-    val providerCategories: List<Category> = emptyList(),
-    val pinnedCategoryIds: Set<Long> = emptySet(),
-    val dialogGroupMemberships: List<Long> = emptyList(),
-    val userMessage: String? = null,
-    val selectedCategoryForOptions: Category? = null,
-    val showRenameGroupDialog: Boolean = false,
-    val groupToRename: Category? = null,
-    val renameGroupError: String? = null,
-    val showDeleteGroupDialog: Boolean = false,
-    val groupToDelete: Category? = null,
-    val isReorderMode: Boolean = false,
-    val reorderCategory: Category? = null,
-    val filteredSeries: List<Series> = emptyList(),
-    val errorMessage: String? = null
-)
-
