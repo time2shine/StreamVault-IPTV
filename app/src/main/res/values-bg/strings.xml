@@ -342,9 +342,6 @@
     <string name="downloads_delete_confirm">Да се изтрие ли това изтегляне?</string>
     <string name="download_play_local">Възпроизведи</string>
     <string name="nav_vod">VOD</string>
-    <string name="torrent_playback_start_failed">Възпроизвеждането на торент не можа да започне. Опитайте отново.</string>
-    <string name="torrent_cache_capacity_reached">Поточното възпроизвеждане достигна лимита за временно съхранение. Изчистете кеша или освободете място и опитайте отново.</string>
-    <string name="torrent_storage_check_failed">Свободното място не можа да бъде проверено. Възпроизвеждането на торент не може да продължи безопасно.</string>
     <string name="nav_extensions">Разширения</string>
     <string name="nav_sports">Спорт</string>
     <string name="fork_catalog_sync_success">Библиотеката е обновена: Каналите и филмите са готови</string>

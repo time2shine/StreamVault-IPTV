@@ -7,7 +7,6 @@ import com.streamvault.feature.catalog.api.CatalogCastPlaybackEvent
 import com.streamvault.feature.catalog.api.CatalogCastPort
 import com.streamvault.feature.catalog.api.CatalogCastRequest
 import com.streamvault.feature.catalog.api.CatalogCastStartResult
-import com.streamvault.feature.catalog.api.CatalogDownloadStarter
 import com.streamvault.feature.catalog.api.CatalogMessage
 import com.streamvault.feature.catalog.api.CatalogStreamPreparer
 import com.streamvault.feature.catalog.api.CatalogUiEvent

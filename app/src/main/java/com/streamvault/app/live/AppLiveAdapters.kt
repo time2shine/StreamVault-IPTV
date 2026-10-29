@@ -1,6 +1,5 @@
 package com.streamvault.app.live
 
-import com.streamvault.app.plugins.StreamVaultPluginManager
 import com.streamvault.app.tvinput.TvInputChannelSyncManager
 import com.streamvault.data.preferences.PreferencesRepository
 import com.streamvault.domain.model.Channel
@@ -28,8 +27,8 @@ class AppLivePreviewStreamPreparer internal constructor(
     private val delegate: LivePreviewStreamPreparationDelegate,
 ) : LivePreviewStreamPreparer {
     @Inject
-    constructor(pluginManager: StreamVaultPluginManager) : this(
-        LivePreviewStreamPreparationDelegate(pluginManager::preparePlaybackStreamInfo),
+    constructor() : this(
+        LivePreviewStreamPreparationDelegate { streamInfo -> Result.success(streamInfo) },
     )
 
     override suspend fun prepare(streamInfo: StreamInfo): Result<StreamInfo> =

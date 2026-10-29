@@ -286,9 +286,6 @@
     <string name="download_play_local">Toista</string>
     <string name="nav_close_app">Sulje sovellus</string>
     <string name="nav_vod">VOD</string>
-    <string name="torrent_playback_start_failed">Torrentin toistoa ei voitu käynnistää. Yritä uudelleen.</string>
-    <string name="torrent_cache_capacity_reached">Torrentin toisto saavutti väliaikaisen tallennustilan rajan. Tyhjennä välimuisti tai vapauta tilaa ja yritä uudelleen.</string>
-    <string name="torrent_storage_check_failed">Vapaata tallennustilaa ei voitu tarkistaa. Torrentin toistoa ei voida jatkaa turvallisesti.</string>
     <string name="nav_extensions">Laajennukset</string>
     <string name="nav_sports">Urheilu</string>
     <string name="fork_catalog_sync_success">Kirjasto päivitetty: Kanavat ja elokuvat ovat valmiina</string>

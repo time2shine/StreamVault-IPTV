@@ -339,9 +339,6 @@
     <string name="downloads_delete_confirm">Избрисати ово преузимање?</string>
     <string name="download_play_local">Пусти</string>
     <string name="nav_vod">VOD</string>
-    <string name="torrent_playback_start_failed">Репродукција торента није могла да се покрене. Покушајте поново.</string>
-    <string name="torrent_cache_capacity_reached">Репродукција торента достигла је ограничење привременог складишта. Обришите кеш или ослободите простор па покушајте поново.</string>
-    <string name="torrent_storage_check_failed">Није могуће проверити доступан простор. Репродукција торента не може безбедно да се настави.</string>
     <string name="nav_extensions">Проширења</string>
     <string name="nav_sports">Спорт</string>
     <string name="fork_catalog_sync_success">Библиотека је ажурирана: Канали и филмови су спремни</string>

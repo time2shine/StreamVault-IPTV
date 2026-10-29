@@ -286,9 +286,6 @@
     <string name="m3u_episode_unresolved">Episodenummeret er ikke avklart – det vil forbli flagget for korrigering.</string>
     <string name="nav_vod">VOD</string>
     <string name="settings_drive_cancel_backup_choice_subtitle">Gå tilbake til Drive-sikkerhetskopihandlingene.</string>
-    <string name="torrent_playback_start_failed">Kunne ikke starte torrentavspillingen. Prøv igjen.</string>
-    <string name="torrent_cache_capacity_reached">Torrentavspillingen nådde grensen for midlertidig lagring. Tøm bufferen eller frigjør plass, og prøv igjen.</string>
-    <string name="torrent_storage_check_failed">Tilgjengelig lagringsplass kunne ikke kontrolleres. Torrentavspillingen kan ikke fortsette trygt.</string>
     <string name="nav_extensions">Utvidelser</string>
     <string name="nav_sports">Sport</string>
     <string name="fork_catalog_sync_success">Biblioteket er oppdatert: Kanaler og filmer er klare</string>

@@ -39,11 +39,5 @@ class Wp1CancellationPolicyTest {
         ).readText()
         assertWithMessage("Xtream compatibility fallback must preserve cancellation")
             .that(xtream).doesNotContain("runCatching { requestSeriesInfo(")
-
-        val plugins = root.resolve(
-            "app/src/main/java/com/streamvault/app/plugins/StreamVaultPluginManager.kt"
-        ).readText()
-        assertWithMessage("Plugin IPC must not use raw runCatching")
-            .that(plugins).doesNotContain("runCatching {\n            messengerClient.send(")
     }
 }

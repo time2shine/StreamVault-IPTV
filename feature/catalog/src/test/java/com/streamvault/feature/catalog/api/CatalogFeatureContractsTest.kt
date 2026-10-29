@@ -32,15 +32,12 @@ class CatalogFeatureContractsTest {
     fun `catalog ports accept app independent fakes`() {
         val platformHost = FakePlatformHost()
         val streamPreparer = FakeStreamPreparer()
-        val downloadStarter = FakeDownloadStarter()
         val castPort = FakeCastPort()
         val updatePort = FakeUpdatePort()
 
         platformHost.openCastRouteChooser()
-        downloadStarter.startDownload("download-1")
 
         assertThat(platformHost.openedChooser).isTrue()
-        assertThat(downloadStarter.startedIds).containsExactly("download-1")
         assertThat(streamPreparer).isInstanceOf(CatalogStreamPreparer::class.java)
         assertThat(castPort).isInstanceOf(CatalogCastPort::class.java)
         assertThat(updatePort).isInstanceOf(CatalogAppUpdatePort::class.java)

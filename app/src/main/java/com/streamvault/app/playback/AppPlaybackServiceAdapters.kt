@@ -1,6 +1,5 @@
 package com.streamvault.app.playback
 
-import com.streamvault.app.plugins.StreamVaultPluginManager
 import com.streamvault.app.tv.LauncherRecommendationsManager
 import com.streamvault.app.tv.WatchNextManager
 import com.streamvault.domain.model.PlaybackHistory
@@ -18,9 +17,7 @@ class StreamVaultPluginPlaybackServiceAdapter internal constructor(
     private val operations: StreamVaultPluginPlaybackOperations
 ) : PlaybackStreamPreparer, CastUrlRewriter {
     @Inject
-    constructor(pluginManager: StreamVaultPluginManager) : this(
-        StreamVaultPluginPlaybackManager(pluginManager)
-    )
+    constructor() : this(DefaultStreamVaultPluginPlaybackOperations)
 
     override suspend fun prepare(streamInfo: StreamInfo): Result<StreamInfo> =
         operations.preparePlaybackStreamInfo(streamInfo)
@@ -75,17 +72,13 @@ internal interface LauncherRecommendationsOperations {
     suspend fun refreshRecommendations()
 }
 
-private class StreamVaultPluginPlaybackManager(
-    private val pluginManager: StreamVaultPluginManager
-) : StreamVaultPluginPlaybackOperations {
+private object DefaultStreamVaultPluginPlaybackOperations : StreamVaultPluginPlaybackOperations {
     override suspend fun preparePlaybackStreamInfo(streamInfo: StreamInfo): Result<StreamInfo> =
-        pluginManager.preparePlaybackStreamInfo(streamInfo)
+        Result.success(streamInfo)
 
-    override fun stopPlayback(streamInfo: StreamInfo) =
-        pluginManager.stopPreparedPlayback(streamInfo)
+    override fun stopPlayback(streamInfo: StreamInfo) = Unit
 
-    override suspend fun rewriteCastUrl(request: CastMediaRequest): String? =
-        pluginManager.rewriteCastUrl(request)
+    override suspend fun rewriteCastUrl(request: CastMediaRequest): String? = null
 }
 
 private class WatchNextManagerOperations(

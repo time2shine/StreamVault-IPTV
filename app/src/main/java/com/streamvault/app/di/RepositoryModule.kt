@@ -41,12 +41,13 @@ import com.streamvault.domain.sports.provider.SportsScoreSourceSettings
 import com.streamvault.domain.sports.provider.SportsStandingsSourceSettings
 import com.streamvault.domain.sports.provider.SportsMetadataSourceSettings
 import com.streamvault.app.playback.AppPlayerPlaybackResolver
-import com.streamvault.app.plugins.StreamVaultPluginManager
+import com.streamvault.domain.provider.ProviderSource
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -191,7 +192,7 @@ abstract class RepositoryModule {
     abstract fun bindCredentialCrypto(impl: AndroidKeystoreCredentialCrypto): CredentialCrypto
 
     @Binds @Singleton
-    abstract fun bindProviderSourceRegistry(impl: StreamVaultPluginManager): ProviderSourceRegistry
+    abstract fun bindProviderSourceRegistry(impl: DefaultProviderSourceRegistry): ProviderSourceRegistry
 
     @Binds @Singleton
     abstract fun bindPlaybackObservationSink(impl: PlaybackObservationCoordinator): PlaybackObservationSink
@@ -220,4 +221,9 @@ abstract class RepositoryModule {
             listOf(xtream, stalker, m3u, jellyfin)
         )
     }
+}
+
+@Singleton
+class DefaultProviderSourceRegistry @Inject constructor() : ProviderSourceRegistry {
+    override suspend fun sources(): List<ProviderSource> = emptyList()
 }

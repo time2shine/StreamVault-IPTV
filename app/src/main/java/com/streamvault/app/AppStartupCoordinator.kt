@@ -4,7 +4,6 @@ import android.content.Context
 import android.os.Build
 import android.os.Trace
 import android.util.Log
-import com.streamvault.app.plugins.StreamVaultPluginManager
 import com.streamvault.app.tv.LauncherRecommendationsManager
 import com.streamvault.app.tv.WatchNextManager
 import com.streamvault.data.manager.PendingBackupRestoreCoordinator
@@ -57,7 +56,6 @@ internal class AppStartupCoordinator internal constructor(
     constructor(
         @ApplicationContext context: Context,
         startupWorkRegistry: Provider<StartupWorkRegistry>,
-        streamVaultPluginManager: Provider<StreamVaultPluginManager>,
         programReminderManager: Provider<ProgramReminderManager>,
         providerSyncLifecycle: Provider<ProviderSyncLifecycle>,
         pendingBackupRestoreCoordinator: Provider<PendingBackupRestoreCoordinator>,
@@ -70,9 +68,6 @@ internal class AppStartupCoordinator internal constructor(
             AppStartupTask("stale-timeshift-cleanup") {
                 TimeshiftDiskManager(context.applicationContext)
                     .cleanupStaleDirectories(activeSessionDir = null)
-            },
-            providerTask("plugin-provider-reconciliation", streamVaultPluginManager) {
-                it.reconcilePluginProviders()
             },
             providerTask("reminder-restoration", programReminderManager) {
                 it.restoreScheduledReminders()
