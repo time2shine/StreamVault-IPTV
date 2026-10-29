@@ -44,7 +44,7 @@ internal fun SourceTypeTabRow(
                 onClick = { if (!isEditing) onSelect(SourceType.XTREAM) }
             )
         }
-        if (!isEditing || sourceType == SourceType.STALKER) {
+        if (isEditing && sourceType == SourceType.STALKER) {
             TabButton(
                 text = androidx.compose.ui.res.stringResource(R.string.setup_stalker),
                 isSelected = sourceType == SourceType.STALKER,
@@ -65,7 +65,7 @@ internal fun SourceTypeTabRow(
                 onClick = { if (!isEditing) onSelect(SourceType.M3U_FILE) }
             )
         }
-        if (!isEditing || sourceType == SourceType.JELLYFIN) {
+        if (isEditing && sourceType == SourceType.JELLYFIN) {
             TabButton(
                 text = androidx.compose.ui.res.stringResource(R.string.setup_tab_jellyfin),
                 isSelected = sourceType == SourceType.JELLYFIN,

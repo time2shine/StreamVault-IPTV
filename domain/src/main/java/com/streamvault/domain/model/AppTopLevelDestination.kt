@@ -23,10 +23,8 @@ enum class AppTopLevelDestination(
             SPORTS,
             MOVIES,
             SERIES,
-            DOWNLOADS,
             GUIDE,
             SEARCH,
-            EXTENSIONS,
             SETTINGS
         )
 

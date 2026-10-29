@@ -60,7 +60,7 @@ internal fun SourceTypeSelectorPanel(
                     onClick = { onSelect(SourceType.XTREAM) }
                 )
             }
-            if (!isEditing || sourceType == SourceType.STALKER) {
+            if (isEditing && sourceType == SourceType.STALKER) {
                 SourceTypeCard(
                     title = androidx.compose.ui.res.stringResource(R.string.setup_stalker),
                     subtitle = androidx.compose.ui.res.stringResource(R.string.setup_info_stalker_body),
@@ -87,7 +87,7 @@ internal fun SourceTypeSelectorPanel(
                     onClick = { onSelect(SourceType.M3U_FILE) }
                 )
             }
-            if (!isEditing || sourceType == SourceType.JELLYFIN) {
+            if (isEditing && sourceType == SourceType.JELLYFIN) {
                 SourceTypeCard(
                     title = androidx.compose.ui.res.stringResource(R.string.setup_tab_jellyfin),
                     subtitle = "Jellyfin media server",

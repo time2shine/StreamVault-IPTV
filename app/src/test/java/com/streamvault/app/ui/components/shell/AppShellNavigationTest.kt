@@ -25,15 +25,11 @@ class AppShellNavigationTest {
                 Routes.SPORTS,
                 Routes.MOVIES,
                 Routes.SERIES,
-                Routes.DOWNLOADS,
                 Routes.EPG,
                 Routes.SEARCH,
-                Routes.PLUGINS,
                 Routes.SETTINGS
             )
             .inOrder()
-        assertThat(result.single { it.route == Routes.PLUGINS }.labelRes)
-            .isEqualTo(com.streamvault.app.R.string.nav_extensions)
     }
 
     @Test
