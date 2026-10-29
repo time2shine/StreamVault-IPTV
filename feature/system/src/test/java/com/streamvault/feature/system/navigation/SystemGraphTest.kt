@@ -8,8 +8,6 @@ class SystemGraphTest {
     fun systemGraphRouteSetPreservesExistingDestinations() {
         assertThat(systemGraphRoutes()).containsExactly(
             "welcome",
-            "downloads",
-            "plugins",
         ).inOrder()
     }
 }

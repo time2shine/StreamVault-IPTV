@@ -30,10 +30,4 @@ fun NavGraphBuilder.registerSystemGraph(
             },
         )
     }
-    composable(SystemRoutePatterns.DOWNLOADS) {
-        // Pruned
-    }
-    composable(SystemRoutePatterns.PLUGINS) {
-        // Pruned
-    }
 }

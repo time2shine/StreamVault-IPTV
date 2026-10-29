@@ -6,23 +6,26 @@ import org.junit.Test
 class AppTopLevelDestinationTest {
 
     @Test
-    fun `legacy plugin and addon navigation preferences migrate to extensions`() {
-        assertThat(AppTopLevelDestination.fromStorage("plugins"))
-            .isEqualTo(AppTopLevelDestination.EXTENSIONS)
-        assertThat(AppTopLevelDestination.fromStorage("ADDONS"))
-            .isEqualTo(AppTopLevelDestination.EXTENSIONS)
+    fun `purged dead endpoints return null from storage`() {
+        assertThat(AppTopLevelDestination.fromStorage("plugins")).isNull()
+        assertThat(AppTopLevelDestination.fromStorage("addons")).isNull()
+        assertThat(AppTopLevelDestination.fromStorage("downloads")).isNull()
+        assertThat(AppTopLevelDestination.fromStorage("extensions")).isNull()
     }
 
     @Test
-    fun `legacy plugin and addon entries normalize to one extensions destination`() {
+    fun `valid entries normalize and always include settings`() {
         assertThat(
             AppTopLevelDestination.normalizeForStorage(
                 listOf(
-                    AppTopLevelDestination.fromStorage("plugins")!!,
-                    AppTopLevelDestination.fromStorage("addons")!!
+                    AppTopLevelDestination.HOME,
+                    AppTopLevelDestination.LIVE_TV
                 )
             )
-        ).containsExactly(AppTopLevelDestination.EXTENSIONS, AppTopLevelDestination.SETTINGS)
-            .inOrder()
+        ).containsExactly(
+            AppTopLevelDestination.HOME,
+            AppTopLevelDestination.LIVE_TV,
+            AppTopLevelDestination.SETTINGS
+        ).inOrder()
     }
 }

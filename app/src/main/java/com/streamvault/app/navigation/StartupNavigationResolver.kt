@@ -140,8 +140,5 @@ private fun AppLandingDestination.toAppDestination(): AppDestination = when (thi
     AppLandingDestination.MOVIES -> AppDestination.Movies
     AppLandingDestination.SERIES -> AppDestination.Series
     AppLandingDestination.GUIDE -> AppDestination.Guide()
-    AppLandingDestination.DOWNLOADS -> AppDestination.Downloads
-    AppLandingDestination.PLUGINS -> AppDestination.Plugins
-    AppLandingDestination.ADDONS -> AppDestination.Addons
     AppLandingDestination.SETTINGS -> AppDestination.Settings()
 }

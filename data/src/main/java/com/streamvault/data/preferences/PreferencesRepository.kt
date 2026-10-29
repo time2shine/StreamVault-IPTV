@@ -3102,7 +3102,6 @@ class PreferencesRepository @Inject constructor(
             .split(',')
             .asSequence()
             .mapNotNull { token -> AppTopLevelDestination.fromStorage(token.trim()) }
-            .filterNot { it == AppTopLevelDestination.DOWNLOADS || it == AppTopLevelDestination.EXTENSIONS }
             .toList()
         return if (decoded.isEmpty()) {
             AppTopLevelDestination.defaultOrder

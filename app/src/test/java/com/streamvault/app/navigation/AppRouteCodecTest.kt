@@ -18,8 +18,6 @@ class AppRouteCodecTest {
                 "epg?categoryId=21&anchorTime=1700000000000&favoritesOnly=true",
             AppDestination.Search("night shift") to "search?query=night%20shift",
             AppDestination.Welcome to SystemRoutePatterns.WELCOME,
-            AppDestination.Downloads to SystemRoutePatterns.DOWNLOADS,
-            AppDestination.Plugins to SystemRoutePatterns.PLUGINS,
             AppDestination.ProviderSetup(7L, "content://playlist/1") to
                 "provider_setup?providerId=7&importUri=content%3A%2F%2Fplaylist%2F1"
         )
@@ -63,8 +61,6 @@ class AppRouteCodecTest {
     fun legacyExternalRoutesDecodeToTypedDestinations() {
         assertThat(AppRouteCodec.decodeLegacyExternalRoute("home"))
             .isEqualTo(AppDestination.Home)
-        assertThat(AppRouteCodec.decodeLegacyExternalRoute("plugins"))
-            .isEqualTo(AppDestination.Plugins)
         assertThat(
             AppRouteCodec.decodeLegacyExternalRoute(
                 "provider_setup?providerId=-1&importUri="

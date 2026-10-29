@@ -241,9 +241,7 @@ private fun AppTopLevelDestination.labelResId(): Int = when (this) {
     AppTopLevelDestination.SPORTS -> R.string.nav_sports
     AppTopLevelDestination.MOVIES -> R.string.nav_movies
     AppTopLevelDestination.SERIES -> R.string.nav_series
-    AppTopLevelDestination.DOWNLOADS -> R.string.nav_downloads
     AppTopLevelDestination.GUIDE -> R.string.nav_epg
     AppTopLevelDestination.SEARCH -> R.string.search_title
-    AppTopLevelDestination.EXTENSIONS -> R.string.nav_extensions
     AppTopLevelDestination.SETTINGS -> R.string.nav_settings
 }

@@ -7,7 +7,5 @@ class SystemRoutePatternsTest {
     @Test
     fun systemRoutesPreserveCompatibilityStrings() {
         assertThat(SystemRoutePatterns.WELCOME).isEqualTo("welcome")
-        assertThat(SystemRoutePatterns.DOWNLOADS).isEqualTo("downloads")
-        assertThat(SystemRoutePatterns.PLUGINS).isEqualTo("plugins")
     }
 }

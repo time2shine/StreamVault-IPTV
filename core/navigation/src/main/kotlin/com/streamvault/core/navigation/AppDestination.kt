@@ -10,7 +10,6 @@ sealed interface AppDestination : Serializable {
     data object Movies : AppDestination
     data object Series : AppDestination
     data object Vod : AppDestination
-    data object Downloads : AppDestination
     data class Guide(
         val categoryId: Long? = null,
         val anchorTimeMs: Long? = null,
@@ -20,8 +19,6 @@ sealed interface AppDestination : Serializable {
         val backupUri: String? = null,
         val openOpenSubtitlesSignIn: Boolean = false,
     ) : AppDestination
-    data object Plugins : AppDestination
-    data object Addons : AppDestination
     data class Search(val query: String? = null) : AppDestination
     data class ProviderSetup(
         val providerId: Long? = null,

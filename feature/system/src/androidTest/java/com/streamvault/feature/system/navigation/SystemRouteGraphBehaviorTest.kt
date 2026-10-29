@@ -23,7 +23,7 @@ class SystemRouteGraphBehaviorTest {
     val composeRule = createComposeRule()
 
     @Test
-    fun systemGraphRegistersWelcomeDownloadsAndPlugins() {
+    fun systemGraphRegistersWelcome() {
         lateinit var navController: TestNavHostController
 
         composeRule.setContent {
@@ -45,17 +45,8 @@ class SystemRouteGraphBehaviorTest {
         }
 
         composeRule.runOnIdle {
-            navController.navigate(SystemRoutePatterns.DOWNLOADS)
-            check(navController.currentBackStackEntry?.destination?.route == SystemRoutePatterns.DOWNLOADS)
+            check(navController.currentBackStackEntry?.destination?.route == SystemRoutePatterns.WELCOME)
         }
-        composeRule.waitForIdle()
-        composeRule.runOnIdle {
-            navController.navigate(SystemRoutePatterns.PLUGINS)
-            check(navController.currentBackStackEntry?.destination?.route == SystemRoutePatterns.PLUGINS)
-        }
-        composeRule.waitForIdle()
-
-        check(navController.currentBackStackEntry?.destination?.route == SystemRoutePatterns.PLUGINS)
     }
 
     private val testScaffold: SystemScaffoldContent = { _, _, _, _, _, content ->

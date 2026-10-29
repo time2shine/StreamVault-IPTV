@@ -239,15 +239,9 @@ class SystemPresentationGoldenTest {
 
     private val goldenScaffold: SystemScaffoldContent = { destination, title, subtitle, compactHeader, showScreenHeader, content ->
         CoreAppScreenScaffold(
-            currentDestinationId = when (destination) {
-                AppDestination.Downloads -> SystemRoutePatterns.DOWNLOADS
-                AppDestination.Plugins -> SystemRoutePatterns.PLUGINS
-                else -> "system"
-            },
+            currentDestinationId = "system",
             destinations = listOf(
                 UiDestination("home", "Home", Icons.Default.Home),
-                UiDestination(SystemRoutePatterns.DOWNLOADS, "Downloads", Icons.Default.Download),
-                UiDestination(SystemRoutePatterns.PLUGINS, "Plugins", Icons.Default.Info),
                 UiDestination("settings", "Settings", Icons.Default.Settings),
             ),
             onDestinationSelected = {},

@@ -19,13 +19,10 @@ internal object AppRoutePatterns {
     const val MOVIES = CatalogRoutePatterns.MOVIES
     const val SERIES = CatalogRoutePatterns.SERIES
     const val VOD = CatalogRoutePatterns.VOD
-    const val DOWNLOADS = SystemRoutePatterns.DOWNLOADS
     const val EPG = LiveRoutePatterns.EPG
     const val EPG_DESTINATION = LiveRoutePatterns.EPG_DESTINATION
     const val SETTINGS = "settings"
     const val SETTINGS_DESTINATION = "settings?backupUri={backupUri}&openOpenSubtitlesSignIn={openOpenSubtitlesSignIn}"
-    const val PLUGINS = SystemRoutePatterns.PLUGINS
-    const val ADDONS = "addons"
     const val PLAYER = PlaybackRoutePatterns.PLAYER
     const val SEARCH = CatalogRoutePatterns.SEARCH
     const val SEARCH_DESTINATION = CatalogRoutePatterns.SEARCH_DESTINATION
@@ -47,7 +44,6 @@ internal object AppRouteCodec {
         AppDestination.Movies -> AppRoutePatterns.MOVIES
         AppDestination.Series -> AppRoutePatterns.SERIES
         AppDestination.Vod -> AppRoutePatterns.VOD
-        AppDestination.Downloads -> AppRoutePatterns.DOWNLOADS
         is AppDestination.Guide -> {
             val categoryId = destination.categoryId ?: -1L
             val anchorTime = destination.anchorTimeMs ?: -1L
@@ -64,8 +60,6 @@ internal object AppRouteCodec {
         }.takeIf { it.isNotEmpty() }
             ?.joinToString(prefix = "${AppRoutePatterns.SETTINGS}?")
             ?: AppRoutePatterns.SETTINGS
-        AppDestination.Plugins -> AppRoutePatterns.PLUGINS
-        AppDestination.Addons -> AppRoutePatterns.ADDONS
         is AppDestination.Search -> destination.query?.takeIf(String::isNotBlank)?.let { query ->
             "${AppRoutePatterns.SEARCH}?query=${Uri.encode(query)}"
         } ?: AppRoutePatterns.SEARCH
@@ -109,14 +103,11 @@ internal object AppRouteCodec {
             path == AppRoutePatterns.MOVIES -> AppDestination.Movies
             path == AppRoutePatterns.SERIES -> AppDestination.Series
             path == AppRoutePatterns.VOD -> AppDestination.Vod
-            path == AppRoutePatterns.DOWNLOADS -> AppDestination.Downloads
             path == AppRoutePatterns.EPG -> decodeGuide(query)
             path == AppRoutePatterns.SETTINGS -> AppDestination.Settings(
                 backupUri = query["backupUri"]?.takeIf(String::isNotBlank),
                 openOpenSubtitlesSignIn = query["openOpenSubtitlesSignIn"]?.toBooleanStrictOrNull() ?: false,
             )
-            path == AppRoutePatterns.PLUGINS -> AppDestination.Plugins
-            path == AppRoutePatterns.ADDONS -> AppDestination.Addons
             path == AppRoutePatterns.PLAYER -> AppDestination.Player
             path == AppRoutePatterns.MULTI_VIEW -> AppDestination.MultiView
             path == AppRoutePatterns.SEARCH -> AppDestination.Search(
@@ -139,7 +130,6 @@ internal object AppRouteCodec {
     fun decodeLegacyExternalRoute(route: String): AppDestination? = decode(route)?.let { destination ->
         when (destination) {
             AppDestination.Home,
-            AppDestination.Plugins,
             is AppDestination.ProviderSetup,
             is AppDestination.MovieDetail,
             is AppDestination.SeriesDetail -> destination
@@ -198,13 +188,10 @@ internal object Routes {
     const val MOVIES = AppRoutePatterns.MOVIES
     const val SERIES = AppRoutePatterns.SERIES
     const val VOD = AppRoutePatterns.VOD
-    const val DOWNLOADS = AppRoutePatterns.DOWNLOADS
     const val EPG = AppRoutePatterns.EPG
     const val EPG_DESTINATION = AppRoutePatterns.EPG_DESTINATION
     const val SETTINGS = AppRoutePatterns.SETTINGS
     const val SETTINGS_DESTINATION = AppRoutePatterns.SETTINGS_DESTINATION
-    const val PLUGINS = AppRoutePatterns.PLUGINS
-    const val ADDONS = AppRoutePatterns.ADDONS
     const val PLAYER = AppRoutePatterns.PLAYER
     const val SEARCH = AppRoutePatterns.SEARCH
     const val SEARCH_DESTINATION = AppRoutePatterns.SEARCH_DESTINATION

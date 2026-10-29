@@ -6,7 +6,7 @@ import com.streamvault.core.ui.components.shell.UiDestination
 import com.streamvault.domain.model.AppTopLevelDestination
 import com.streamvault.domain.model.CatalogLayout
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Extension
+import androidx.compose.material.icons.filled.Home
 import org.junit.Test
 
 class AppShellNavigationTest {
@@ -33,13 +33,13 @@ class AppShellNavigationTest {
     }
 
     @Test
-    fun addonsRouteSelectsTheExtensionsNavigationItem() {
+    fun selectedNavigationDestinationIdReturnsCurrentRoute() {
         val destinations = listOf(
-            UiDestination(Routes.PLUGINS, "Extensions", Icons.Default.Extension)
+            UiDestination(Routes.HOME, "Home", Icons.Default.Home)
         )
 
-        assertThat(selectedNavigationDestinationId(Routes.ADDONS, destinations))
-            .isEqualTo(Routes.PLUGINS)
+        assertThat(selectedNavigationDestinationId(Routes.HOME, destinations))
+            .isEqualTo(Routes.HOME)
     }
 
     @Test

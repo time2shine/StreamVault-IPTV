@@ -95,14 +95,7 @@ fun AppScreenScaffold(
 internal fun selectedNavigationDestinationId(
     currentRoute: String,
     destinations: List<UiDestination>
-): String = if (
-    currentRoute.substringBefore('?') == Routes.ADDONS &&
-    destinations.any { destination -> destination.id == Routes.PLUGINS }
-) {
-    Routes.PLUGINS
-} else {
-    currentRoute
-}
+): String = currentRoute
 
 internal data class AppDestinationItem(
     val route: String,
@@ -154,9 +147,7 @@ private fun AppTopLevelDestination.toDestinationItem(): AppDestinationItem = whe
     AppTopLevelDestination.SPORTS -> AppDestinationItem(Routes.SPORTS, R.string.nav_sports, Icons.Default.SportsSoccer)
     AppTopLevelDestination.MOVIES -> AppDestinationItem(Routes.MOVIES, R.string.nav_movies, Icons.Default.Star)
     AppTopLevelDestination.SERIES -> AppDestinationItem(Routes.SERIES, R.string.nav_series, Icons.Default.Menu)
-    AppTopLevelDestination.DOWNLOADS -> AppDestinationItem(Routes.DOWNLOADS, R.string.nav_downloads, Icons.Default.Download)
     AppTopLevelDestination.GUIDE -> AppDestinationItem(Routes.EPG, R.string.nav_epg, Icons.Default.Info)
     AppTopLevelDestination.SEARCH -> AppDestinationItem(Routes.SEARCH, R.string.search_title, Icons.Default.Search)
-    AppTopLevelDestination.EXTENSIONS -> AppDestinationItem(Routes.PLUGINS, R.string.nav_extensions, Icons.Default.Extension)
     AppTopLevelDestination.SETTINGS -> AppDestinationItem(Routes.SETTINGS, R.string.nav_settings, Icons.Default.Settings)
 }
