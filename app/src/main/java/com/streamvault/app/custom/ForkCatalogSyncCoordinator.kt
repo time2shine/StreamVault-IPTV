@@ -7,7 +7,9 @@ import com.streamvault.domain.model.GuideSourcePolicy
 import com.streamvault.domain.model.LegacyProvider
 import com.streamvault.domain.model.ProviderType
 import com.streamvault.domain.model.Result
+import com.streamvault.domain.model.XmltvTimezonePolicy
 import com.streamvault.domain.repository.ChannelRepository
+import com.streamvault.domain.repository.EpgSourceRepository
 import com.streamvault.domain.repository.MovieRepository
 import com.streamvault.domain.repository.ProviderRepository
 import com.streamvault.domain.sync.AutomaticSyncActivity
@@ -36,7 +38,8 @@ class ForkCatalogSyncCoordinator @Inject constructor(
     private val providerRepository: ProviderRepository,
     private val channelRepository: ChannelRepository,
     private val movieRepository: MovieRepository,
-    private val validateAndAddProvider: ValidateAndAddProvider
+    private val validateAndAddProvider: ValidateAndAddProvider,
+    private val epgSourceRepository: EpgSourceRepository
 ) {
     companion object {
         private val logger: Logger = Logger.getLogger("ForkCatalogSyncCoordinator")
@@ -111,6 +114,7 @@ class ForkCatalogSyncCoordinator @Inject constructor(
             }
 
             val providerId = targetProvider.id
+            ensureDefaultEpgSource(providerId)
             val initialChannels = channelRepository.getChannelCount(providerId).first()
             val initialMovies = movieRepository.getLibraryCount(providerId).first()
 
@@ -187,6 +191,8 @@ class ForkCatalogSyncCoordinator @Inject constructor(
                 return
             }
 
+            ensureDefaultEpgSource(targetProvider.id)
+
             val now = System.currentTimeMillis()
             val lastDailySync = ForkPreferences.getLastDailySyncMillis(context)
             val isDailyDue = (lastDailySync == 0L || (now - lastDailySync) >= ForkConfig.DAILY_SYNC_INTERVAL_MILLIS)
@@ -228,6 +234,51 @@ class ForkCatalogSyncCoordinator @Inject constructor(
             logger.log(Level.SEVERE, "Exception during background catalog sync", e)
         } finally {
             isSyncRunning.set(false)
+        }
+    }
+
+    suspend fun ensureDefaultEpgSource(providerId: Long) {
+        try {
+            val sources = epgSourceRepository.getAllSources().first()
+            val existing = sources.firstOrNull { it.url == ForkConfig.DEFAULT_EPG_URL }
+            val sourceId = if (existing != null) {
+                existing.id
+            } else {
+                val result = epgSourceRepository.addSource(
+                    name = ForkConfig.DEFAULT_EPG_NAME,
+                    url = ForkConfig.DEFAULT_EPG_URL,
+                    timezonePolicy = XmltvTimezonePolicy.REQUIRE_OFFSET,
+                    timezoneId = null
+                )
+                when (result) {
+                    is Result.Success -> {
+                        logger.info("Successfully registered default EPG source: ${ForkConfig.DEFAULT_EPG_NAME} (id=${result.data.id})")
+                        result.data.id
+                    }
+                    is Result.Error -> {
+                        logger.warning("Failed to register default EPG source: ${result.message}")
+                        return
+                    }
+                    is Result.Loading -> return
+                }
+            }
+
+            // Ensure assigned to provider
+            val assignments = epgSourceRepository.getAssignmentsForProvider(providerId).first()
+            if (assignments.none { it.epgSourceId == sourceId }) {
+                epgSourceRepository.assignSourceToProvider(providerId, sourceId, priority = 0)
+                logger.info("Assigned default EPG source $sourceId to provider $providerId")
+            }
+
+            // Refresh source if never refreshed or older than DAILY_SYNC_INTERVAL_MILLIS
+            val source = epgSourceRepository.getSourceById(sourceId)
+            val now = System.currentTimeMillis()
+            if (source != null && (source.lastRefreshAt == 0L || (now - source.lastRefreshAt) >= ForkConfig.DAILY_SYNC_INTERVAL_MILLIS)) {
+                logger.info("Triggering background sync for default EPG source $sourceId")
+                epgSourceRepository.refreshSource(sourceId)
+            }
+        } catch (e: Exception) {
+            logger.log(Level.WARNING, "Error provisioning default EPG source", e)
         }
     }
 
