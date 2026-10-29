@@ -512,12 +512,6 @@ dependencies {
     implementation(libs.media3.ui)
     implementation(files("../player/libs/media3-decoder-ffmpeg-1.11.0.aar"))
 
-    // Built-in BitTorrent playback (native libraries cover the app's supported ABIs).
-    implementation(libs.libtorrent.core)
-    implementation(libs.libtorrent.android.arm)
-    implementation(libs.libtorrent.android.arm64)
-    implementation(libs.libtorrent.android.x86)
-    implementation(libs.libtorrent.android.x8664)
 
     // Room
     implementation(libs.room.runtime)
