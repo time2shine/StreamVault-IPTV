@@ -8,7 +8,6 @@ import com.streamvault.feature.playback.navigation.PlaybackRoutePatterns
 import com.streamvault.feature.live.navigation.LiveRoutePatterns
 import com.streamvault.feature.catalog.navigation.CatalogRoutePatterns
 import com.streamvault.feature.system.navigation.SystemRoutePatterns
-import com.streamvault.feature.stremio.navigation.StremioRoutePatterns
 import java.net.URLDecoder
 
 internal object AppRoutePatterns {
@@ -26,7 +25,7 @@ internal object AppRoutePatterns {
     const val SETTINGS = "settings"
     const val SETTINGS_DESTINATION = "settings?backupUri={backupUri}&openOpenSubtitlesSignIn={openOpenSubtitlesSignIn}"
     const val PLUGINS = SystemRoutePatterns.PLUGINS
-    const val ADDONS = StremioRoutePatterns.ADDONS
+    const val ADDONS = "addons"
     const val PLAYER = PlaybackRoutePatterns.PLAYER
     const val SEARCH = CatalogRoutePatterns.SEARCH
     const val SEARCH_DESTINATION = CatalogRoutePatterns.SEARCH_DESTINATION

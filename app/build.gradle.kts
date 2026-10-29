@@ -483,7 +483,6 @@ dependencies {
     implementation(project(":feature:live"))
     implementation(project(":feature:catalog"))
     implementation(project(":feature:system"))
-    implementation(project(":feature:stremio"))
     implementation(libs.profileinstaller)
     baselineProfile(project(":benchmark"))
 

@@ -7,7 +7,6 @@ import com.streamvault.core.navigation.AppDestination
 import com.streamvault.core.navigation.NavigationActions
 import com.streamvault.core.navigation.NavigationOptions
 import com.streamvault.feature.system.api.SystemScaffoldContent
-import com.streamvault.feature.system.presentation.plugins.PluginsScreen
 import com.streamvault.feature.system.presentation.welcome.WelcomeScreen
 
 fun NavGraphBuilder.registerSystemGraph(
@@ -35,9 +34,6 @@ fun NavGraphBuilder.registerSystemGraph(
         // Pruned
     }
     composable(SystemRoutePatterns.PLUGINS) {
-        PluginsScreen(
-            scaffold = scaffold,
-            onNavigateToStremioAddons = { onTopLevelDestinationRequested(AppDestination.Addons) }
-        )
+        // Pruned
     }
 }
