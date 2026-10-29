@@ -172,7 +172,6 @@ fun MovieDetailScreen(
                         Result.Loading -> null
                     }
                 },
-                onDownload = viewModel::downloadMovie,
                 onCast = viewModel::castMovie,
                 onToggleFavorite = viewModel::toggleFavorite,
                 onSelectVariant = viewModel::selectMovieVariant,
@@ -214,7 +213,6 @@ private fun MovieDetailContent(
     onRateOnTrakt: () -> Unit,
     onPlay: () -> Unit,
     onCopyUrl: suspend () -> String?,
-    onDownload: () -> Unit,
     onCast: () -> Unit,
     onToggleFavorite: () -> Unit,
     onSelectVariant: (Long) -> Unit,
@@ -226,7 +224,6 @@ private fun MovieDetailContent(
     val coroutineScope = rememberCoroutineScope()
     val isTelevisionDevice = rememberIsTelevisionDevice()
     val playButtonFocusRequester = remember { FocusRequester() }
-    val onDownload: () -> Unit = viewModel::downloadMovie
 
     LaunchedEffect(movie.id) {
         playButtonFocusRequester.requestFocusSafely(
@@ -311,7 +308,6 @@ private fun MovieDetailContent(
                                     copyStreamUrlToClipboard(context, onCopyUrl())
                                 }
                             },
-                            onDownload = onDownload,
                             onCast = onCast,
                             onToggleFavorite = onToggleFavorite,
                             onSelectVariant = onSelectVariant,
@@ -344,7 +340,6 @@ private fun MovieDetailContent(
                                     copyStreamUrlToClipboard(context, onCopyUrl())
                                 }
                             },
-                            onDownload = onDownload,
                             onCast = onCast,
                             onToggleFavorite = onToggleFavorite,
                             onSelectVariant = onSelectVariant,
@@ -483,7 +478,6 @@ private fun MovieDetailHeroText(
     isLoadingExternalRatings: Boolean,
     onPlay: () -> Unit,
     onCopyUrl: () -> Unit,
-    onDownload: () -> Unit,
     onCast: () -> Unit,
     onToggleFavorite: () -> Unit,
     onSelectVariant: (Long) -> Unit,
@@ -556,7 +550,6 @@ private fun MovieDetailHeroText(
                 primary = true
             ) }
             item { DetailActionButton(stringResource(R.string.stream_url_copy), onCopyUrl) }
-            item { DetailActionButton(stringResource(R.string.download_button_label), onDownload) }
             item { DetailActionButton(
                 stringResource(if (isCasting) R.string.cast_launching else R.string.cast_button_label),
                 onCast, enabled = !isCasting

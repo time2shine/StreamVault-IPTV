@@ -7,7 +7,6 @@ import com.streamvault.core.navigation.AppDestination
 import com.streamvault.core.navigation.NavigationActions
 import com.streamvault.core.navigation.NavigationOptions
 import com.streamvault.feature.system.api.SystemScaffoldContent
-import com.streamvault.feature.system.presentation.downloads.DownloadsScreen
 import com.streamvault.feature.system.presentation.plugins.PluginsScreen
 import com.streamvault.feature.system.presentation.welcome.WelcomeScreen
 
@@ -33,7 +32,7 @@ fun NavGraphBuilder.registerSystemGraph(
         )
     }
     composable(SystemRoutePatterns.DOWNLOADS) {
-        DownloadsScreen(scaffold = scaffold)
+        // Pruned
     }
     composable(SystemRoutePatterns.PLUGINS) {
         PluginsScreen(

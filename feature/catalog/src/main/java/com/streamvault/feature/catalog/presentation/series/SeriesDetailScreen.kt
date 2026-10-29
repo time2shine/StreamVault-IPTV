@@ -173,9 +173,6 @@ fun SeriesDetailScreen(
                 Result.Loading -> null
             }
         },
-        onDownloadEpisode = { episode ->
-            viewModel.downloadEpisode(episode)
-        },
         onCastResumeEpisode = viewModel::castResumeEpisode,
         onCastEpisode = viewModel::castEpisode,
         onBack = onBack
@@ -243,7 +240,6 @@ private fun SeriesDetailContent(
     onEpisodeClick: (Episode) -> Unit,
     onResumeClick: (Episode) -> Unit,
     onCopyEpisodeUrl: suspend (Episode) -> String?,
-    onDownloadEpisode: (Episode) -> Unit,
     onCastResumeEpisode: () -> Unit,
     onCastEpisode: (Episode) -> Unit,
     onBack: () -> Unit
@@ -579,7 +575,6 @@ private fun SeriesDetailContent(
                             fallbackImageUrl = fallbackCover,
                             onClick = { onEpisodeClick(episode) },
                             onCopyUrl = { copyEpisodeUrl(episode) },
-                            onDownload = { onDownloadEpisode(episode) },
                             onCast = { onCastEpisode(episode) },
                             isCasting = isCasting
                         )
@@ -795,7 +790,6 @@ fun EpisodeItem(
     fallbackImageUrl: String? = null,
     onClick: () -> Unit,
     onCopyUrl: () -> Unit,
-    onDownload: () -> Unit,
     onCast: () -> Unit,
     isCasting: Boolean
 ) {
@@ -828,8 +822,6 @@ fun EpisodeItem(
             modifier = Modifier.width(140.dp),
             verticalArrangement = Arrangement.spacedBy(7.dp)
         ) {
-            DetailActionButton(stringResource(R.string.download_button_label), onDownload,
-                modifier = Modifier.fillMaxWidth(), compact = true)
             DetailActionButton(stringResource(R.string.stream_url_copy), onCopyUrl,
                 modifier = Modifier.fillMaxWidth(), compact = true)
             DetailActionButton(
