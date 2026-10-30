@@ -1,6 +1,8 @@
 package com.streamvault.core.ui.image
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,6 +36,8 @@ fun ChannelLogoBadge(
     shape: Shape = RoundedCornerShape(12.dp),
     backgroundColor: Color = AppColors.SurfaceEmphasis,
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    contentScale: ContentScale = ContentScale.Fit,
+    border: BorderStroke? = null,
     textStyle: TextStyle = MaterialTheme.typography.titleMedium,
     textColor: Color = AppColors.TextSecondary
 ) {
@@ -50,7 +54,7 @@ fun ChannelLogoBadge(
             AsyncImage(
                 model = model,
                 contentDescription = channelName,
-                contentScale = ContentScale.Fit,
+                contentScale = contentScale,
                 onLoading = { showFallback = true },
                 onError = { showFallback = true },
                 onSuccess = { showFallback = false },
@@ -69,7 +73,7 @@ fun ChannelLogoBadge(
                 AsyncImage(
                     model = model,
                     contentDescription = channelName,
-                    contentScale = ContentScale.Fit,
+                    contentScale = contentScale,
                     onLoading = { showFallback = true },
                     onError = { showFallback = true },
                     onSuccess = { showFallback = false },
@@ -78,6 +82,13 @@ fun ChannelLogoBadge(
                         .padding(contentPadding)
                 )
             }
+        }
+        if (border != null) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .border(border, shape)
+            )
         }
     }
 }

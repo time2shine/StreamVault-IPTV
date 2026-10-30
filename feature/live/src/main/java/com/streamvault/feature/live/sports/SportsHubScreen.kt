@@ -58,6 +58,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -627,6 +628,8 @@ private fun SportsFixture(event: SportsEvent, featured: Boolean, modifier: Modif
                         logoUrl = logo,
                         modifier = Modifier.size(if (featured) 34.dp else 26.dp),
                         shape = CircleShape,
+                        contentScale = ContentScale.Crop,
+                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.22f)),
                         backgroundColor = BrowseColors.Brand.copy(alpha = 0.14f),
                     )
                     Text(competitor.displayName, fontSize = if (featured) 18.sp else 14.sp,
@@ -960,6 +963,8 @@ private fun SportsExtraDetailsContent(details: LoadedSportsEventExtraDetails) {
                     logoUrl = item.artwork.uri.toString(),
                     modifier = Modifier.size(46.dp),
                     shape = CircleShape,
+                    contentScale = ContentScale.Crop,
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.22f)),
                 )
             }
         }
