@@ -7,6 +7,7 @@ import com.streamvault.core.ui.layout.AdaptiveRow
 import com.streamvault.core.ui.layout.isPortraitLayout
 
 import android.text.format.DateUtils
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -73,6 +74,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.tv.material3.Border
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
@@ -411,15 +413,20 @@ private fun SportsFilterButton(
 ) {
     TvButton(
         onClick = onClick,
-        modifier = Modifier.height(30.dp).semantics { this.selected = selected },
-        scale = ButtonDefaults.scale(focusedScale = 1f),
+        modifier = Modifier.height(32.dp).semantics { this.selected = selected },
+        shape = ButtonDefaults.shape(RoundedCornerShape(16.dp)),
+        scale = ButtonDefaults.scale(focusedScale = 1.04f),
         colors = ButtonDefaults.colors(
-            containerColor = if (selected) BrowseColors.Brand.copy(alpha = 0.20f) else Color.Transparent,
+            containerColor = if (selected) BrowseColors.Brand.copy(alpha = 0.22f) else Color.Transparent,
             contentColor = if (selected) BrowseColors.BrandStrong else BrowseColors.TextSecondary,
             focusedContainerColor = BrowseColors.BrandStrong,
             focusedContentColor = contentOnColor(BrowseColors.BrandStrong),
         ),
-        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp),
+        border = ButtonDefaults.border(
+            border = Border(BorderStroke(1.dp, if (selected) BrowseColors.Brand.copy(alpha = 0.45f) else Color.Transparent)),
+            focusedBorder = Border(BorderStroke(2.dp, BrowseColors.Focus)),
+        ),
+        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp),
     ) {
         if (selected) {
             Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(13.dp))
@@ -439,9 +446,9 @@ private fun FeaturedSportsEvent(
 ) {
     if (isPortraitLayout()) {
         Column(
-            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
-                .background(Brush.horizontalGradient(listOf(BrowseColors.SurfaceEmphasis, BrowseColors.Surface)))
-                .border(1.dp, BrowseColors.Outline, RoundedCornerShape(12.dp)).padding(16.dp),
+            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
+                .background(Brush.horizontalGradient(listOf(Color(0xFF14243B), Color(0xFF0F1A2C))))
+                .border(1.dp, BrowseColors.Outline, RoundedCornerShape(14.dp)).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             EventEyebrow(event, isLive)
@@ -453,7 +460,7 @@ private fun FeaturedSportsEvent(
                 event.broadcastsForPresentation().firstOrNull()?.let { broadcast ->
                     SportsChannelButton(channel = broadcast.channel, compact = true, onClick = { onPlayBroadcast(broadcast) })
                 }
-                TvButton(onClick = { onShowDetails(event) }) {
+                TvButton(onClick = { onShowDetails(event) }, shape = ButtonDefaults.shape(RoundedCornerShape(18.dp))) {
                     Text(stringResource(R.string.epg_program_details_show), fontSize = 12.sp)
                 }
             }
@@ -463,10 +470,11 @@ private fun FeaturedSportsEvent(
         return
     }
     Row(
-        modifier = Modifier.fillMaxWidth().height(180.dp + 18.dp * event.attributionCredits.sumOf { it.lineCount })
-            .clip(RoundedCornerShape(12.dp))
-            .background(Brush.horizontalGradient(listOf(BrowseColors.SurfaceEmphasis, BrowseColors.Surface)))
-            .border(1.dp, BrowseColors.Outline, RoundedCornerShape(12.dp))
+        modifier = Modifier.fillMaxWidth()
+            .height(188.dp + 18.dp * event.attributionCredits.sumOf { it.lineCount })
+            .clip(RoundedCornerShape(14.dp))
+            .background(Brush.horizontalGradient(listOf(Color(0xFF132238), Color(0xFF0F1A2A), Color(0xFF0A101A))))
+            .border(1.dp, Color(0xFF1F3554), RoundedCornerShape(14.dp))
             .padding(18.dp),
         horizontalArrangement = Arrangement.spacedBy(24.dp),
     ) {
@@ -476,18 +484,19 @@ private fun FeaturedSportsEvent(
             Text(formatEventTime(event, showDate), fontSize = 12.sp, color = BrowseColors.TextSecondary,
                 maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
-        Box(Modifier.width(1.dp).fillMaxHeight().background(BrowseColors.Outline))
+        Box(Modifier.width(1.dp).fillMaxHeight().background(Color(0xFF1F3554)))
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(sportsDescriptionForPresentation(event.description).ifBlank { event.title }, fontSize = 12.sp,
                 color = BrowseColors.TextSecondary, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Spacer(Modifier.weight(1f))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                 event.broadcastsForPresentation().firstOrNull()?.let { broadcast ->
                     SportsChannelButton(channel = broadcast.channel, compact = true,
                         modifier = Modifier.weight(1f), onClick = { onPlayBroadcast(broadcast) })
                 }
                 TvButton(onClick = { onShowDetails(event) }, modifier = Modifier.height(36.dp),
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)) {
+                    shape = ButtonDefaults.shape(RoundedCornerShape(18.dp)),
+                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp)) {
                     Text(stringResource(R.string.epg_program_details_show), fontSize = 12.sp)
                 }
             }
@@ -615,7 +624,7 @@ private fun SportsFixture(event: SportsEvent, featured: Boolean, modifier: Modif
                     ChannelLogoBadge(
                         channelName = competitor.displayName,
                         logoUrl = competitor.logoUrl,
-                        modifier = Modifier.size(if (featured) 32.dp else 26.dp),
+                        modifier = Modifier.size(if (featured) 34.dp else 26.dp),
                         shape = CircleShape,
                         backgroundColor = BrowseColors.Brand.copy(alpha = 0.14f),
                     )
@@ -631,7 +640,7 @@ private fun SportsFixture(event: SportsEvent, featured: Boolean, modifier: Modif
                             color = if (event.provenance.score?.isStale == true) {
                                 BrowseColors.TextTertiary
                             } else {
-                                BrowseColors.TextPrimary
+                                BrowseColors.BrandStrong
                             },
                             maxLines = 1,
                         )
@@ -660,20 +669,66 @@ private fun SportsEventCard(
 ) {
     TvClickableSurface(
         onClick = { onShowDetails(event) },
-        modifier = Modifier.width(244.dp).height(172.dp + 18.dp * attributionLines),
-        shape = ClickableSurfaceDefaults.shape(RoundedCornerShape(10.dp)),
-        scale = ClickableSurfaceDefaults.scale(focusedScale = 1.02f),
+        modifier = Modifier.width(260.dp).height(176.dp + 18.dp * attributionLines),
+        shape = ClickableSurfaceDefaults.shape(RoundedCornerShape(12.dp)),
+        scale = ClickableSurfaceDefaults.scale(focusedScale = 1.04f),
+        colors = ClickableSurfaceDefaults.colors(
+            containerColor = Color(0xFF131D2E),
+            focusedContainerColor = Color(0xFF182842),
+            contentColor = BrowseColors.TextPrimary,
+            focusedContentColor = BrowseColors.TextPrimary,
+        ),
+        border = ClickableSurfaceDefaults.border(
+            border = Border(BorderStroke(1.dp, BrowseColors.Outline.copy(alpha = 0.5f))),
+            focusedBorder = Border(BorderStroke(2.dp, BrowseColors.Focus)),
+        ),
     ) {
-        Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Brush.verticalGradient(listOf(Color(0xFF172438), Color(0xFF0F1724))))
+                .padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             EventEyebrow(event, isLive)
             SportsFixture(event, featured = false, modifier = Modifier.weight(1f))
-            Text(formatEventTime(event, showDate), fontSize = 11.sp,
-                color = BrowseColors.TextSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                event.broadcastsForPresentation().firstOrNull()?.channel?.let { channel ->
-                    ChannelLogoBadge(channelName = channel.name, logoUrl = channel.logoUrl, modifier = Modifier.size(18.dp))
-                    Text(channel.name, modifier = Modifier.weight(1f), fontSize = 10.sp,
-                        color = BrowseColors.TextTertiary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(
+                formatEventTime(event, showDate),
+                fontSize = 11.sp,
+                color = BrowseColors.TextSecondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            val broadcasts = event.broadcastsForPresentation()
+            val primaryChannel = broadcasts.firstOrNull()?.channel
+            if (primaryChannel != null) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(Color(0xFF0B111C).copy(alpha = 0.7f))
+                        .padding(horizontal = 6.dp, vertical = 3.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    ChannelLogoBadge(channelName = primaryChannel.name, logoUrl = primaryChannel.logoUrl, modifier = Modifier.size(16.dp))
+                    Text(
+                        primaryChannel.name,
+                        modifier = Modifier.weight(1f),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = BrowseColors.TextSecondary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    if (broadcasts.size > 1) {
+                        Text(
+                            "+${broadcasts.size - 1}",
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = BrowseColors.BrandStrong
+                        )
+                    }
                 }
             }
         }
@@ -1227,18 +1282,27 @@ private fun SportsManualChannelPickerDialog(
 
 @Composable
 private fun LiveBadge() {
-    Box(
+    Row(
         modifier = Modifier
-            .clip(CircleShape)
-            .background(BrowseColors.Live.copy(alpha = 0.18f))
-            .padding(horizontal = 7.dp, vertical = 3.dp),
+            .clip(RoundedCornerShape(6.dp))
+            .background(Color(0xFFE50914).copy(alpha = 0.22f))
+            .border(1.dp, Color(0xFFE50914).copy(alpha = 0.6f), RoundedCornerShape(6.dp))
+            .padding(horizontal = 7.dp, vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
+        Box(
+            modifier = Modifier
+                .size(6.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFE50914))
+        )
         Text(
             text = stringResource(R.string.live_sports_live_badge),
             fontSize = 9.sp,
-            color = BrowseColors.Live,
+            color = Color.White,
             fontWeight = FontWeight.Bold,
-            letterSpacing = 0.7.sp,
+            letterSpacing = 0.6.sp,
         )
     }
 }
