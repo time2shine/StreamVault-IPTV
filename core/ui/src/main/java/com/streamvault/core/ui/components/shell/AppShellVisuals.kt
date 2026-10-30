@@ -61,6 +61,7 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -303,24 +304,26 @@ private fun TopNavigationBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
-                .padding(horizontal = 10.dp),
+                .padding(horizontal = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(3.dp)
         ) {
             Text(
                 text = "StreamVault",
-                style = MaterialTheme.typography.titleSmall.copy(letterSpacing = (-0.4).sp),
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = (-0.4).sp
+                ),
                 color = BrowseColors.TextPrimary,
                 modifier = Modifier.wrapContentWidth(Alignment.Start)
             )
-            Spacer(modifier = Modifier.width(24.dp))
+            Spacer(modifier = Modifier.width(6.dp))
             Row(
                 modifier = Modifier
                     .weight(1f)
                     .horizontalScroll(scrollState)
-                    .padding(horizontal = 12.dp)
                     .focusRestorer(focusRequesters[activeItem?.id] ?: FocusRequester.Default),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 destinations.forEach { destination ->
                     val requester = focusRequesters.getOrPut(destination.id) { FocusRequester() }
@@ -338,7 +341,7 @@ private fun TopNavigationBar(
             }
             if (actions != null) {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(3.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     content = actions
                 )
@@ -372,7 +375,7 @@ fun AppTopBarCloseAction(
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ExitToApp,
             contentDescription = contentDescription,
-            modifier = Modifier.size(18.dp)
+            modifier = Modifier.size(19.dp)
         )
     }
 }
@@ -419,8 +422,8 @@ private fun TopNavigationButton(
         shape = ClickableSurfaceDefaults.shape(BrowseShapes.Control),
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1f),
         colors = ClickableSurfaceDefaults.colors(
-            containerColor = if (selected) BrowseColors.Brand.copy(alpha = 0.12f) else Color.Transparent,
-            focusedContainerColor = BrowseColors.Brand.copy(alpha = 0.18f)
+            containerColor = if (selected) BrowseColors.Brand.copy(alpha = 0.16f) else Color.Transparent,
+            focusedContainerColor = BrowseColors.Brand.copy(alpha = 0.22f)
         ),
         border = ClickableSurfaceDefaults.border(
             focusedBorder = Border(
@@ -431,20 +434,22 @@ private fun TopNavigationButton(
     ) {
         Row(
             modifier = Modifier
-                .then(if (selected) Modifier.border(1.dp, BrowseColors.Brand.copy(alpha = 0.28f), BrowseShapes.Control) else Modifier)
-                .padding(horizontal = 8.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                .then(if (selected) Modifier.border(1.dp, BrowseColors.Brand.copy(alpha = 0.35f), BrowseShapes.Control) else Modifier)
+                .padding(horizontal = 7.dp, vertical = 7.dp),
+            horizontalArrangement = Arrangement.spacedBy(3.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 imageVector = destination.icon,
                 contentDescription = destination.label,
                 tint = if (selected) BrowseColors.Brand else BrowseColors.TextSecondary,
-                modifier = Modifier.size(14.dp)
+                modifier = Modifier.size(16.dp)
             )
             Text(
                 text = destination.label,
-                style = MaterialTheme.typography.labelSmall,
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
+                ),
                 color = if (selected) BrowseColors.TextPrimary else BrowseColors.TextSecondary
             )
         }
