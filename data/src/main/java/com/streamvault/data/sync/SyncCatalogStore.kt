@@ -27,6 +27,7 @@ import java.security.MessageDigest
 import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 import kotlin.random.Random
 
 internal class SyncCatalogStore(
@@ -1023,13 +1024,16 @@ internal class SyncCatalogStore(
             .forEach { item ->
                 batch.add(stageBuilder(item))
                 if (batch.size >= STAGE_BATCH_SIZE) {
-                    insert(batch)
+                    insert(batch.toList())
                     batch.clear()
+                    yield()
                 }
             }
 
         if (batch.isNotEmpty()) {
-            insert(batch)
+            insert(batch.toList())
+            batch.clear()
+            yield()
         }
 
         return StagingResult(acceptedCount = bestItems.size, overflowed = overflowed)
@@ -1039,9 +1043,12 @@ internal class SyncCatalogStore(
         rows: List<T>,
         insert: suspend (List<T>) -> Unit
     ) {
-        rows.chunked(STAGE_BATCH_SIZE).forEach { chunk ->
+        for (i in rows.indices step STAGE_BATCH_SIZE) {
+            val end = minOf(i + STAGE_BATCH_SIZE, rows.size)
+            val chunk = rows.subList(i, end)
             if (chunk.isNotEmpty()) {
                 insert(chunk)
+                yield()
             }
         }
     }
@@ -1051,9 +1058,12 @@ internal class SyncCatalogStore(
         insert: suspend (List<T>) -> List<Long>
     ): Int {
         var insertedCount = 0
-        rows.chunked(STAGE_BATCH_SIZE).forEach { chunk ->
+        for (i in rows.indices step STAGE_BATCH_SIZE) {
+            val end = minOf(i + STAGE_BATCH_SIZE, rows.size)
+            val chunk = rows.subList(i, end)
             if (chunk.isNotEmpty()) {
                 insertedCount += insert(chunk).count { rowId -> rowId != -1L }
+                yield()
             }
         }
         return insertedCount

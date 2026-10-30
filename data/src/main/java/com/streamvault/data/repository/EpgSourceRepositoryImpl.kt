@@ -50,6 +50,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import com.streamvault.domain.util.KeyedMutexRegistry
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.FilterInputStream
@@ -404,8 +405,10 @@ class EpgSourceRepositoryImpl @Inject constructor(
                                 )
                                 channelCount++
                                 if (channelBatch.size >= CHANNEL_BATCH_SIZE) {
-                                    epgChannelDao.insertAll(channelBatch.toList())
+                                    val chunk = channelBatch.toList()
                                     channelBatch.clear()
+                                    epgChannelDao.insertAll(chunk)
+                                    yield()
                                 }
                             },
                             onProgramme = { programme ->
@@ -427,8 +430,10 @@ class EpgSourceRepositoryImpl @Inject constructor(
                                 )
                                 programmeCount++
                                 if (programmeBatch.size >= PROGRAMME_BATCH_SIZE) {
-                                    epgProgrammeDao.insertAll(programmeBatch.toList())
+                                    val chunk = programmeBatch.toList()
                                     programmeBatch.clear()
+                                    epgProgrammeDao.insertAll(chunk)
+                                    yield()
                                 }
                             }
                         )
@@ -437,10 +442,16 @@ class EpgSourceRepositoryImpl @Inject constructor(
 
                 // Flush remaining staging batches
                 if (channelBatch.isNotEmpty()) {
-                    epgChannelDao.insertAll(channelBatch.toList())
+                    val chunk = channelBatch.toList()
+                    channelBatch.clear()
+                    epgChannelDao.insertAll(chunk)
+                    yield()
                 }
                 if (programmeBatch.isNotEmpty()) {
-                    epgProgrammeDao.insertAll(programmeBatch.toList())
+                    val chunk = programmeBatch.toList()
+                    programmeBatch.clear()
+                    epgProgrammeDao.insertAll(chunk)
+                    yield()
                 }
 
                 // Atomically swap staging data into the real source ID

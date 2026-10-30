@@ -25,6 +25,7 @@ import com.streamvault.domain.sync.Section
 import com.streamvault.domain.sync.SyncProgress
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -38,6 +39,7 @@ private const val M3U_PROGRESS_INTERVAL = 5_000
 private const val M3U_SERIES_RECONCILIATION_PAGE_SIZE = 2_048
 private const val M3U_MAX_SERIES_CATEGORY_QUERY_IDS = 900
 private const val M3U_IMPORTER_TAG = "SyncManagerM3u"
+private const val M3U_DEFAULT_BATCH_SIZE = 500
 private val WHITESPACE_REGEX = Regex("\\s+")
 
 internal class SyncManagerM3uImporter(
@@ -57,7 +59,7 @@ internal class SyncManagerM3uImporter(
         onProgress: ((String) -> Unit)?,
         includeLive: Boolean = true,
         includeMovies: Boolean = true,
-        batchSize: Int = 1000,
+        batchSize: Int = M3U_DEFAULT_BATCH_SIZE,
         afterCatalogApply: suspend () -> Unit = {}
     ): M3uImportStats {
         UrlSecurityPolicy.validatePlaylistSourceUrl(provider.m3uUrl.ifBlank { provider.serverUrl })?.let { message ->
@@ -550,6 +552,7 @@ internal class SyncManagerM3uImporter(
         if (batch.isEmpty()) return 0
         val insertedCount = syncCatalogStore.stageM3uChannelBatch(providerId, sessionId, batch)
         batch.clear()
+        yield()
         return insertedCount
     }
 
@@ -557,6 +560,7 @@ internal class SyncManagerM3uImporter(
         if (batch.isEmpty()) return 0
         val insertedCount = syncCatalogStore.stageM3uMovieBatch(providerId, sessionId, batch)
         batch.clear()
+        yield()
         return insertedCount
     }
 

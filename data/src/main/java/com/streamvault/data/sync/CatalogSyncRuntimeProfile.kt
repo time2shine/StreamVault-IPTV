@@ -81,8 +81,10 @@ internal data class CatalogSyncRuntimeProfile(
         fun from(context: Context): CatalogSyncRuntimeProfile {
             val snapshot = SyncDeviceSnapshot.from(context)
             val detectedTier = when {
-                snapshot.isLowRamDevice || snapshot.memoryClassMb <= LOW_MEMORY_CLASS_MB -> DeviceSyncTier.LOW
-                snapshot.memoryClassMb <= MID_MEMORY_CLASS_MB -> DeviceSyncTier.MID
+                snapshot.isLowRamDevice || snapshot.memoryClassMb <= LOW_MEMORY_CLASS_MB ||
+                    (snapshot.isTelevision && snapshot.memoryClassMb <= TV_LOW_MEMORY_CLASS_MB) -> DeviceSyncTier.LOW
+                snapshot.memoryClassMb <= MID_MEMORY_CLASS_MB ||
+                    (snapshot.isTelevision && snapshot.memoryClassMb <= TV_MID_MEMORY_CLASS_MB) -> DeviceSyncTier.MID
                 else -> DeviceSyncTier.HIGH
             }
             val benchmarkOverrides = if (context.packageName == BENCHMARK_APPLICATION_ID) {
@@ -139,6 +141,8 @@ internal data class CatalogSyncRuntimeProfile(
         private const val MAX_BENCHMARK_BATCH_SIZE = 1024
         private const val LOW_MEMORY_CLASS_MB = 192
         private const val MID_MEMORY_CLASS_MB = 320
+        private const val TV_LOW_MEMORY_CLASS_MB = 256
+        private const val TV_MID_MEMORY_CLASS_MB = 384
         private const val LOW_STAGE_BATCH_SIZE = 100
         private const val MID_STAGE_BATCH_SIZE = 300
         private const val HIGH_STAGE_BATCH_SIZE = 500

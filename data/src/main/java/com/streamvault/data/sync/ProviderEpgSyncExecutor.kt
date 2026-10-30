@@ -27,6 +27,7 @@ import com.streamvault.domain.repository.EpgSourceRepository
 import com.streamvault.domain.repository.SyncMetadataRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.yield
 
 /** Owns provider-neutral guide policy and the provider-specific XMLTV/native guide handoffs. */
 internal class ProviderEpgSyncExecutor(
@@ -253,17 +254,17 @@ internal class ProviderEpgSyncExecutor(
             val chunk = insertBuffer.toList()
             insertBuffer.clear()
             transactionRunner.inTransaction {
-                chunk
-                    .map { it.channelId }
-                    .distinct()
-                    .forEach { channelId ->
-                        if (replacedChannelKeys.add(channelId)) {
-                            programDao.deleteForChannel(provider.id, channelId)
-                        }
+                val touchedChannels = HashSet<String>()
+                for (i in chunk.indices) {
+                    val channelId = chunk[i].channelId
+                    if (touchedChannels.add(channelId) && replacedChannelKeys.add(channelId)) {
+                        programDao.deleteForChannel(provider.id, channelId)
                     }
+                }
                 programDao.insertAll(chunk)
                 importedProgramCount += chunk.size
             }
+            yield()
         }
 
         runSuspendCatching {
@@ -652,7 +653,7 @@ internal class ProviderEpgSyncExecutor(
 
     private companion object {
         const val TAG = "ProviderEpgSync"
-        const val STALKER_GUIDE_PROGRAM_BATCH_SIZE = 5_000
+        const val STALKER_GUIDE_PROGRAM_BATCH_SIZE = 1_000
         const val STALKER_MIN_HEALTHY_EPG_PROGRAMS = 3
         const val STALKER_PER_CHANNEL_RECORD_SANITY_CAP = 5_000
         const val STALKER_PER_CHANNEL_EPG_REQUESTS_PER_RUN = 48

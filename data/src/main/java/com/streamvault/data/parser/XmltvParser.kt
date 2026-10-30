@@ -205,7 +205,7 @@ class XmltvParser {
                                         lang = currentLang,
                                         rating = currentRating,
                                         imageUrl = currentImageUrl,
-                                        genre = currentCategories.distinct().joinToString(" / ").takeIf { it.isNotBlank() },
+                                        genre = formatGenre(currentCategories),
                                         category = currentCategories.firstOrNull()
                                     )
                                 )
@@ -320,7 +320,7 @@ class XmltvParser {
                                         lang = currentLang,
                                         rating = currentRating,
                                         imageUrl = currentImageUrl,
-                                        genre = currentCategories.distinct().joinToString(" / ").takeIf { it.isNotBlank() },
+                                        genre = formatGenre(currentCategories),
                                         category = currentCategories.firstOrNull()
                                     )
                                 )
@@ -506,7 +506,7 @@ class XmltvParser {
                                 if (programmeCount >= limits.maxProgrammes) {
                                     throw XmltvLimitExceeded(XmltvLimitKind.PROGRAMMES, limits.maxProgrammes.toLong())
                                 }
-                                val genre = currentCategories.distinct().joinToString(" / ").takeIf { it.isNotBlank() }
+                                val genre = formatGenre(currentCategories)
                                 requireXmltvField(genre, limits)
                                 onProgramme(
                                     XmltvProgramme(
@@ -641,6 +641,12 @@ class XmltvParser {
             logger.warning("Unparseable XMLTV date: $dateStr")
         }
         return 0
+    }
+
+    private fun formatGenre(categories: List<String>): String? = when (categories.size) {
+        0 -> null
+        1 -> categories[0].trim().takeIf { it.isNotEmpty() }
+        else -> categories.distinct().joinToString(" / ").takeIf { it.isNotBlank() }
     }
 
     private fun isValidProgramme(
