@@ -135,10 +135,19 @@ fun DashboardScreen(
             false
         ) {
             if (provider == null) {
-                EmptyDashboard(
-                    onAddProvider = onAddProvider,
-                    onOpenSettings = { onDestinationRequested(AppDestination.Settings()) }
-                )
+                if (uiState.isLoading) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = Primary)
+                    }
+                } else {
+                    EmptyDashboard(
+                        onAddProvider = onAddProvider,
+                        onOpenSettings = { onDestinationRequested(AppDestination.Settings()) }
+                    )
+                }
                 return@scaffold
             }
             val isPortrait = isPortraitLayout()

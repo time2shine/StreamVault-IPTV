@@ -55,10 +55,16 @@ class ForkCatalogSyncCoordinator @Inject constructor(
         if (!maintenanceStarted.compareAndSet(false, true)) return
         logger.info("Starting fork catalog sync maintenance")
 
-        // 1. Initial delayed check after app boot to allow UI/playback to settle
+        // 1. Initial check after app boot: if providers are empty (fresh install), bootstrap immediately without waiting
         scope.launch {
-            delay(ForkConfig.INITIAL_BACKGROUND_SYNC_DELAY_MILLIS)
-            checkAndTriggerSync(isStartupCheck = true)
+            val providers = providerRepository.getProviders().first()
+            if (providers.isEmpty()) {
+                logger.info("No providers configured on boot: bootstrapping default Xtream provider immediately")
+                checkAndTriggerSync(isStartupCheck = true)
+            } else {
+                delay(ForkConfig.INITIAL_BACKGROUND_SYNC_DELAY_MILLIS)
+                checkAndTriggerSync(isStartupCheck = true)
+            }
         }
 
         // 2. Periodic hourly check for daily sync if app stays open

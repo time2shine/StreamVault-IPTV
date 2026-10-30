@@ -198,13 +198,6 @@ public fun ProviderActionButtons(
             )
         }
 
-        ProviderActionButton(
-            label = stringResource(R.string.settings_edit),
-            accent = Secondary,
-            onClick = onEdit,
-            modifier = if (targetItemId == "sources.edit") targetFocusModifier else Modifier,
-        )
-
         if (isActive) {
             ProviderActionButton(
                 label = stringResource(R.string.settings_provider_category_controls_action),
@@ -212,13 +205,6 @@ public fun ProviderActionButtons(
                 onClick = onParentalControl
             )
         }
-
-        ProviderActionButton(
-            label = stringResource(R.string.settings_delete),
-            accent = ErrorColor,
-            onClick = onDelete,
-            modifier = if (targetItemId == "sources.delete") targetFocusModifier else Modifier,
-        )
     }
 }
 

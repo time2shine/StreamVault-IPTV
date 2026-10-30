@@ -81,12 +81,6 @@ public fun LazyListScope.providerSection(
                         modifier = if (targetItemId == "sources.quick_refresh") targetFocusModifier else Modifier,
                     )
                 }
-                CompactSettingsActionChip(
-                    label = stringResource(R.string.settings_add_provider),
-                    accent = Primary,
-                    onClick = onAddProvider,
-                    modifier = if (targetItemId == "sources.add") targetFocusModifier else Modifier,
-                )
             }
         }
     }
@@ -205,7 +199,7 @@ public fun LazyListScope.providerSection(
             Spacer(modifier = Modifier.height(18.dp))
             AutomaticSyncSettingsCard(viewModel = viewModel, provider = selectedProvider)
             Spacer(modifier = Modifier.height(18.dp))
-            if (uiState.availableM3uProviders.size > 1 || uiState.combinedProfiles.isNotEmpty()) {
+            if (false && (uiState.availableM3uProviders.size > 1 || uiState.combinedProfiles.isNotEmpty())) {
                 CombinedM3uProfilesCard(
                     profiles = uiState.combinedProfiles,
                     availableProviders = uiState.availableM3uProviders,
