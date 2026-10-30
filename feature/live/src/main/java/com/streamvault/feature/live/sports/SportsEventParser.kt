@@ -34,6 +34,7 @@ internal object SportsEventParser {
         "(?i)^\\s*(?:football|soccer|basketball|nba|nfl|laliga|premier league)\\s*[:–—-]\\s*",
     )
     private val competitorDecorationPattern = Regex("\\s*[\\[(].*?[\\])](?=\\s*$)")
+    private val competitorSuffixSeparatorPattern = Regex("""\s*;\s*.*$""")
     private val displayQualitySuffixPattern = Regex(
         "(?i)\\s+\\b(?:hd|fhd|uhd|4k|8k|hevc|h\\.?265|backup|vip|raw)\\b.*$",
     )
@@ -253,6 +254,7 @@ internal object SportsEventParser {
         .replace(competitorPrefixPattern, "")
         .replace(competitorDecorationPattern, "")
         .replace(qualitySuffixPattern, "")
+        .replace(competitorSuffixSeparatorPattern, "")
         .trim()
 
     private fun stripCompetitionHeader(value: String): String {

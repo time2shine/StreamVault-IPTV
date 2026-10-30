@@ -29,6 +29,22 @@ class SportsProgrammeClassifierTest {
         assertThat(matchup.sport).isEqualTo(SportType.FOOTBALL)
         assertThat(matchup.competitors).containsExactly("FC Barcelona", "Real Madrid CF").inOrder()
 
+        val cricketMatch = classify(
+            title = "India vs West Indies; T20 Cricket",
+            genre = "Cricket",
+        )
+        assertThat(cricketMatch.isSports).isTrue()
+        assertThat(cricketMatch.isCompetitiveEvent).isTrue()
+        assertThat(cricketMatch.sport).isEqualTo(SportType.CRICKET)
+        assertThat(cricketMatch.competitors).containsExactly("India", "West Indies").inOrder()
+        assertThat(cricketMatch.displayTitle).isEqualTo("India vs West Indies")
+
+        val footballMatch = classify(
+            title = "Dempo SC vs Shillong Lajong FC; I-League Soccer",
+            genre = "Sports",
+        )
+        assertThat(footballMatch.competitors).containsExactly("Dempo SC", "Shillong Lajong FC").inOrder()
+
         val qualifying = classify("Formula 1 Japanese GP Qualifying")
         assertThat(qualifying.isSports).isTrue()
         assertThat(qualifying.isCompetitiveEvent).isTrue()

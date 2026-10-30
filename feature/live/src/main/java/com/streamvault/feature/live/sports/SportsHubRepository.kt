@@ -733,7 +733,8 @@ internal class SportsHubRepository @Inject constructor(
             broadcasts = emptyList(),
             confidence = 0.85f,
             competitors = providerEvent.competitors.map { competitor ->
-                SportsCompetitor(competitor.name, logoUrl = competitor.logoUrl)
+                val logoUrl = competitor.logoUrl ?: SportsCountryResolver.resolveFlagUrl(competitor.name)
+                SportsCompetitor(competitor.name, logoUrl = logoUrl)
             },
             session = providerEvent.session,
             eventType = providerEvent.status?.state.toSportsEventType(),

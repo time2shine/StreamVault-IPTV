@@ -621,9 +621,10 @@ private fun SportsFixture(event: SportsEvent, featured: Boolean, modifier: Modif
         if (event.competitors.size == 2) {
             event.competitors.forEach { competitor ->
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    val logo = competitor.logoUrl ?: SportsCountryResolver.resolveFlagUrl(competitor.displayName)
                     ChannelLogoBadge(
                         channelName = competitor.displayName,
-                        logoUrl = competitor.logoUrl,
+                        logoUrl = logo,
                         modifier = Modifier.size(if (featured) 34.dp else 26.dp),
                         shape = CircleShape,
                         backgroundColor = BrowseColors.Brand.copy(alpha = 0.14f),
