@@ -279,7 +279,9 @@ class Media3PlayerEngine @Inject constructor(
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
         val memoryClassMb = activityManager?.memoryClass ?: 256
         val lowRam = activityManager?.isLowRamDevice ?: false
-        lowRam || memoryClassMb <= 256
+        val uiModeManager = context.getSystemService(Context.UI_MODE_SERVICE) as? android.app.UiModeManager
+        val isTv = uiModeManager?.currentModeType == android.content.res.Configuration.UI_MODE_TYPE_TELEVISION
+        lowRam || memoryClassMb <= 256 || (isTv && memoryClassMb <= 384)
     }
 
     private val _playbackState = MutableStateFlow(PlaybackState.IDLE)
@@ -1712,6 +1714,7 @@ class Media3PlayerEngine @Inject constructor(
                     .setLivePlaybackSpeedControl(livePlaybackSpeedControl)
                     .setSeekBackIncrementMs(10_000)
                     .setSeekForwardIncrementMs(10_000)
+                    .setReleaseTimeoutMs(2_000)
                 .setTrackSelector(
                     DefaultTrackSelector(context).apply {
                         parameters = parameters.buildUpon()
