@@ -41,6 +41,7 @@ import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
+import com.streamvault.core.ui.design.BrowseColors
 import com.streamvault.core.ui.image.ChannelLogoBadge
 import com.streamvault.core.ui.interaction.TvClickableSurface
 import com.streamvault.core.ui.design.browse.FocusBorder
@@ -143,13 +144,19 @@ fun LiveGuideGridRow(
                     isFocused = it.isFocused
                 },
             colors = ClickableSurfaceDefaults.colors(
-                containerColor = if (transparentOverlay) SurfaceElevated.copy(alpha = 0.62f) else SurfaceElevated,
-                focusedContainerColor = if (transparentOverlay) SurfaceHighlight.copy(alpha = 0.88f) else SurfaceHighlight
+                containerColor = if (transparentOverlay) Color(0xFF101928).copy(alpha = 0.72f) else Color(0xFF101928),
+                focusedContainerColor = BrowseColors.BrandStrong,
+                contentColor = BrowseColors.TextPrimary,
+                focusedContentColor = Color.White
             ),
             shape = ClickableSurfaceDefaults.shape(androidx.compose.foundation.shape.RoundedCornerShape(8.dp)),
             border = ClickableSurfaceDefaults.border(
+                border = Border(
+                    border = BorderStroke(1.dp, BrowseColors.Outline.copy(alpha = 0.35f)),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+                ),
                 focusedBorder = Border(
-                    border = BorderStroke(2.dp, FocusBorder),
+                    border = BorderStroke(2.dp, BrowseColors.Focus),
                     shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
                 )
             )
@@ -380,21 +387,26 @@ fun LiveGuideProgramItem(
             },
         colors = ClickableSurfaceDefaults.colors(
             containerColor = when {
-                isCurrent && transparentOverlay -> Primary.copy(alpha = 0.28f)
-                isCurrent -> Primary.copy(alpha = 0.2f)
-                transparentOverlay -> SurfaceElevated.copy(alpha = 0.54f)
-                else -> SurfaceElevated
+                isCurrent && transparentOverlay -> Color(0xFF1E3A5F).copy(alpha = 0.55f)
+                isCurrent -> Color(0xFF1B3150)
+                transparentOverlay -> Color(0xFF101928).copy(alpha = 0.65f)
+                else -> Color(0xFF101928)
             },
-            focusedContainerColor = if (transparentOverlay) SurfaceHighlight.copy(alpha = 0.88f) else SurfaceHighlight
+            focusedContainerColor = BrowseColors.BrandStrong,
+            contentColor = BrowseColors.TextPrimary,
+            focusedContentColor = Color.White
         ),
         shape = ClickableSurfaceDefaults.shape(androidx.compose.foundation.shape.RoundedCornerShape(8.dp)),
         border = ClickableSurfaceDefaults.border(
             border = Border(
-                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.12f)),
+                border = BorderStroke(
+                    1.dp,
+                    if (isCurrent) BrowseColors.Brand.copy(alpha = 0.5f) else Color.White.copy(alpha = 0.10f)
+                ),
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
             ),
             focusedBorder = Border(
-                border = BorderStroke(2.dp, FocusBorder),
+                border = BorderStroke(2.dp, BrowseColors.Focus),
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
             )
         )

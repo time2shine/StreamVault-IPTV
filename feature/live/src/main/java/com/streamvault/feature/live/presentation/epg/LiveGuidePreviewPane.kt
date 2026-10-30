@@ -2,8 +2,9 @@ package com.streamvault.feature.live.presentation.epg
 
 import com.streamvault.core.ui.layout.isPortraitLayout
 
-import com.streamvault.core.ui.design.BrowseShapes
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,8 +17,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LiveTv
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,21 +31,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.tv.material3.Border
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import androidx.tv.material3.SurfaceDefaults
 import androidx.tv.material3.Text
+import com.streamvault.core.ui.design.BrowseColors
+import com.streamvault.core.ui.design.BrowseShapes
 import com.streamvault.core.ui.image.ChannelLogoBadge
-import com.streamvault.core.ui.design.browse.OnSurface
-import com.streamvault.core.ui.design.browse.OnSurfaceDim
 import com.streamvault.core.ui.design.browse.Primary
-import com.streamvault.core.ui.design.browse.SurfaceElevated
-import com.streamvault.core.ui.design.browse.SurfaceHighlight
 import com.streamvault.domain.model.Channel
 import com.streamvault.domain.model.Program
 import com.streamvault.feature.live.presentation.time.LocalLiveTimeFormat
@@ -74,12 +81,16 @@ fun LiveGuidePreviewPane(
     val timeFormat = remember(appTimeFormat) { appTimeFormat.createLiveTimeFormat() }
 
     Surface(
-        modifier = modifier.height(150.dp),
-        colors = SurfaceDefaults.colors(containerColor = SurfaceElevated),
-        shape = BrowseShapes.Panel
+        modifier = modifier.height(152.dp),
+        colors = SurfaceDefaults.colors(containerColor = Color(0xFF101928)),
+        shape = BrowseShapes.Panel,
+        border = Border(BorderStroke(1.dp, BrowseColors.Outline.copy(alpha = 0.5f)))
     ) {
         Row(
-            modifier = Modifier.fillMaxSize().padding(10.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Brush.horizontalGradient(listOf(Color(0xFF132238), Color(0xFF0C1320))))
+                .padding(10.dp),
             horizontalArrangement = Arrangement.spacedBy(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -87,8 +98,12 @@ fun LiveGuidePreviewPane(
                 modifier = Modifier
                     .then(if (isPortraitLayout()) Modifier.width(120.dp) else Modifier.fillMaxHeight())
                     .aspectRatio(16f / 9f)
-                    .background(Color.Black, BrowseShapes.Artwork)
-                    .clip(BrowseShapes.Artwork),
+                    .clip(BrowseShapes.Artwork)
+                    .background(
+                        Brush.verticalGradient(listOf(Color(0xFF0D1624), Color(0xFF080D15))),
+                        BrowseShapes.Artwork
+                    )
+                    .border(1.dp, Color(0xFF1F304B), BrowseShapes.Artwork),
                 contentAlignment = Alignment.Center
             ) {
                 if (previewPlayerEngine != null) {
@@ -100,7 +115,7 @@ fun LiveGuidePreviewPane(
                     )
                     if (isPreviewLoading) {
                         CircularProgressIndicator(
-                            color = Primary,
+                            color = BrowseColors.Brand,
                             strokeWidth = 2.dp,
                             modifier = Modifier.size(22.dp)
                         )
@@ -108,13 +123,20 @@ fun LiveGuidePreviewPane(
                 } else {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
                         modifier = Modifier.padding(horizontal = 12.dp)
                     ) {
+                        Icon(
+                            imageVector = Icons.Default.LiveTv,
+                            contentDescription = null,
+                            tint = BrowseColors.Brand.copy(alpha = 0.6f),
+                            modifier = Modifier.size(26.dp)
+                        )
                         Text(
                             text = labels.placeholderTitle,
                             style = MaterialTheme.typography.labelMedium,
-                            color = Color.White.copy(alpha = 0.7f),
+                            fontSize = 11.sp,
+                            color = BrowseColors.TextSecondary,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -126,7 +148,7 @@ fun LiveGuidePreviewPane(
             if (channel != null) {
                 Column(
                     modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -141,50 +163,93 @@ fun LiveGuidePreviewPane(
                         Text(
                             text = if (channel.number > 0) "${channel.number}. ${channel.name}" else channel.name,
                             style = MaterialTheme.typography.titleSmall,
-                            color = OnSurface,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = BrowseColors.TextPrimary,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
                     }
                     if (program != null) {
-                        Text(
-                            text = program.title,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = OnSurface,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                        val isLive = now in program.startTime until program.endTime
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            if (isLive) {
+                                Row(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(Color(0xFFE50914).copy(alpha = 0.22f))
+                                        .border(1.dp, Color(0xFFE50914).copy(alpha = 0.6f), RoundedCornerShape(4.dp))
+                                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(5.dp)
+                                            .clip(CircleShape)
+                                            .background(Color(0xFFE50914))
+                                    )
+                                    Text(
+                                        text = "LIVE",
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                }
+                            }
+                            Text(
+                                text = program.title,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = BrowseColors.TextPrimary,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                         Text(
                             text = "${timeFormat.format(Date(program.startTime))} – ${timeFormat.format(Date(program.endTime))}",
                             style = MaterialTheme.typography.labelSmall,
-                            color = OnSurfaceDim
+                            fontSize = 11.sp,
+                            color = BrowseColors.TextSecondary
                         )
-                        if (now in program.startTime until program.endTime) {
+                        if (isLive) {
                             LinearProgressIndicator(
                                 progress = { ((now - program.startTime).toFloat() / (program.endTime - program.startTime).toFloat()).coerceIn(0f, 1f) },
-                                modifier = Modifier.fillMaxWidth(0.6f).height(3.dp),
-                                color = Primary,
-                                trackColor = SurfaceHighlight
+                                modifier = Modifier
+                                    .fillMaxWidth(0.65f)
+                                    .height(3.dp)
+                                    .clip(RoundedCornerShape(1.5.dp)),
+                                color = BrowseColors.BrandStrong,
+                                trackColor = Color(0xFF17263C)
                             )
                         }
                         if (program.description.isNotBlank()) {
                             Text(
                                 text = program.description,
                                 style = MaterialTheme.typography.labelSmall,
-                                color = OnSurfaceDim,
+                                fontSize = 11.sp,
+                                color = BrowseColors.TextTertiary,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
                     } else {
-                        Text(text = labels.noSchedule, style = MaterialTheme.typography.bodySmall, color = OnSurfaceDim)
+                        Text(
+                            text = labels.noSchedule,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = BrowseColors.TextSecondary
+                        )
                     }
                 }
             } else {
                 Text(
                     text = labels.title,
                     style = MaterialTheme.typography.titleSmall,
-                    color = OnSurfaceDim,
+                    color = BrowseColors.TextSecondary,
                     modifier = Modifier.weight(1f)
                 )
             }
