@@ -108,12 +108,30 @@ class DashboardViewModel @Inject constructor(
     private val _channelSearchQuery = MutableStateFlow("")
     private var categoryChannelsJob: kotlinx.coroutines.Job? = null
     private var combinedMovieCategoryIds = listOf<Long>()
+    private var combinedSportsCategoryIds = listOf<Long>()
 
     private fun isMovieCategoryToCombine(name: String): Boolean {
         val lower = name.trim().lowercase(Locale.ROOT)
         return lower == "movies" || lower == "movie" ||
                lower == "movie channels" || lower == "movies channels" ||
                lower == "movie channel" || lower == "movies channel"
+    }
+
+    internal fun isSportsCategoryToCombine(name: String): Boolean {
+        val lower = name.trim().lowercase(Locale.ROOT)
+        if (lower.contains("transport")) return false
+        return lower == "sports" || lower == "sport" ||
+               lower.contains("sports") || lower.contains("sport") ||
+               lower.contains("cricket") || lower.contains("football") ||
+               lower.contains("soccer") || lower.contains("fifa") ||
+               lower.contains("wwe") || lower.contains("motorsport") ||
+               lower.contains("racing") || lower.contains("f1") ||
+               lower.contains("tennis") || lower.contains("basketball") ||
+               lower.contains("nba") || lower.contains("sony ten") ||
+               lower.contains("golf") || lower.contains("baseball") ||
+               lower.contains("hockey") || lower.contains("badminton") ||
+               lower.contains("rugby") || lower.contains("boxing") ||
+               lower.contains("ufc") || lower.contains("mma")
     }
 
     init {
@@ -1034,7 +1052,7 @@ class DashboardViewModel @Inject constructor(
 
         // Combine Movies and Movies Channels on the main tab
         val movieCatsToCombine = visibleProviderCats.filter { isMovieCategoryToCombine(it.name) }
-        val combinedProviderCats: List<Category> = if (movieCatsToCombine.size > 1) {
+        val catsAfterMovieCombine: List<Category> = if (movieCatsToCombine.size > 1) {
             combinedMovieCategoryIds = movieCatsToCombine.map { it.id }
             val primaryMovieCat = movieCatsToCombine.find {
                 it.name.trim().equals("movies", ignoreCase = true)
@@ -1051,6 +1069,25 @@ class DashboardViewModel @Inject constructor(
             visibleProviderCats
         }
 
+        // Combine Sports categories on the main tab
+        val sportsCatsToCombine = catsAfterMovieCombine.filter { isSportsCategoryToCombine(it.name) }
+        val combinedProviderCats: List<Category> = if (sportsCatsToCombine.isNotEmpty()) {
+            combinedSportsCategoryIds = sportsCatsToCombine.map { it.id }
+            val primarySportsCat = sportsCatsToCombine.find {
+                it.name.trim().equals("sports", ignoreCase = true)
+            } ?: sportsCatsToCombine.first()
+            val combinedCount = sportsCatsToCombine.sumOf { it.count }
+            val combinedCategory = primarySportsCat.copy(
+                name = "Sports",
+                count = combinedCount
+            )
+            val nonSportsCats = catsAfterMovieCombine.filterNot { isSportsCategoryToCombine(it.name) }
+            nonSportsCats + combinedCategory
+        } else {
+            combinedSportsCategoryIds = emptyList()
+            catsAfterMovieCombine
+        }
+
         val result = mutableListOf<Category>()
         if (allChannelsCount > 0) {
             result.add(allChannelsCategory)
@@ -1059,7 +1096,9 @@ class DashboardViewModel @Inject constructor(
             result.add(it)
         }
         val (pinned, unpinned) = combinedProviderCats.partition { 
-            it.id in pinnedCategoryIds || (movieCatsToCombine.size > 1 && it.id in combinedMovieCategoryIds && movieCatsToCombine.any { m -> m.id in pinnedCategoryIds })
+            it.id in pinnedCategoryIds || 
+            (movieCatsToCombine.size > 1 && it.id in combinedMovieCategoryIds && movieCatsToCombine.any { m -> m.id in pinnedCategoryIds }) ||
+            (sportsCatsToCombine.isNotEmpty() && it.id in combinedSportsCategoryIds && sportsCatsToCombine.any { s -> s.id in pinnedCategoryIds })
         }
         result.addAll(sortLiveCategoriesByPreferredOrder(pinned))
         result.addAll(sortLiveCategoriesByPreferredOrder(unpinned))
@@ -1082,8 +1121,18 @@ class DashboardViewModel @Inject constructor(
                 val isCombinedMovies = combinedMovieCategoryIds.size > 1 &&
                     (category.id in combinedMovieCategoryIds || isMovieCategoryToCombine(category.name))
 
+                val isCombinedSports = combinedSportsCategoryIds.isNotEmpty() &&
+                    (category.id in combinedSportsCategoryIds || isSportsCategoryToCombine(category.name))
+
                 val flow: Flow<List<Channel>> = if (isCombinedMovies) {
                     val catFlows = combinedMovieCategoryIds.map { catId ->
+                        channelRepository.getChannelsByCategory(providerId, catId)
+                    }
+                    combine(catFlows) { channelArrays ->
+                        channelArrays.flatMap { it }.distinctBy { it.id }
+                    }
+                } else if (isCombinedSports) {
+                    val catFlows = combinedSportsCategoryIds.map { catId ->
                         channelRepository.getChannelsByCategory(providerId, catId)
                     }
                     combine(catFlows) { channelArrays ->

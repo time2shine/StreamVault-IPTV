@@ -381,4 +381,9 @@
     <string name="home_no_channels_in_category">Ingen tilgjengelige kanaler i denne kategorien</string>
     <string name="home_all_channels">Alle kanaler</string>
     <string name="movies_watch_history_title">Seerhistorikk</string>
+    <string name="home_sports_filter_all">Alle</string>
+    <string name="home_sports_filter_cricket">Cricket</string>
+    <string name="home_sports_filter_football">Fotball</string>
+    <string name="home_sports_filter_other">Annet</string>
+    <string name="home_sports_match_center">Live kampsenter</string>
 </resources>

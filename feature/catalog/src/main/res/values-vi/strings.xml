@@ -381,4 +381,9 @@
     <string name="home_no_channels_in_category">Không có kênh nào khả dụng trong danh mục này</string>
     <string name="home_all_channels">Tất cả các kênh</string>
     <string name="movies_watch_history_title">Lịch sử xem</string>
+    <string name="home_sports_filter_all">Tất cả</string>
+    <string name="home_sports_filter_cricket">Cricket</string>
+    <string name="home_sports_filter_football">Bóng đá</string>
+    <string name="home_sports_filter_other">Khác</string>
+    <string name="home_sports_match_center">Trung tâm trận đấu trực tiếp</string>
 </resources>

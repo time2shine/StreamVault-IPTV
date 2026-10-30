@@ -367,4 +367,9 @@
     <string name="home_no_channels_in_category">Nuk ka kanale të disponueshme në këtë kategori</string>
     <string name="home_all_channels">Të gjitha kanalet</string>
     <string name="movies_watch_history_title">Historiku i shikimit</string>
+    <string name="home_sports_filter_all">Të gjitha</string>
+    <string name="home_sports_filter_cricket">Kriket</string>
+    <string name="home_sports_filter_football">Futboll</string>
+    <string name="home_sports_filter_other">Të tjera</string>
+    <string name="home_sports_match_center">Qendra e ndeshjeve drejtpërdrejt</string>
 </resources>

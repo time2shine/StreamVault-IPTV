@@ -381,4 +381,9 @@
     <string name="home_no_channels_in_category">Ei kanavia saatavilla tässä kategoriassa</string>
     <string name="home_all_channels">Kaikki kanavat</string>
     <string name="movies_watch_history_title">Katseluhistoria</string>
+    <string name="home_sports_filter_all">Kaikki</string>
+    <string name="home_sports_filter_cricket">Kriketti</string>
+    <string name="home_sports_filter_football">Jalkapallo</string>
+    <string name="home_sports_filter_other">Muut</string>
+    <string name="home_sports_match_center">Live-ottelukeskus</string>
 </resources>

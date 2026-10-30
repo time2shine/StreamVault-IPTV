@@ -166,6 +166,7 @@ fun DashboardScreen(
                     scheduledChannelIds = scheduledChannelIds,
                     isPortrait = isPortrait,
                     onBack = viewModel::clearSelectedCategory,
+                    onOpenSportsHub = { onDestinationRequested(AppDestination.Sports) },
                     onChannelClick = { channel ->
                         onChannelClick(channel, uiState.selectedCategory?.id, uiState.currentCombinedProfileId)
                     }

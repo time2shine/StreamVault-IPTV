@@ -367,4 +367,9 @@
     <string name="home_no_channels_in_category">ไม่มีช่องในหมวดหมู่นี้</string>
     <string name="home_all_channels">ทุกช่อง</string>
     <string name="movies_watch_history_title">ประวัติการรับชม</string>
+    <string name="home_sports_filter_all">ทั้งหมด</string>
+    <string name="home_sports_filter_cricket">คริกเก็ต</string>
+    <string name="home_sports_filter_football">ฟุตบอล</string>
+    <string name="home_sports_filter_other">อื่นๆ</string>
+    <string name="home_sports_match_center">ศูนย์การแข่งขันสด</string>
 </resources>

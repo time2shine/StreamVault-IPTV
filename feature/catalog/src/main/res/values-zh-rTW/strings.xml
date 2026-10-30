@@ -367,4 +367,9 @@
     <string name="home_no_channels_in_category">此分類下沒有可用頻道</string>
     <string name="home_all_channels">所有頻道</string>
     <string name="movies_watch_history_title">觀看紀錄</string>
+    <string name="home_sports_filter_all">全部</string>
+    <string name="home_sports_filter_cricket">板球</string>
+    <string name="home_sports_filter_football">足球</string>
+    <string name="home_sports_filter_other">其他</string>
+    <string name="home_sports_match_center">即時賽事中心</string>
 </resources>

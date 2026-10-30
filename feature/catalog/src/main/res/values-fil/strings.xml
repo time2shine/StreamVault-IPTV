@@ -367,4 +367,9 @@
     <string name="home_no_channels_in_category">Walang available na channel sa kategoryang ito</string>
     <string name="home_all_channels">Lahat ng Channel</string>
     <string name="movies_watch_history_title">Kasaysayan ng Panonood</string>
+    <string name="home_sports_filter_all">Lahat</string>
+    <string name="home_sports_filter_cricket">Kriket</string>
+    <string name="home_sports_filter_football">Putbol</string>
+    <string name="home_sports_filter_other">Iba pa</string>
+    <string name="home_sports_match_center">Live Match Center</string>
 </resources>

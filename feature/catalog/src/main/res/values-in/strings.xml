@@ -381,4 +381,9 @@
     <string name="home_no_channels_in_category">Tidak ada saluran yang tersedia dalam kategori ini</string>
     <string name="home_all_channels">Semua Saluran</string>
     <string name="movies_watch_history_title">Riwayat Tontonan</string>
+    <string name="home_sports_filter_all">Semua</string>
+    <string name="home_sports_filter_cricket">Kriket</string>
+    <string name="home_sports_filter_football">Sepak bola</string>
+    <string name="home_sports_filter_other">Lainnya</string>
+    <string name="home_sports_match_center">Pusat Pertandingan Langsung</string>
 </resources>

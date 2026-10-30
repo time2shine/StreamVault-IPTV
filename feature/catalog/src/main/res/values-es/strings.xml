@@ -381,4 +381,9 @@
     <string name="home_no_channels_in_category">No hay canales disponibles en esta categoría</string>
     <string name="home_all_channels">Todos los canales</string>
     <string name="movies_watch_history_title">Historial de reproducción</string>
+    <string name="home_sports_filter_all">Todos</string>
+    <string name="home_sports_filter_cricket">Críquet</string>
+    <string name="home_sports_filter_football">Fútbol</string>
+    <string name="home_sports_filter_other">Otros</string>
+    <string name="home_sports_match_center">Centro de partidos en vivo</string>
 </resources>

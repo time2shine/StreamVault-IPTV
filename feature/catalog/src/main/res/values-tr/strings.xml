@@ -381,4 +381,9 @@
     <string name="home_no_channels_in_category">Bu kategoride kullanılabilir kanal yok</string>
     <string name="home_all_channels">Tüm Kanallar</string>
     <string name="movies_watch_history_title">İzleme Geçmişi</string>
+    <string name="home_sports_filter_all">Hepsi</string>
+    <string name="home_sports_filter_cricket">Kriket</string>
+    <string name="home_sports_filter_football">Futbol</string>
+    <string name="home_sports_filter_other">Diğer</string>
+    <string name="home_sports_match_center">Canlı Maç Merkezi</string>
 </resources>

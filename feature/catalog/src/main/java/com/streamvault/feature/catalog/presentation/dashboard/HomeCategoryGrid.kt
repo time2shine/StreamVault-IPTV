@@ -21,8 +21,10 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SportsSoccer
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,7 +32,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,7 +62,32 @@ import com.streamvault.feature.catalog.R
 import com.streamvault.feature.catalog.presentation.components.ChannelCard
 import com.streamvault.feature.catalog.presentation.components.LiveCategoryCard
 import com.streamvault.feature.catalog.presentation.components.resolveCategoryIcon
+import java.util.Locale
 import kotlinx.coroutines.delay
+
+private enum class SportsChannelSubFilter {
+    ALL,
+    CRICKET,
+    FOOTBALL,
+    OTHER
+}
+
+internal fun matchesCricketChannel(name: String): Boolean {
+    val lower = name.lowercase(Locale.ROOT)
+    return "cricket" in lower || "willow" in lower || "t sports" in lower ||
+           "sony ten" in lower || "star sports" in lower || "ptv sports" in lower ||
+           "gazi tv" in lower || "gtv" in lower || "dd sports" in lower ||
+           "astro cricket" in lower || "sky sports cricket" in lower
+}
+
+internal fun matchesFootballChannel(name: String): Boolean {
+    val lower = name.lowercase(Locale.ROOT)
+    return "football" in lower || "soccer" in lower || "fifa" in lower ||
+           "bein" in lower || "supersport" in lower || "premier" in lower ||
+           "dazn" in lower || "laliga" in lower || "epl" in lower ||
+           "uefa" in lower || "optus" in lower || "astro supersport" in lower ||
+           "tnt sports" in lower || "bt sport" in lower
+}
 
 @Composable
 fun HomeCategoryGridView(
@@ -191,6 +221,7 @@ fun HomeCategoryChannelListView(
     isPortrait: Boolean,
     onBack: () -> Unit,
     onChannelClick: (Channel) -> Unit,
+    onOpenSportsHub: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val gridState = rememberLazyGridState()
@@ -198,8 +229,35 @@ fun HomeCategoryChannelListView(
     val categoryIcon = remember(category) { resolveCategoryIcon(category) }
     val firstChannelFocusRequester = remember { FocusRequester() }
 
+    val isSportsCategory = remember(category) {
+        val lower = category.name.trim().lowercase(Locale.ROOT)
+        lower == "sports" || lower == "sport" ||
+        lower.contains("sport") || lower.contains("cricket") || lower.contains("football")
+    }
+    var sportsSubFilter by remember(category.id) { mutableStateOf(SportsChannelSubFilter.ALL) }
+
+    val cricketCount = remember(channels, isSportsCategory) {
+        if (!isSportsCategory) 0 else channels.count { matchesCricketChannel(it.name) }
+    }
+    val footballCount = remember(channels, isSportsCategory) {
+        if (!isSportsCategory) 0 else channels.count { matchesFootballChannel(it.name) }
+    }
+    val otherCount = remember(channels, isSportsCategory) {
+        if (!isSportsCategory) 0 else channels.count { !matchesCricketChannel(it.name) && !matchesFootballChannel(it.name) }
+    }
+
+    val displayedChannels = remember(channels, isSportsCategory, sportsSubFilter) {
+        if (!isSportsCategory) channels
+        else when (sportsSubFilter) {
+            SportsChannelSubFilter.ALL -> channels
+            SportsChannelSubFilter.CRICKET -> channels.filter { matchesCricketChannel(it.name) }
+            SportsChannelSubFilter.FOOTBALL -> channels.filter { matchesFootballChannel(it.name) }
+            SportsChannelSubFilter.OTHER -> channels.filter { !matchesCricketChannel(it.name) && !matchesFootballChannel(it.name) }
+        }
+    }
+
     val focusFirstChannel: suspend () -> Unit = {
-        if (channels.isNotEmpty()) {
+        if (displayedChannels.isNotEmpty()) {
             if (gridState.firstVisibleItemIndex > 0) {
                 runCatching { gridState.scrollToItem(0) }
             }
@@ -213,12 +271,12 @@ fun HomeCategoryChannelListView(
     }
 
     FocusRestoreHost(
-        enabled = channels.isNotEmpty(),
+        enabled = displayedChannels.isNotEmpty(),
         onRestore = {
             focusFirstChannel()
         }
     ) {
-        LaunchedEffect(channels.firstOrNull()?.id) {
+        LaunchedEffect(displayedChannels.firstOrNull()?.id) {
             focusFirstChannel()
         }
 
@@ -328,6 +386,93 @@ fun HomeCategoryChannelListView(
                 )
             }
 
+            if (isSportsCategory && channels.isNotEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 14.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    SportsSubFilterChip(
+                        label = "${stringResource(R.string.home_sports_filter_all)} (${channels.size})",
+                        selected = sportsSubFilter == SportsChannelSubFilter.ALL,
+                        onClick = { sportsSubFilter = SportsChannelSubFilter.ALL }
+                    )
+                    if (cricketCount > 0) {
+                        SportsSubFilterChip(
+                            label = "🏏 ${stringResource(R.string.home_sports_filter_cricket)} ($cricketCount)",
+                            selected = sportsSubFilter == SportsChannelSubFilter.CRICKET,
+                            onClick = { sportsSubFilter = SportsChannelSubFilter.CRICKET }
+                        )
+                    }
+                    if (footballCount > 0) {
+                        SportsSubFilterChip(
+                            label = "⚽ ${stringResource(R.string.home_sports_filter_football)} ($footballCount)",
+                            selected = sportsSubFilter == SportsChannelSubFilter.FOOTBALL,
+                            onClick = { sportsSubFilter = SportsChannelSubFilter.FOOTBALL }
+                        )
+                    }
+                    if (otherCount > 0) {
+                        SportsSubFilterChip(
+                            label = "🏎️ ${stringResource(R.string.home_sports_filter_other)} ($otherCount)",
+                            selected = sportsSubFilter == SportsChannelSubFilter.OTHER,
+                            onClick = { sportsSubFilter = SportsChannelSubFilter.OTHER }
+                        )
+                    }
+
+                    if (onOpenSportsHub != null) {
+                        Spacer(modifier = Modifier.weight(1f))
+                        TvClickableSurface(
+                            onClick = onOpenSportsHub,
+                            shape = androidx.tv.material3.ClickableSurfaceDefaults.shape(RoundedCornerShape(16.dp)),
+                            colors = androidx.tv.material3.ClickableSurfaceDefaults.colors(
+                                containerColor = Primary.copy(alpha = 0.22f),
+                                focusedContainerColor = Primary
+                            ),
+                            border = androidx.tv.material3.ClickableSurfaceDefaults.border(
+                                border = androidx.tv.material3.Border(
+                                    border = androidx.compose.foundation.BorderStroke(1.dp, Primary.copy(alpha = 0.6f)),
+                                    shape = RoundedCornerShape(16.dp)
+                                ),
+                                focusedBorder = androidx.tv.material3.Border(
+                                    border = androidx.compose.foundation.BorderStroke(2.dp, Color.White),
+                                    shape = RoundedCornerShape(16.dp)
+                                )
+                            ),
+                            scale = androidx.tv.material3.ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
+                            modifier = Modifier.height(32.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.SportsSoccer,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(15.dp)
+                                )
+                                Text(
+                                    text = stringResource(R.string.home_sports_match_center),
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    color = Color.White
+                                )
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(13.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
             if (isLoading) {
                 Box(
                     modifier = Modifier
@@ -337,7 +482,7 @@ fun HomeCategoryChannelListView(
                 ) {
                     CircularProgressIndicator(color = Primary)
                 }
-            } else if (channels.isEmpty()) {
+            } else if (displayedChannels.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -360,7 +505,7 @@ fun HomeCategoryChannelListView(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     itemsIndexed(
-                        items = channels,
+                        items = displayedChannels,
                         key = { _, channel -> channel.id }
                     ) { index, channel ->
                         ChannelCard(
@@ -374,6 +519,51 @@ fun HomeCategoryChannelListView(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun SportsSubFilterChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    TvClickableSurface(
+        onClick = onClick,
+        shape = androidx.tv.material3.ClickableSurfaceDefaults.shape(RoundedCornerShape(16.dp)),
+        colors = androidx.tv.material3.ClickableSurfaceDefaults.colors(
+            containerColor = if (selected) Primary else SurfaceElevated,
+            focusedContainerColor = if (selected) Primary.copy(alpha = 0.9f) else SurfaceElevated.copy(alpha = 0.95f)
+        ),
+        border = androidx.tv.material3.ClickableSurfaceDefaults.border(
+            border = androidx.tv.material3.Border(
+                border = androidx.compose.foundation.BorderStroke(
+                    width = 1.dp,
+                    color = if (selected) Primary else Color.White.copy(alpha = 0.15f)
+                ),
+                shape = RoundedCornerShape(16.dp)
+            ),
+            focusedBorder = androidx.tv.material3.Border(
+                border = androidx.compose.foundation.BorderStroke(2.dp, Color.White),
+                shape = RoundedCornerShape(16.dp)
+            )
+        ),
+        scale = androidx.tv.material3.ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
+        modifier = modifier.height(32.dp)
+    ) {
+        Box(
+            modifier = Modifier.padding(horizontal = 12.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
+                ),
+                color = if (selected) Color.White else OnSurfaceDim
+            )
         }
     }
 }

@@ -381,4 +381,9 @@
     <string name="home_no_channels_in_category">لا توجد قنوات متاحة في هذه الفئة</string>
     <string name="home_all_channels">جميع القنوات</string>
     <string name="movies_watch_history_title">سجل المشاهدة</string>
+    <string name="home_sports_filter_all">الكل</string>
+    <string name="home_sports_filter_cricket">الكريكيت</string>
+    <string name="home_sports_filter_football">كرة القدم</string>
+    <string name="home_sports_filter_other">أخرى</string>
+    <string name="home_sports_match_center">مركز المباريات المباشرة</string>
 </resources>

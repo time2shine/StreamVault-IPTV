@@ -367,4 +367,9 @@
     <string name="home_no_channels_in_category">Няма налични канали в тази категория</string>
     <string name="home_all_channels">Всички канали</string>
     <string name="movies_watch_history_title">История на гледане</string>
+    <string name="home_sports_filter_all">Всички</string>
+    <string name="home_sports_filter_cricket">Крикет</string>
+    <string name="home_sports_filter_football">Футбол</string>
+    <string name="home_sports_filter_other">Други</string>
+    <string name="home_sports_match_center">Център за мачове на живо</string>
 </resources>

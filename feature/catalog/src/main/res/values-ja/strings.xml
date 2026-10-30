@@ -381,4 +381,9 @@
     <string name="home_no_channels_in_category">このカテゴリーに利用可能なチャンネルはありません</string>
     <string name="home_all_channels">すべてのチャンネル</string>
     <string name="movies_watch_history_title">視聴履歴</string>
+    <string name="home_sports_filter_all">すべて</string>
+    <string name="home_sports_filter_cricket">クリケット</string>
+    <string name="home_sports_filter_football">サッカー</string>
+    <string name="home_sports_filter_other">その他</string>
+    <string name="home_sports_match_center">ライブ試合センター</string>
 </resources>

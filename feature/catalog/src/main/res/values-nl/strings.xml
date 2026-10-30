@@ -381,4 +381,9 @@
     <string name="home_no_channels_in_category">Geen kanalen beschikbaar in deze categorie</string>
     <string name="home_all_channels">Alle kanalen</string>
     <string name="movies_watch_history_title">Kijkgeschiedenis</string>
+    <string name="home_sports_filter_all">Allemaal</string>
+    <string name="home_sports_filter_cricket">Cricket</string>
+    <string name="home_sports_filter_football">Voetbal</string>
+    <string name="home_sports_filter_other">Overig</string>
+    <string name="home_sports_match_center">Live Wedstrijdcentrum</string>
 </resources>

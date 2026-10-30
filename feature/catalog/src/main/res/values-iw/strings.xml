@@ -381,4 +381,9 @@
     <string name="home_no_channels_in_category">אין ערוצים זמינים בקטגוריה זו</string>
     <string name="home_all_channels">כל הערוצים</string>
     <string name="movies_watch_history_title">היסטוריית צפייה</string>
+    <string name="home_sports_filter_all">הכל</string>
+    <string name="home_sports_filter_cricket">קריקט</string>
+    <string name="home_sports_filter_football">כדורגל</string>
+    <string name="home_sports_filter_other">אחר</string>
+    <string name="home_sports_match_center">מרכז משחקים חיים</string>
 </resources>
