@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
@@ -92,13 +94,27 @@ fun LiveChannelCard(
         semanticsStateDescription = if (isLocked) lockedLabel else null
     ) { isFocused ->
         if (!isLocked) {
-            ChannelLogoBadge(
-                channelName = channel.name,
-                logoUrl = channel.logoUrl,
-                textStyle = MaterialTheme.typography.titleMedium,
-                textColor = AppColors.TextSecondary,
-                modifier = Modifier.fillMaxSize()
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(72.dp)
+                    .align(Alignment.TopCenter)
+                    .padding(top = 10.dp, bottom = 4.dp, start = 14.dp, end = 14.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                ChannelLogoBadge(
+                    channelName = channel.name,
+                    logoUrl = channel.logoUrl,
+                    shape = RoundedCornerShape(8.dp),
+                    backgroundColor = Color.Transparent,
+                    contentScale = ContentScale.Fit,
+                    textStyle = MaterialTheme.typography.titleMedium,
+                    textColor = AppColors.TextSecondary,
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .widthIn(max = 130.dp)
+                )
+            }
         }
         Box(modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().fillMaxHeight(0.55f).background(Brush.verticalGradient(listOf(Color.Transparent, AppColors.HeroBottom))))
         Column(modifier = Modifier.align(Alignment.BottomStart).fillMaxWidth().padding(horizontal = 10.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {

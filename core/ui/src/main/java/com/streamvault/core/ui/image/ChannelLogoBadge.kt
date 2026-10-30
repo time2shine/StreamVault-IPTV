@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -63,12 +64,22 @@ fun ChannelLogoBadge(
                     .padding(contentPadding)
             )
         } else {
-            Text(
-                text = channelInitials(channelName),
-                style = textStyle,
-                color = textColor,
-                fontWeight = FontWeight.Bold
-            )
+            Box(
+                modifier = if (backgroundColor == Color.Transparent) {
+                    Modifier
+                        .size(44.dp)
+                        .background(AppColors.SurfaceEmphasis, RoundedCornerShape(10.dp))
+                        .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(10.dp))
+                } else Modifier,
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = channelInitials(channelName),
+                    style = textStyle,
+                    color = textColor,
+                    fontWeight = FontWeight.Bold
+                )
+            }
             if (model != null) {
                 AsyncImage(
                     model = model,

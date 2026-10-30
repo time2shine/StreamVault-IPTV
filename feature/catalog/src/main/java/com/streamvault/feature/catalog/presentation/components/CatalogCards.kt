@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Movie as MovieIcon
@@ -220,14 +221,27 @@ fun ChannelCard(
         semanticsStateDescription = if (isLocked) stringResource(R.string.a11y_locked) else null
     ) { isFocused ->
         if (!isLocked) {
-            ChannelLogoBadge(
-                channelName = channel.name,
-                logoUrl = channel.logoUrl,
-                shape = channelCardShape,
-                textStyle = MaterialTheme.typography.titleMedium,
-                textColor = TextSecondary,
-                modifier = Modifier.fillMaxSize()
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(72.dp)
+                    .align(Alignment.TopCenter)
+                    .padding(top = 10.dp, bottom = 4.dp, start = 14.dp, end = 14.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                ChannelLogoBadge(
+                    channelName = channel.name,
+                    logoUrl = channel.logoUrl,
+                    shape = RoundedCornerShape(8.dp),
+                    backgroundColor = Color.Transparent,
+                    contentScale = ContentScale.Fit,
+                    textStyle = MaterialTheme.typography.titleMedium,
+                    textColor = TextSecondary,
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .widthIn(max = 130.dp)
+                )
+            }
         }
 
         Box(
