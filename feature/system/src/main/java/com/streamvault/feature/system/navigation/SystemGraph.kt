@@ -18,7 +18,7 @@ fun NavGraphBuilder.registerSystemGraph(
 ) {
     composable(SystemRoutePatterns.WELCOME) {
         WelcomeScreen(
-            onNavigateToHome = dropUnlessResumed {
+            onNavigateToHome = {
                 onStartupNavigationRequested(AppDestination.Welcome)
             },
             startupReady = startupReady,

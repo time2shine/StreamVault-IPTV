@@ -162,6 +162,10 @@ fun LiveHomeScreen(
     var pendingUnlockCategory by remember { mutableStateOf<Category?>(null) }
     var pendingUnlockChannel by remember { mutableStateOf<Channel?>(null) }
     var pendingLockToggleCategory by remember { mutableStateOf<Category?>(null) }
+    var lastFocusedCategoryId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var lastFocusedChannelId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var preferredRestoreTarget by rememberSaveable { mutableStateOf(FocusRestoreTarget.CHANNEL.name) }
+    val channelListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
 
     fun revealCategorySidebar() {
@@ -251,7 +255,11 @@ fun LiveHomeScreen(
         onShowAddQuickFilterDialogChange = { showAddQuickFilterDialog = it },
         onShowSplitManagerDialogChange = { showSplitManagerDialog = it },
         onPendingSplitPlannerChannelChange = { pendingSplitPlannerChannel = it },
-        onChannelClick = onChannelClick,
+        onChannelClick = { channel, category, provider, profileId, sourceProviderId ->
+            lastFocusedChannelId = channel.id
+            preferredRestoreTarget = FocusRestoreTarget.CHANNEL.name
+            onChannelClick(channel, category, provider, profileId, sourceProviderId)
+        },
         onOpenMultiView = onOpenMultiView,
         multiViewPlanner = multiViewPlanner,
         addToGroupContent = addToGroupContent,
@@ -403,9 +411,7 @@ fun LiveHomeScreen(
                 ) {
                     visibleCategories.filterNot(isCategoryLocked)
                 }
-                var lastFocusedCategoryId by rememberSaveable { mutableStateOf<Long?>(null) }
-                var lastFocusedChannelId by rememberSaveable { mutableStateOf<Long?>(null) }
-                var preferredRestoreTarget by rememberSaveable { mutableStateOf(FocusRestoreTarget.CHANNEL.name) }
+
                 var pendingRestoreTarget by remember { mutableStateOf<FocusRestoreTarget?>(null) }
                 var focusRestoreNonce by rememberSaveable { mutableStateOf(0) }
                 var focusedRemoteShortcutTarget by remember { mutableStateOf<FocusedRemoteShortcutTarget?>(null) }
@@ -607,10 +613,27 @@ fun LiveHomeScreen(
 
                 LaunchedEffect(focusRestoreNonce, uiState.categories, uiState.filteredChannels) {
                     val restoreTarget = pendingRestoreTarget ?: return@LaunchedEffect
-                    kotlinx.coroutines.delay(80)
-                    val restored = when (restoreTarget) {
-                        FocusRestoreTarget.CHANNEL -> requestChannelFocus(lastFocusedChannelId)
-                        FocusRestoreTarget.CATEGORY -> requestCategoryFocus(lastFocusedCategoryId)
+                    if (restoreTarget == FocusRestoreTarget.CHANNEL && lastFocusedChannelId != null) {
+                        val targetIndex = uiState.filteredChannels.indexOfFirst { it.id == lastFocusedChannelId }
+                        if (targetIndex >= 0) {
+                            val visibleItems = channelListState.layoutInfo.visibleItemsInfo
+                            val firstVisible = visibleItems.firstOrNull()?.index ?: -1
+                            val lastVisible = visibleItems.lastOrNull()?.index ?: -1
+                            if (targetIndex <= firstVisible || targetIndex >= lastVisible) {
+                                runCatching {
+                                    channelListState.scrollToItem((targetIndex - 1).coerceAtLeast(0))
+                                }
+                            }
+                        }
+                    }
+                    var restored = false
+                    for (attempt in 0..6) {
+                        kotlinx.coroutines.delay(60)
+                        restored = when (restoreTarget) {
+                            FocusRestoreTarget.CHANNEL -> requestChannelFocus(lastFocusedChannelId)
+                            FocusRestoreTarget.CATEGORY -> requestCategoryFocus(lastFocusedCategoryId)
+                        }
+                        if (restored) break
                     }
                     if (!restored) {
                         when (restoreTarget) {
@@ -674,6 +697,8 @@ fun LiveHomeScreen(
                                         else viewModel.addFavorite(target.channel)
                                     },
                                     onPlayChannel = {
+                                        lastFocusedChannelId = target.channel.id
+                                        preferredRestoreTarget = FocusRestoreTarget.CHANNEL.name
                                         onChannelClick(
                                             target.channel,
                                             uiState.selectedCategory,
@@ -948,6 +973,7 @@ fun LiveHomeScreen(
                                 channelFocusRequesters = channelFocusRequesters,
                                 contentPaddingBottom = if (isDenseMode) 8.dp else 12.dp,
                                 channelListSpacing = channelListSpacing,
+                                channelListState = channelListState,
                                 onDraggingChannelChange = { draggingChannel = it },
                                 onExitReorderMode = viewModel::exitChannelReorderMode,
                                 onMoveChannelUp = viewModel::moveChannelUp,
@@ -1009,6 +1035,8 @@ fun LiveHomeScreen(
                                                         if (!handedOff) {
                                                             viewModel.clearPreview()
                                                         }
+                                                        lastFocusedChannelId = channel.id
+                                                        preferredRestoreTarget = FocusRestoreTarget.CHANNEL.name
                                                         onChannelClick(
                                                             channel,
                                                             uiState.selectedCategory,
@@ -1017,9 +1045,12 @@ fun LiveHomeScreen(
                                                             uiState.selectedCombinedSourceProviderId
                                                         )
                                                     } else {
+                                                        lastFocusedChannelId = channel.id
                                                         viewModel.previewChannel(channel)
                                                     }
                                                 } else {
+                                                    lastFocusedChannelId = channel.id
+                                                    preferredRestoreTarget = FocusRestoreTarget.CHANNEL.name
                                                     onChannelClick(
                                                         channel,
                                                         uiState.selectedCategory,

@@ -130,10 +130,8 @@ fun LiveChannelCard(
             Box(modifier = Modifier.align(Alignment.TopEnd).padding(6.dp)) {
                 Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(3.dp)) {
                     if (channel.isFavorite) Icon(imageVector = Icons.Filled.Star, contentDescription = null, tint = AppColors.MediaWarning, modifier = Modifier.size(14.dp))
-                    if (hasArchive) StatusPill(label = catchUpLabel, containerColor = AppColors.Brand)
                     if (isRecording) StatusPill(label = recordingLabel, containerColor = AppColors.Live)
                     else if (isScheduledRecording) StatusPill(label = scheduledLabel, containerColor = AppColors.Warning, contentColor = Color.Black)
-                    StatusPill(label = liveLabel, containerColor = AppColors.Live)
                 }
             }
         } else {

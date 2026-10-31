@@ -182,7 +182,7 @@ fun NavGraphBuilder.registerCatalogGraph(
                     movie,
                     AppDestination.MovieDetail(
                         movieId = movie.id.takeIf { it > 0L } ?: movieId,
-                        returnDestination = returnDestination,
+                        returnDestination = returnDestination ?: AppDestination.Movies,
                     )
                 )
             },
@@ -194,7 +194,7 @@ fun NavGraphBuilder.registerCatalogGraph(
                     onOpenMovieDetail = onOpenMovieDetail,
                 )
             },
-            onBack = { actions.returnTo(returnDestination) },
+            onBack = { actions.returnTo(returnDestination ?: AppDestination.Movies) },
             platformHost = platformHost,
         )
     }
@@ -219,11 +219,11 @@ fun NavGraphBuilder.registerCatalogGraph(
                     series,
                     AppDestination.SeriesDetail(
                         seriesId = episode.seriesId.takeIf { it > 0L } ?: seriesId,
-                        returnDestination = returnDestination,
+                        returnDestination = returnDestination ?: AppDestination.Series,
                     )
                 )
             },
-            onBack = { actions.returnTo(returnDestination) },
+            onBack = { actions.returnTo(returnDestination ?: AppDestination.Series) },
             platformHost = platformHost,
         )
     }

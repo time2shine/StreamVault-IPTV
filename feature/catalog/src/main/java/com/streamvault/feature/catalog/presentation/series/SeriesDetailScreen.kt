@@ -1,5 +1,6 @@
 package com.streamvault.feature.catalog.presentation.series
 
+import androidx.activity.compose.BackHandler
 import com.streamvault.core.ui.design.BrowseShapes
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -103,6 +104,10 @@ fun SeriesDetailScreen(
     platformHost: CatalogPlatformHost? = null,
     viewModel: SeriesDetailViewModel = hiltViewModel()
 ) {
+    BackHandler {
+        onBack()
+    }
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val series = uiState.series
     val context = LocalContext.current

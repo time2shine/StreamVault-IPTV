@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
@@ -36,9 +37,23 @@ fun LiveChannelListHost(
     onVisibleChannelWindowChanged: (List<Long>, Long?) -> Unit,
     onLoadMore: () -> Unit,
     itemContent: @Composable (channel: Channel, focusRequester: FocusRequester, isDragging: Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    channelListState: LazyListState = rememberLazyListState()
 ) {
-    val channelListState = rememberLazyListState()
+    LaunchedEffect(focusedChannelId) {
+        val targetId = focusedChannelId ?: return@LaunchedEffect
+        val targetIndex = channels.indexOfFirst { it.id == targetId }
+        if (targetIndex >= 0) {
+            val visibleItems = channelListState.layoutInfo.visibleItemsInfo
+            val firstVisibleIndex = visibleItems.firstOrNull()?.index ?: -1
+            val lastVisibleIndex = visibleItems.lastOrNull()?.index ?: -1
+            if (targetIndex <= firstVisibleIndex || targetIndex >= lastVisibleIndex) {
+                runCatching {
+                    channelListState.scrollToItem((targetIndex - 1).coerceAtLeast(0))
+                }
+            }
+        }
+    }
 
     LaunchedEffect(isReorderMode, draggingChannel?.id, channels) {
         if (!isReorderMode) return@LaunchedEffect

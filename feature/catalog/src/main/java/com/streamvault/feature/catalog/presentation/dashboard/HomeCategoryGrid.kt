@@ -1,6 +1,9 @@
 package com.streamvault.feature.catalog.presentation.dashboard
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.BringIntoViewSpec
+import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,16 +37,20 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -91,6 +98,31 @@ internal fun matchesFootballChannel(name: String): Boolean {
            "dazn" in lower || "laliga" in lower || "epl" in lower ||
            "uefa" in lower || "optus" in lower || "astro supersport" in lower ||
            "tnt sports" in lower || "bt sport" in lower
+}
+
+internal fun isBanglaNewsCategory(name: String): Boolean {
+    val lower = name.trim().lowercase(Locale.ROOT)
+    return lower.contains("bangla news")
+}
+
+internal fun formatBanglaNewsDisplayName(name: String): String {
+    val trimmed = name.trim()
+    return when {
+        trimmed.startsWith("BD |", ignoreCase = true) -> trimmed.substring(4).trim()
+        trimmed.startsWith("BD|", ignoreCase = true) -> trimmed.substring(3).trim()
+        trimmed.startsWith("IN |", ignoreCase = true) -> trimmed.substring(4).trim()
+        trimmed.startsWith("IN|", ignoreCase = true) -> trimmed.substring(3).trim()
+        else -> trimmed
+    }
+}
+
+internal fun resolveBanglaNewsFlag(name: String): String? {
+    val trimmed = name.trim()
+    return when {
+        trimmed.startsWith("BD |", ignoreCase = true) || trimmed.startsWith("BD|", ignoreCase = true) -> "🇧🇩"
+        trimmed.startsWith("IN |", ignoreCase = true) || trimmed.startsWith("IN|", ignoreCase = true) -> "🇮🇳"
+        else -> null
+    }
 }
 
 @Composable
@@ -231,7 +263,8 @@ fun HomeCategoryChannelListView(
     val gridState = rememberLazyGridState()
     val columns = if (isPortrait) GridCells.Fixed(1) else GridCells.Adaptive(minSize = 220.dp)
     val categoryIcon = remember(category) { resolveCategoryIcon(category) }
-    val firstChannelFocusRequester = remember { FocusRequester() }
+    var lastSelectedChannelId by rememberSaveable(category.id) { mutableStateOf<Long?>(null) }
+    val channelFocusRequesters = remember { mutableMapOf<Long, FocusRequester>() }
 
     val isSportsCategory = remember(category) {
         val lower = category.name.trim().lowercase(Locale.ROOT)
@@ -250,25 +283,87 @@ fun HomeCategoryChannelListView(
         if (!isSportsCategory) 0 else channels.count { !matchesCricketChannel(it.name) && !matchesFootballChannel(it.name) }
     }
 
-    val displayedChannels = remember(channels, isSportsCategory, sportsSubFilter) {
-        if (!isSportsCategory) channels
+    val isBanglaNewsCategory = remember(category) {
+        isBanglaNewsCategory(category.name)
+    }
+
+    val stableBringIntoViewSpec = remember {
+        @OptIn(ExperimentalFoundationApi::class)
+        object : BringIntoViewSpec {
+            override fun calculateScrollDistance(offset: Float, size: Float, containerSize: Float): Float {
+                val trailingEdge = offset + size
+                if (offset >= -8f && trailingEdge <= containerSize + 8f) {
+                    return 0f
+                }
+                return if (offset < 0f) {
+                    offset
+                } else if (trailingEdge > containerSize) {
+                    trailingEdge - containerSize
+                } else {
+                    0f
+                }
+            }
+        }
+    }
+
+    val displayedChannels = remember(channels, isSportsCategory, sportsSubFilter, isBanglaNewsCategory) {
+        val filtered = if (!isSportsCategory) channels
         else when (sportsSubFilter) {
             SportsChannelSubFilter.ALL -> channels
             SportsChannelSubFilter.CRICKET -> channels.filter { matchesCricketChannel(it.name) }
             SportsChannelSubFilter.FOOTBALL -> channels.filter { matchesFootballChannel(it.name) }
             SportsChannelSubFilter.OTHER -> channels.filter { !matchesCricketChannel(it.name) && !matchesFootballChannel(it.name) }
         }
+        if (isBanglaNewsCategory) {
+            filtered.sortedWith(
+                compareBy<Channel> { ch ->
+                    val trimmed = ch.name.trim()
+                    when {
+                        trimmed.startsWith("BD |", ignoreCase = true) || trimmed.startsWith("BD|", ignoreCase = true) -> 0
+                        trimmed.startsWith("IN |", ignoreCase = true) || trimmed.startsWith("IN|", ignoreCase = true) -> 1
+                        else -> 2
+                    }
+                }.thenBy { ch ->
+                    formatBanglaNewsDisplayName(ch.name).lowercase(Locale.ROOT)
+                }
+            )
+        } else {
+            filtered
+        }
     }
 
-    val focusFirstChannel: suspend () -> Unit = {
+    val restoreChannelFocusOrScroll: suspend () -> Unit = {
         if (displayedChannels.isNotEmpty()) {
-            if (gridState.firstVisibleItemIndex > 0) {
+            val targetId = lastSelectedChannelId
+            val targetIndex = if (targetId != null) {
+                displayedChannels.indexOfFirst { it.id == targetId }
+            } else {
+                0
+            }
+            val resolvedIndex = if (targetIndex >= 0) targetIndex else 0
+            val resolvedTargetId = displayedChannels.getOrNull(resolvedIndex)?.id
+
+            val visibleItems = gridState.layoutInfo.visibleItemsInfo
+            val firstVisible = visibleItems.firstOrNull()?.index ?: -1
+            val lastVisible = visibleItems.lastOrNull()?.index ?: -1
+            val isAlreadyVisible = resolvedIndex in firstVisible..lastVisible
+
+            if (!isAlreadyVisible && resolvedIndex > 0) {
+                runCatching {
+                    val scrollOffset = if (isPortrait) 1 else 2
+                    gridState.scrollToItem((resolvedIndex - scrollOffset).coerceAtLeast(0))
+                }
+            } else if (targetId == null && gridState.firstVisibleItemIndex > 0) {
                 runCatching { gridState.scrollToItem(0) }
             }
-            for (attempt in 0..5) {
-                delay(80)
-                if (firstChannelFocusRequester.requestFocusSafely(tag = "HomeCategoryChannelList", target = "First channel")) {
-                    break
+
+            if (resolvedTargetId != null) {
+                for (attempt in 0..6) {
+                    delay(80)
+                    val requester = channelFocusRequesters[resolvedTargetId]
+                    if (requester?.requestFocusSafely(tag = "HomeCategoryChannelList", target = "Channel $resolvedTargetId") == true) {
+                        break
+                    }
                 }
             }
         }
@@ -277,11 +372,13 @@ fun HomeCategoryChannelListView(
     FocusRestoreHost(
         enabled = displayedChannels.isNotEmpty(),
         onRestore = {
-            focusFirstChannel()
+            restoreChannelFocusOrScroll()
         }
     ) {
         LaunchedEffect(displayedChannels.firstOrNull()?.id) {
-            focusFirstChannel()
+            if (lastSelectedChannelId == null) {
+                restoreChannelFocusOrScroll()
+            }
         }
 
         Column(
@@ -537,26 +634,45 @@ fun HomeCategoryChannelListView(
                     )
                 }
             } else {
-                LazyVerticalGrid(
-                    columns = columns,
-                    state = gridState,
-                    contentPadding = PaddingValues(bottom = 32.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    itemsIndexed(
-                        items = displayedChannels,
-                        key = { _, channel -> channel.id }
-                    ) { index, channel ->
-                        ChannelCard(
-                            channel = channel,
-                            nowMs = nowMs,
-                            isRecording = channel.id in recordingChannelIds,
-                            isScheduledRecording = channel.id in scheduledChannelIds,
-                            onClick = { onChannelClick(channel) },
-                            modifier = if (index == 0) Modifier.focusRequester(firstChannelFocusRequester) else Modifier
-                        )
+                @OptIn(ExperimentalFoundationApi::class)
+                CompositionLocalProvider(LocalBringIntoViewSpec provides stableBringIntoViewSpec) {
+                    LazyVerticalGrid(
+                        columns = columns,
+                        state = gridState,
+                        contentPadding = PaddingValues(top = 10.dp, bottom = 36.dp, start = 6.dp, end = 6.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        itemsIndexed(
+                            items = displayedChannels,
+                            key = { _, channel -> channel.id }
+                        ) { index, channel ->
+                            val requester = remember(channel.id) { FocusRequester() }
+                            DisposableEffect(channel.id) {
+                                channelFocusRequesters[channel.id] = requester
+                                onDispose { channelFocusRequesters.remove(channel.id) }
+                            }
+                            ChannelCard(
+                                channel = channel,
+                                nowMs = nowMs,
+                                isRecording = channel.id in recordingChannelIds,
+                                isScheduledRecording = channel.id in scheduledChannelIds,
+                                displayName = if (isBanglaNewsCategory) formatBanglaNewsDisplayName(channel.name) else null,
+                                countryFlag = if (isBanglaNewsCategory) resolveBanglaNewsFlag(channel.name) else null,
+                                onClick = {
+                                    lastSelectedChannelId = channel.id
+                                    onChannelClick(channel)
+                                },
+                                modifier = Modifier
+                                    .focusRequester(requester)
+                                    .onFocusChanged { focusState ->
+                                        if (focusState.isFocused) {
+                                            lastSelectedChannelId = channel.id
+                                        }
+                                    }
+                            )
+                        }
                     }
                 }
             }

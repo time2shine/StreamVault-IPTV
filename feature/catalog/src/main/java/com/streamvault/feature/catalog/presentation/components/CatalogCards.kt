@@ -19,6 +19,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Movie as MovieIcon
@@ -184,15 +192,18 @@ fun ChannelCard(
     isReorderMode: Boolean = false,
     isDragging: Boolean = false,
     isRecording: Boolean = false,
-    isScheduledRecording: Boolean = false
+    isScheduledRecording: Boolean = false,
+    displayName: String? = null,
+    countryFlag: String? = null
 ) {
+    val effectiveName = displayName ?: channel.name
     val channelCardShape = LocalAppShapes.current.small
     val hasUsableArchive = channel.archivePlaybackCapability().canBuildReplayCandidate
     val channelDescription = buildString {
         append(
             channel.number.takeIf { it > 0 }?.let {
-                stringResource(R.string.a11y_channel_with_number, it, channel.name)
-            } ?: channel.name
+                stringResource(R.string.a11y_channel_with_number, it, effectiveName)
+            } ?: effectiveName
         )
         if (!isLocked) {
             channel.currentProgram?.title?.takeIf { it.isNotBlank() }?.let {
@@ -230,7 +241,7 @@ fun ChannelCard(
                 contentAlignment = Alignment.Center
             ) {
                 ChannelLogoBadge(
-                    channelName = channel.name,
+                    channelName = effectiveName,
                     logoUrl = channel.logoUrl,
                     shape = RoundedCornerShape(8.dp),
                     backgroundColor = Color.Transparent,
@@ -264,7 +275,7 @@ fun ChannelCard(
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             Text(
-                text = if (isLocked) stringResource(R.string.card_locked_channel) else channel.name,
+                text = if (isLocked) stringResource(R.string.card_locked_channel) else effectiveName,
                 style = MaterialTheme.typography.titleSmall,
                 color = if (isFocused) TextPrimary else TextSecondary,
                 maxLines = 1,
@@ -308,6 +319,12 @@ fun ChannelCard(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                if (countryFlag != null) {
+                    CountryFlagCircleBadge(
+                        countryFlag = countryFlag,
+                        size = 22.dp
+                    )
+                }
                 if (channel.isFavorite) {
                     Icon(
                         imageVector = Icons.Filled.Star,
@@ -327,13 +344,15 @@ fun ChannelCard(
                 } else if (isScheduledRecording) {
                     StatusPill(label = stringResource(R.string.badge_scheduled), containerColor = AccentAmber, cornerRadius = 4.dp, horizontalPadding = 6.dp, verticalPadding = 2.dp)
                 }
-                StatusPill(
-                    label = stringResource(R.string.card_live_badge),
-                    containerColor = AccentRed,
-                    cornerRadius = 4.dp,
-                    horizontalPadding = 6.dp,
-                    verticalPadding = 2.dp
-                )
+                if (countryFlag == null) {
+                    StatusPill(
+                        label = stringResource(R.string.card_live_badge),
+                        containerColor = AccentRed,
+                        cornerRadius = 4.dp,
+                        horizontalPadding = 6.dp,
+                        verticalPadding = 2.dp
+                    )
+                }
             }
         }
 
@@ -344,6 +363,104 @@ fun ChannelCard(
         }
     }
 }
+
+@Composable
+fun CountryFlagCircleBadge(
+    countryFlag: String,
+    modifier: Modifier = Modifier,
+    size: Dp = 22.dp
+) {
+    val (countryCode, flagUrl) = remember(countryFlag) {
+        val trimmed = countryFlag.trim()
+        when {
+            trimmed.equals("bd", ignoreCase = true) || trimmed == "🇧🇩" || trimmed.contains("/bd.") ->
+                "bd" to "https://flagcdn.com/w80/bd.png"
+            trimmed.equals("in", ignoreCase = true) || trimmed == "🇮🇳" || trimmed.contains("/in.") ->
+                "in" to "https://flagcdn.com/w80/in.png"
+            trimmed.startsWith("http", ignoreCase = true) ->
+                null to trimmed
+            else ->
+                null to null
+        }
+    }
+
+    Box(
+        modifier = modifier
+            .size(size)
+            .clip(CircleShape)
+            .border(1.dp, Color.White.copy(alpha = 0.28f), CircleShape),
+        contentAlignment = Alignment.Center
+    ) {
+        when (countryCode) {
+            "bd" -> BangladeshFlagCanvas(modifier = Modifier.fillMaxSize())
+            "in" -> IndiaFlagCanvas(modifier = Modifier.fillMaxSize())
+            else -> {
+                if (flagUrl == null) {
+                    Text(
+                        text = countryFlag,
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
+
+        if (flagUrl != null) {
+            AsyncImage(
+                model = rememberCrossfadeImageModel(flagUrl),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+    }
+}
+
+@Composable
+private fun BangladeshFlagCanvas(modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier) {
+        drawRect(color = Color(0xFF006A4E))
+        drawCircle(
+            color = Color(0xFFF42A41),
+            radius = size.minDimension * 0.32f,
+            center = center
+        )
+    }
+}
+
+@Composable
+private fun IndiaFlagCanvas(modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier) {
+        val bandHeight = size.height / 3f
+        drawRect(
+            color = Color(0xFFFF9933),
+            topLeft = Offset(0f, 0f),
+            size = Size(size.width, bandHeight)
+        )
+        drawRect(
+            color = Color(0xFFFFFFFF),
+            topLeft = Offset(0f, bandHeight),
+            size = Size(size.width, bandHeight)
+        )
+        drawRect(
+            color = Color(0xFF138808),
+            topLeft = Offset(0f, bandHeight * 2f),
+            size = Size(size.width, bandHeight)
+        )
+        drawCircle(
+            color = Color(0xFF000080),
+            radius = bandHeight * 0.42f,
+            center = center,
+            style = Stroke(width = (size.minDimension * 0.05f).coerceAtLeast(1f))
+        )
+        drawCircle(
+            color = Color(0xFF000080),
+            radius = bandHeight * 0.12f,
+            center = center
+        )
+    }
+}
+
 
 @Composable
 private fun BoxScope.VodTypeBadge(

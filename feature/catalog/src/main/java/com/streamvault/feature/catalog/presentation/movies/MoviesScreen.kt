@@ -32,12 +32,18 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -47,7 +53,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.streamvault.core.navigation.AppDestination
 import com.streamvault.core.ui.components.shell.AppMessageState
 import com.streamvault.core.ui.components.SearchInput
+import com.streamvault.core.ui.design.FocusRestoreHost
+import com.streamvault.core.ui.design.requestFocusSafely
 import com.streamvault.domain.model.Movie
+import kotlinx.coroutines.delay
 import com.streamvault.domain.model.PlaybackHistory
 import com.streamvault.feature.catalog.R
 import com.streamvault.feature.catalog.api.CatalogNavigationChrome
@@ -64,46 +73,69 @@ fun MoviesScreen(
     viewModel: MoviesViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var lastSelectedMovieId by rememberSaveable { mutableStateOf<Long?>(null) }
+    val movieFocusRequesters = remember { mutableMapOf<Long, FocusRequester>() }
 
     BackHandler(enabled = uiState.selectedCategory != null) {
         viewModel.selectCategory(null)
     }
 
-    scaffold(
-        AppDestination.Movies,
-        stringResource(R.string.nav_movies),
-        null,
-        CatalogNavigationChrome.TopBar,
-        true,
-        true,
-        false
+    FocusRestoreHost(
+        enabled = lastSelectedMovieId != null,
+        onRestore = {
+            val targetId = lastSelectedMovieId ?: return@FocusRestoreHost
+            for (attempt in 0..6) {
+                delay(80)
+                if (movieFocusRequesters[targetId]?.requestFocusSafely(tag = "MoviesScreen", target = "Movie $targetId") == true) {
+                    break
+                }
+            }
+        }
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            when {
-                uiState.isLoading && uiState.shelves.isEmpty() -> {
-                    LoadingContent()
-                }
-                !uiState.hasProviders -> {
-                    NoProvidersContent()
-                }
-                uiState.errorMessage != null && uiState.shelves.isEmpty() -> {
-                    ErrorContent(message = uiState.errorMessage ?: "")
-                }
-                uiState.selectedCategory != null -> {
-                    CategoryGridContent(
-                        uiState = uiState,
-                        onMovieClick = onMovieClick,
-                        onBack = { viewModel.selectCategory(null) },
-                        onLoadMore = viewModel::loadMoreSelectedCategory
-                    )
-                }
-                else -> {
-                    MovieShelvesContent(
-                        uiState = uiState,
-                        onMovieClick = onMovieClick,
-                        onContinueWatchingPlay = onContinueWatchingPlay,
-                        onSelectCategory = viewModel::selectCategory
-                    )
+        scaffold(
+            AppDestination.Movies,
+            stringResource(R.string.nav_movies),
+            null,
+            CatalogNavigationChrome.TopBar,
+            true,
+            true,
+            false
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                when {
+                    uiState.isLoading && uiState.shelves.isEmpty() -> {
+                        LoadingContent()
+                    }
+                    !uiState.hasProviders -> {
+                        NoProvidersContent()
+                    }
+                    uiState.errorMessage != null && uiState.shelves.isEmpty() -> {
+                        ErrorContent(message = uiState.errorMessage ?: "")
+                    }
+                    uiState.selectedCategory != null -> {
+                        CategoryGridContent(
+                            uiState = uiState,
+                            onMovieClick = { movie ->
+                                lastSelectedMovieId = movie.id
+                                onMovieClick(movie)
+                            },
+                            movieFocusRequesters = movieFocusRequesters,
+                            onBack = { viewModel.selectCategory(null) },
+                            onLoadMore = viewModel::loadMoreSelectedCategory
+                        )
+                    }
+                    else -> {
+                        MovieShelvesContent(
+                            uiState = uiState,
+                            onMovieClick = { movie ->
+                                lastSelectedMovieId = movie.id
+                                onMovieClick(movie)
+                            },
+                            movieFocusRequesters = movieFocusRequesters,
+                            onContinueWatchingPlay = onContinueWatchingPlay,
+                            onSelectCategory = viewModel::selectCategory
+                        )
+                    }
                 }
             }
         }
@@ -114,6 +146,7 @@ fun MoviesScreen(
 private fun MovieShelvesContent(
     uiState: MoviesUiState,
     onMovieClick: (Movie) -> Unit,
+    movieFocusRequesters: MutableMap<Long, FocusRequester>,
     onContinueWatchingPlay: (PlaybackHistory) -> Unit,
     onSelectCategory: (String) -> Unit
 ) {
@@ -162,9 +195,15 @@ private fun MovieShelvesContent(
                 keySelector = { movie -> "${shelf.categoryId}_${movie.id}_${movie.streamId}" },
                 contentTypeSelector = { "movie_card" }
             ) { movie ->
+                val requester = remember(movie.id) { FocusRequester() }
+                DisposableEffect(movie.id) {
+                    movieFocusRequesters[movie.id] = requester
+                    onDispose { movieFocusRequesters.remove(movie.id) }
+                }
                 MovieCard(
                     movie = movie,
                     onClick = { onMovieClick(movie) },
+                    modifier = Modifier.focusRequester(requester),
                     showRating = !isKidsOrChannel,
                     showNewBadge = if (isKidsOrChannel) false else null
                 )
@@ -177,6 +216,7 @@ private fun MovieShelvesContent(
 private fun CategoryGridContent(
     uiState: MoviesUiState,
     onMovieClick: (Movie) -> Unit,
+    movieFocusRequesters: MutableMap<Long, FocusRequester>,
     onBack: () -> Unit,
     onLoadMore: () -> Unit
 ) {
@@ -249,6 +289,11 @@ private fun CategoryGridContent(
                 items = uiState.selectedCategoryMovies,
                 key = { movie -> "grid_${movie.id}_${movie.streamId}" }
             ) { movie ->
+                val requester = remember(movie.id) { FocusRequester() }
+                DisposableEffect(movie.id) {
+                    movieFocusRequesters[movie.id] = requester
+                    onDispose { movieFocusRequesters.remove(movie.id) }
+                }
                 val isItemKidsOrChannel = isGridKidsOrChannel ||
                     movie.categoryName?.contains("kids", ignoreCase = true) == true ||
                     movie.categoryName?.contains("channel", ignoreCase = true) == true ||
@@ -257,6 +302,7 @@ private fun CategoryGridContent(
                 MovieCard(
                     movie = movie,
                     onClick = { onMovieClick(movie) },
+                    modifier = Modifier.focusRequester(requester),
                     showRating = !isItemKidsOrChannel,
                     showNewBadge = if (isItemKidsOrChannel) false else null
                 )

@@ -1,5 +1,6 @@
 package com.streamvault.feature.catalog.presentation.movies
 
+import androidx.activity.compose.BackHandler
 import com.streamvault.core.ui.design.BrowseShapes
 import android.content.Intent
 import android.content.ClipData
@@ -98,6 +99,10 @@ fun MovieDetailScreen(
     platformHost: CatalogPlatformHost? = null,
     viewModel: MovieDetailViewModel = hiltViewModel()
 ) {
+    BackHandler {
+        onBack()
+    }
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val movie = uiState.movie
     val context = LocalContext.current
