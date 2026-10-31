@@ -220,6 +220,7 @@
     <string name="player_resume_start_over">Започни од почеток</string>
     <string name="player_resume_title">Продолжи репродукција</string>
     <string name="player_retry">Обиди се повторно</string>
+    <string name="player_action_back">Назад</string>
     <string name="player_rewind">Премотај назад</string>
     <string name="player_schedule_daily_recording">Закажи дневно</string>
     <string name="player_schedule_recording">Закажи</string>

@@ -159,6 +159,7 @@
     <string name="player_resume_start_over">Baştan Başla</string>
     <string name="player_resume_title">Oynatmayı Devam Ettir</string>
     <string name="player_retry">Yeniden dene</string>
+    <string name="player_action_back">Geri</string>
     <string name="player_rewind">Geri sarma</string>
     <string name="player_schedule_daily_recording">Günlük Zamanla</string>
     <string name="player_schedule_recording">Program</string>

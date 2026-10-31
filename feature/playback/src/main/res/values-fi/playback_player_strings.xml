@@ -159,6 +159,7 @@
     <string name="player_resume_start_over">Aloita alusta</string>
     <string name="player_resume_title">Jatka toistoa</string>
     <string name="player_retry">Yritä uudelleen</string>
+    <string name="player_action_back">Takaisin</string>
     <string name="player_rewind">Kelaa taaksepäin</string>
     <string name="player_schedule_daily_recording">Aikataulu päivittäin</string>
     <string name="player_schedule_recording">Aikataulu</string>

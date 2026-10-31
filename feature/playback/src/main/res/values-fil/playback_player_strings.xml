@@ -220,6 +220,7 @@
     <string name="player_resume_start_over">Magsimula Muli</string>
     <string name="player_resume_title">Ituloy ang Playback</string>
     <string name="player_retry">Subukang Muli</string>
+    <string name="player_action_back">Bumalik</string>
     <string name="player_rewind">I-rewind</string>
     <string name="player_schedule_daily_recording">I-iskedyul Araw-araw</string>
     <string name="player_schedule_recording">I-iskedyul</string>

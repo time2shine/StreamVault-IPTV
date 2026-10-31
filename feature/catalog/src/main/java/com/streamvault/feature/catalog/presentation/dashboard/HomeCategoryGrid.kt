@@ -48,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import com.streamvault.core.navigation.LastPlayedMediaTracker
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -291,14 +292,16 @@ fun HomeCategoryChannelListView(
         @OptIn(ExperimentalFoundationApi::class)
         object : BringIntoViewSpec {
             override fun calculateScrollDistance(offset: Float, size: Float, containerSize: Float): Float {
+                val headroom = 24f
+                val footroom = 36f
                 val trailingEdge = offset + size
-                if (offset >= -8f && trailingEdge <= containerSize + 8f) {
+                if (offset >= headroom && trailingEdge <= containerSize - footroom) {
                     return 0f
                 }
-                return if (offset < 0f) {
-                    offset
-                } else if (trailingEdge > containerSize) {
-                    trailingEdge - containerSize
+                return if (offset < headroom) {
+                    offset - headroom
+                } else if (trailingEdge > containerSize - footroom) {
+                    trailingEdge - containerSize + footroom
                 } else {
                     0f
                 }
@@ -334,7 +337,9 @@ fun HomeCategoryChannelListView(
 
     val restoreChannelFocusOrScroll: suspend () -> Unit = {
         if (displayedChannels.isNotEmpty()) {
-            val targetId = lastSelectedChannelId
+            val targetId = LastPlayedMediaTracker.lastPlayedChannelId?.takeIf { id ->
+                displayedChannels.any { it.id == id }
+            } ?: lastSelectedChannelId
             val targetIndex = if (targetId != null) {
                 displayedChannels.indexOfFirst { it.id == targetId }
             } else {
@@ -639,7 +644,7 @@ fun HomeCategoryChannelListView(
                     LazyVerticalGrid(
                         columns = columns,
                         state = gridState,
-                        contentPadding = PaddingValues(top = 10.dp, bottom = 36.dp, start = 6.dp, end = 6.dp),
+                        contentPadding = PaddingValues(top = 16.dp, bottom = 64.dp, start = 6.dp, end = 6.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         modifier = Modifier.fillMaxSize()
@@ -662,6 +667,7 @@ fun HomeCategoryChannelListView(
                                 countryFlag = if (isBanglaNewsCategory) resolveBanglaNewsFlag(channel.name) else null,
                                 onClick = {
                                     lastSelectedChannelId = channel.id
+                                    LastPlayedMediaTracker.recordChannelPlayed(channel.id)
                                     onChannelClick(channel)
                                 },
                                 modifier = Modifier
@@ -669,6 +675,7 @@ fun HomeCategoryChannelListView(
                                     .onFocusChanged { focusState ->
                                         if (focusState.isFocused) {
                                             lastSelectedChannelId = channel.id
+                                            LastPlayedMediaTracker.recordChannelPlayed(channel.id)
                                         }
                                     }
                             )

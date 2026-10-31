@@ -159,6 +159,7 @@
     <string name="player_resume_start_over">Mulai dari awal</string>
     <string name="player_resume_title">Lanjutkan Pemutaran</string>
     <string name="player_retry">Coba lagi</string>
+    <string name="player_action_back">Kembali</string>
     <string name="player_rewind">Mundur</string>
     <string name="player_schedule_daily_recording">Jadwalkan Setiap Hari</string>
     <string name="player_schedule_recording">Jadwal</string>

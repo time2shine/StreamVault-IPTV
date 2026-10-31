@@ -169,6 +169,7 @@ fun PlayerErrorOverlay(
     hasLastChannel: Boolean,
     onAction: (PlayerNoticeAction) -> Unit,
     onBack: (() -> Unit)? = null,
+    title: String? = null,
     modifier: Modifier = Modifier
 ) {
     val fallbackMessage = when (playerError) {
@@ -193,6 +194,14 @@ fun PlayerErrorOverlay(
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            if (!title.isNullOrBlank()) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+            }
             Text(
                 text = stringResource(R.string.player_error_title),
                 style = MaterialTheme.typography.titleMedium,
@@ -235,7 +244,7 @@ fun PlayerErrorOverlay(
                         )
                     ) {
                         Text(
-                            text = "Back",
+                            text = stringResource(R.string.player_action_back),
                             color = Color.White,
                             modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
                         )

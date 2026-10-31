@@ -160,6 +160,7 @@
     <string name="player_resume_start_over">התחל מחדש</string>
     <string name="player_resume_title">המשך השמעה</string>
     <string name="player_retry">נסה שוב</string>
+    <string name="player_action_back">חזרה</string>
     <string name="player_rewind">החזר לאחור</string>
     <string name="player_schedule_daily_recording">לוח זמנים יומי</string>
     <string name="player_schedule_recording">לוח זמנים</string>

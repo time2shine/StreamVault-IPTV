@@ -160,6 +160,7 @@
     <string name="player_resume_start_over">Repornește de la început</string>
     <string name="player_resume_title">Reluați redarea</string>
     <string name="player_retry">Reîncercați</string>
+    <string name="player_action_back">Înapoi</string>
     <string name="player_rewind">Derulează înapoi</string>
     <string name="player_schedule_daily_recording">Program zilnic</string>
     <string name="player_schedule_recording">Program</string>

@@ -219,6 +219,7 @@
     <string name="player_resume_start_over">從頭開始</string>
     <string name="player_resume_title">繼續播放</string>
     <string name="player_retry">重試</string>
+    <string name="player_action_back">返回</string>
     <string name="player_rewind">倒轉</string>
     <string name="player_schedule_daily_recording">每日排程</string>
     <string name="player_schedule_recording">排程</string>

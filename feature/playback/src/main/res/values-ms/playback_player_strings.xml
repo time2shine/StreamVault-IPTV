@@ -219,6 +219,7 @@
     <string name="player_resume_start_over">Mula Semula</string>
     <string name="player_resume_title">Sambung Main Balik</string>
     <string name="player_retry">Cuba lagi</string>
+    <string name="player_action_back">Kembali</string>
     <string name="player_rewind">Putar balik</string>
     <string name="player_schedule_daily_recording">Jadual Harian</string>
     <string name="player_schedule_recording">Jadual</string>

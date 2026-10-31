@@ -159,6 +159,7 @@
     <string name="player_resume_start_over">Start forfra</string>
     <string name="player_resume_title">Genoptag afspilning</string>
     <string name="player_retry">Prøv igen</string>
+    <string name="player_action_back">Tilbage</string>
     <string name="player_rewind">Spol tilbage</string>
     <string name="player_schedule_daily_recording">Tidsplan dagligt</string>
     <string name="player_schedule_recording">Tidsplan</string>

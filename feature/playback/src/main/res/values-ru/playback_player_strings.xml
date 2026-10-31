@@ -161,6 +161,7 @@
     <string name="player_resume_start_over">С начала</string>
     <string name="player_resume_title">Продолжить воспроизведение</string>
     <string name="player_retry">Повторить</string>
+    <string name="player_action_back">Назад</string>
     <string name="player_rewind">Перемотка назад</string>
     <string name="player_schedule_daily_recording">Запланировать ежедневно</string>
     <string name="player_schedule_recording">Запланировать</string>

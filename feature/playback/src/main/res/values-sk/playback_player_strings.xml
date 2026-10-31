@@ -222,6 +222,7 @@
     <string name="player_resume_start_over">Začať od začiatku</string>
     <string name="player_resume_title">Obnoviť prehrávanie</string>
     <string name="player_retry">Skúsiť znova</string>
+    <string name="player_action_back">Späť</string>
     <string name="player_rewind">Pretočiť vzad</string>
     <string name="player_schedule_daily_recording">Plánovať denne</string>
     <string name="player_schedule_recording">Naplánovať</string>

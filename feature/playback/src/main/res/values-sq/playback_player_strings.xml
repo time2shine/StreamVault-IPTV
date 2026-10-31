@@ -220,6 +220,7 @@
     <string name="player_resume_start_over">Fillo nga e para</string>
     <string name="player_resume_title">Vazhdo luajtjen</string>
     <string name="player_retry">Provo përsëri</string>
+    <string name="player_action_back">Kthehu</string>
     <string name="player_rewind">Kthe pas</string>
     <string name="player_schedule_daily_recording">Planifiko çdo ditë</string>
     <string name="player_schedule_recording">Planifiko</string>

@@ -32,6 +32,13 @@ internal class PlayerRecoveryExecutionPortAdapter(
     private val hasLastChannel: () -> Boolean,
     private val tryFallbackToAvcEpisodeVariant: suspend (Long, String) -> EpisodeFallbackResult = { _, _ -> EpisodeFallbackResult.NotEligible },
     private val handleEpisodeReplacementError: (PlayerError) -> Boolean = { false },
+    private val getLastZapDirection: () -> ZapDirection = { ZapDirection.NONE },
+    private val getConsecutiveAutoSkipCount: () -> Int = { 0 },
+    private val incrementConsecutiveAutoSkipCount: () -> Int = { 0 },
+    private val resetConsecutiveAutoSkipCount: () -> Unit = {},
+    private val playNext: () -> Unit = {},
+    private val playPrevious: () -> Unit = {},
+    private val isLivePlayback: () -> Boolean = { false },
 ) : PlayerRecoveryExecutionPort {
     override val playerEngine: PlayerEngine
         get() = engineCoordinator.currentEngine
@@ -103,4 +110,12 @@ internal class PlayerRecoveryExecutionPortAdapter(
     override fun fallbackToPreviousChannel(reason: String): Boolean = fallbackToPreviousChannel.invoke(reason)
 
     override fun hasLastChannel(): Boolean = hasLastChannel.invoke()
+
+    override fun getLastZapDirection(): ZapDirection = getLastZapDirection.invoke()
+    override fun getConsecutiveAutoSkipCount(): Int = getConsecutiveAutoSkipCount.invoke()
+    override fun incrementConsecutiveAutoSkipCount(): Int = incrementConsecutiveAutoSkipCount.invoke()
+    override fun resetConsecutiveAutoSkipCount() { resetConsecutiveAutoSkipCount.invoke() }
+    override fun playNext() { playNext.invoke() }
+    override fun playPrevious() { playPrevious.invoke() }
+    override fun isLivePlayback(): Boolean = isLivePlayback.invoke()
 }

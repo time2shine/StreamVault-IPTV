@@ -159,6 +159,7 @@
     <string name="player_resume_start_over">처음부터</string>
     <string name="player_resume_title">재생 이어보기</string>
     <string name="player_retry">다시 시도</string>
+    <string name="player_action_back">뒤로</string>
     <string name="player_rewind">되감기</string>
     <string name="player_schedule_daily_recording">매일 예약</string>
     <string name="player_schedule_recording">예약</string>

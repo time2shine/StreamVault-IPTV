@@ -159,6 +159,7 @@
     <string name="player_resume_start_over">最初から再生</string>
     <string name="player_resume_title">再生を再開</string>
     <string name="player_retry">再試行</string>
+    <string name="player_action_back">戻る</string>
     <string name="player_rewind">巻き戻し</string>
     <string name="player_schedule_daily_recording">毎日予約</string>
     <string name="player_schedule_recording">予約</string>

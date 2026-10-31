@@ -1,6 +1,7 @@
 package com.streamvault.feature.playback.player
 
 import androidx.lifecycle.viewModelScope
+import com.streamvault.core.navigation.LastPlayedMediaTracker
 import com.streamvault.domain.model.Channel
 import com.streamvault.domain.model.ChannelNumberingMode
 import com.streamvault.domain.model.ContentType
@@ -14,6 +15,12 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+
+enum class ZapDirection {
+    NONE,
+    FORWARD,
+    BACKWARD
+}
 
 internal const val MAX_NUMERIC_CHANNEL_INPUT_DIGITS = 6
 
@@ -150,6 +157,8 @@ internal fun releaseOutgoingLiveZapPlayback(
 }
 
 fun PlayerViewModel.playNext() {
+    lastZapDirection = ZapDirection.FORWARD
+    consecutiveAutoSkipCount = 0
     clearNumericChannelInput()
     if (currentContentType == ContentType.MOVIE) {
         if (!isSongPlayback.value && !isMovieChannelPlayback.value) return
@@ -169,6 +178,8 @@ fun PlayerViewModel.playNext() {
 }
 
 fun PlayerViewModel.playPrevious() {
+    lastZapDirection = ZapDirection.BACKWARD
+    consecutiveAutoSkipCount = 0
     clearNumericChannelInput()
     if (currentContentType == ContentType.MOVIE) {
         if (!isSongPlayback.value && !isMovieChannelPlayback.value) return
@@ -188,6 +199,8 @@ fun PlayerViewModel.playPrevious() {
 }
 
 fun PlayerViewModel.zapToChannel(channelId: Long) {
+    lastZapDirection = ZapDirection.NONE
+    consecutiveAutoSkipCount = 0
     clearNumericChannelInput()
     if (currentContentType != ContentType.LIVE || channelList.isEmpty()) return
     val index = channelList.indexOfFirst { it.id == channelId }
@@ -198,6 +211,8 @@ fun PlayerViewModel.zapToChannel(channelId: Long) {
 }
 
 fun PlayerViewModel.zapToLastChannel() {
+    lastZapDirection = ZapDirection.NONE
+    consecutiveAutoSkipCount = 0
     clearNumericChannelInput()
     if (currentContentType != ContentType.LIVE || channelList.isEmpty()) return
     if (previousChannelIndex in channelList.indices && previousChannelIndex != currentChannelIndex) {
@@ -232,6 +247,8 @@ fun PlayerViewModel.inputNumericChannelDigit(digit: Int) {
 }
 
 fun PlayerViewModel.commitNumericChannelInput() {
+    lastZapDirection = ZapDirection.NONE
+    consecutiveAutoSkipCount = 0
     numericInputCommitJob?.cancel()
     if (numericInputBuffer.isBlank()) return
 
@@ -290,6 +307,7 @@ internal fun PlayerViewModel.changeChannel(index: Int, isAutoFallback: Boolean =
     val channel = channelList[index]
     currentChannelIndex = index
     currentContentId = channel.id
+    LastPlayedMediaTracker.recordChannelPlayed(channel.id)
     currentTitle = channel.name
     playbackTitleFlow.value = currentTitle
     currentStreamUrl = channel.streamUrl

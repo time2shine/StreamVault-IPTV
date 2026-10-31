@@ -163,6 +163,7 @@
     <string name="player_resume_start_over">ابدأ من البداية</string>
     <string name="player_resume_title">استئناف التشغيل</string>
     <string name="player_retry">إعادة المحاولة</string>
+    <string name="player_action_back">رجوع</string>
     <string name="player_rewind">ترجيع</string>
     <string name="player_schedule_daily_recording">جدولة يومية</string>
     <string name="player_schedule_recording">جدولة</string>

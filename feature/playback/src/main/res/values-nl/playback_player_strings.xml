@@ -159,6 +159,7 @@
     <string name="player_resume_start_over">Begin opnieuw</string>
     <string name="player_resume_title">Hervat het afspelen</string>
     <string name="player_retry">Opnieuw proberen</string>
+    <string name="player_action_back">Terug</string>
     <string name="player_rewind">Terugspoelen</string>
     <string name="player_schedule_daily_recording">Schema dagelijks</string>
     <string name="player_schedule_recording">Schema</string>

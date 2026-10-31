@@ -895,6 +895,7 @@ fun PlayerScreen(
                 }
             }
             is PlaybackResolutionUiState.Failure -> PlayerErrorOverlay(
+                title = viewModel.currentTitle.ifBlank { title },
                 playerError = PlayerError.SourceError(resolutionState.message),
                 contentType = contentType,
                 hasAlternateStream = false,
@@ -908,6 +909,7 @@ fun PlayerScreen(
         // Engine error overlay
         if (playbackResolutionUiState == PlaybackResolutionUiState.Idle && playbackState == PlaybackState.ERROR) {
             PlayerErrorOverlay(
+                title = viewModel.currentTitle.ifBlank { title },
                 playerError = playerError,
                 contentType = contentType,
                 hasAlternateStream = viewModel.hasAlternateStream(),

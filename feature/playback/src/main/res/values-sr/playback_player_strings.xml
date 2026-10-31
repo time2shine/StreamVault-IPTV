@@ -221,6 +221,7 @@
     <string name="player_resume_start_over">Почни из почетка</string>
     <string name="player_resume_title">Настави репродукцију</string>
     <string name="player_retry">Покушај поново</string>
+    <string name="player_action_back">Назад</string>
     <string name="player_rewind">Премотај уназад</string>
     <string name="player_schedule_daily_recording">Закажи дневно</string>
     <string name="player_schedule_recording">Закажи</string>

@@ -159,6 +159,7 @@
     <string name="player_resume_start_over">Recommencer</string>
     <string name="player_resume_title">Reprendre la lecture</string>
     <string name="player_retry">Réessayer</string>
+    <string name="player_action_back">Retour</string>
     <string name="player_rewind">Rembobiner</string>
     <string name="player_schedule_daily_recording">Programme quotidien</string>
     <string name="player_schedule_recording">Calendrier</string>

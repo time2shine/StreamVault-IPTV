@@ -159,6 +159,7 @@
     <string name="player_resume_start_over">Börja om</string>
     <string name="player_resume_title">Återuppta uppspelning</string>
     <string name="player_retry">Försök igen</string>
+    <string name="player_action_back">Tillbaka</string>
     <string name="player_rewind">Spola tillbaka</string>
     <string name="player_schedule_daily_recording">Schema dagligen</string>
     <string name="player_schedule_recording">Schema</string>

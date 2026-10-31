@@ -69,6 +69,13 @@ internal interface PlayerRecoveryExecutionPort {
     fun logRepositoryFailure(operation: String, result: Result<Unit>)
     fun fallbackToPreviousChannel(reason: String): Boolean
     fun hasLastChannel(): Boolean
+    fun getLastZapDirection(): ZapDirection = ZapDirection.NONE
+    fun getConsecutiveAutoSkipCount(): Int = 0
+    fun incrementConsecutiveAutoSkipCount(): Int = 0
+    fun resetConsecutiveAutoSkipCount() {}
+    fun playNext() {}
+    fun playPrevious() {}
+    fun isLivePlayback(): Boolean = false
 }
 
 /** Owns the playback-error decision tree and its session-scoped recovery job. */
@@ -275,20 +282,35 @@ class PlayerRecoveryExecutionCoordinator @Inject constructor() {
                 "recovery-no-switch type=$recoveryType hasLastChannel=${port.hasLastChannel()}"
             )
 
-            if (port.fallbackToPreviousChannel("Recovery path exhausted for ${recoveryType.name.lowercase()}")) {
-                port.appendRecoveryAction("Returned to last channel")
-                port.showPlayerNotice(
-                    message = "Playback failed on this stream. Returned to the last channel.",
-                    recoveryType = recoveryType,
-                    actions = port.buildRecoveryActions(recoveryType)
-                )
-            } else {
-                port.showPlayerNotice(
-                    message = resolvePlaybackErrorMessage(error),
-                    recoveryType = recoveryType,
-                    actions = port.buildRecoveryActions(recoveryType)
-                )
+            if (port.isLivePlayback()) {
+                when (port.getLastZapDirection()) {
+                    ZapDirection.FORWARD -> {
+                        if (port.getConsecutiveAutoSkipCount() < 5) {
+                            port.incrementConsecutiveAutoSkipCount()
+                            port.appendRecoveryAction("Auto-skipping forward to next channel")
+                            port.playNext()
+                            return@launch
+                        }
+                    }
+                    ZapDirection.BACKWARD -> {
+                        if (port.getConsecutiveAutoSkipCount() < 5) {
+                            port.incrementConsecutiveAutoSkipCount()
+                            port.appendRecoveryAction("Auto-skipping backward to previous channel")
+                            port.playPrevious()
+                            return@launch
+                        }
+                    }
+                    ZapDirection.NONE -> {
+                        // User specifically opened this channel. Stay on current channel and show error in center.
+                    }
+                }
             }
+
+            port.showPlayerNotice(
+                message = resolvePlaybackErrorMessage(error),
+                recoveryType = recoveryType,
+                actions = port.buildRecoveryActions(recoveryType)
+            )
         }
         return recoveryJob
     }

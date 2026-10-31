@@ -159,6 +159,7 @@
     <string name="player_resume_start_over">Xem lại từ đầu</string>
     <string name="player_resume_title">Tiếp tục phát</string>
     <string name="player_retry">Thử lại</string>
+    <string name="player_action_back">Quay lại</string>
     <string name="player_rewind">Tua lại</string>
     <string name="player_schedule_daily_recording">Lên lịch hằng ngày</string>
     <string name="player_schedule_recording">Lên lịch</string>

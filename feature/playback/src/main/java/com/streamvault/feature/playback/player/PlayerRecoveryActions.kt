@@ -111,16 +111,21 @@ internal fun PlayerViewModel.scheduleZapBufferWatchdog(targetIndex: Int) {
             markStreamFailure(currentStreamUrl)
             setLastFailureReason("Channel timed out in buffering state")
             appendRecoveryAction("Buffer watchdog triggered")
-            val recovered = fallbackToPreviousChannel("Channel timed out in buffering state")
-            showPlayerNotice(
-                message = if (recovered) {
-                    "That channel stalled too long. Returned to the last channel."
-                } else {
-                    "That channel stalled too long. Try another source or open the guide."
-                },
-                recoveryType = PlayerRecoveryType.BUFFER_TIMEOUT,
-                actions = buildRecoveryActions(PlayerRecoveryType.BUFFER_TIMEOUT)
-            )
+            if (lastZapDirection == ZapDirection.FORWARD && consecutiveAutoSkipCount < 5) {
+                consecutiveAutoSkipCount++
+                appendRecoveryAction("Auto-skipping forward to next channel after buffer timeout")
+                playNext()
+            } else if (lastZapDirection == ZapDirection.BACKWARD && consecutiveAutoSkipCount < 5) {
+                consecutiveAutoSkipCount++
+                appendRecoveryAction("Auto-skipping backward to previous channel after buffer timeout")
+                playPrevious()
+            } else {
+                showPlayerNotice(
+                    message = "That channel stalled too long. Try another source or open the guide.",
+                    recoveryType = PlayerRecoveryType.BUFFER_TIMEOUT,
+                    actions = buildRecoveryActions(PlayerRecoveryType.BUFFER_TIMEOUT)
+                )
+            }
         }
     }
 }

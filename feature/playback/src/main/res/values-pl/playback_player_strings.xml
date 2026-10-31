@@ -153,6 +153,7 @@
     <string name="player_resume_start_over">Zacznij od nowa</string>
     <string name="player_resume_title">Wznów odtwarzanie</string>
     <string name="player_retry">Spróbuj ponownie</string>
+    <string name="player_action_back">Wstecz</string>
     <string name="player_rewind">Przewiń do tyłu</string>
     <string name="player_schedule_daily_recording">Zaplanuj codziennie</string>
     <string name="player_schedule_recording">Harmonogram</string>

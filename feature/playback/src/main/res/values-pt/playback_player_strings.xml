@@ -159,6 +159,7 @@
     <string name="player_resume_start_over">Recomeçar</string>
     <string name="player_resume_title">Retomar a reprodução</string>
     <string name="player_retry">Tentar novamente</string>
+    <string name="player_action_back">Voltar</string>
     <string name="player_rewind">Retroceder</string>
     <string name="player_schedule_daily_recording">Agendar diariamente</string>
     <string name="player_schedule_recording">Cronograma</string>

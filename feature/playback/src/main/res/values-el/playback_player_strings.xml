@@ -159,6 +159,7 @@
     <string name="player_resume_start_over">Από την αρχή</string>
     <string name="player_resume_title">Συνέχιση αναπαραγωγής</string>
     <string name="player_retry">Επανάληψη</string>
+    <string name="player_action_back">Πίσω</string>
     <string name="player_rewind">Πίσω</string>
     <string name="player_schedule_daily_recording">Ημερήσιος προγραμματισμός</string>
     <string name="player_schedule_recording">Προγραμματισμός</string>

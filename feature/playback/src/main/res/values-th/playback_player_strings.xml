@@ -219,6 +219,7 @@
     <string name="player_resume_start_over">เริ่มตั้งแต่ต้น</string>
     <string name="player_resume_title">เล่นต่อ</string>
     <string name="player_retry">ลองอีกครั้ง</string>
+    <string name="player_action_back">ย้อนกลับ</string>
     <string name="player_rewind">ย้อนกลับ</string>
     <string name="player_schedule_daily_recording">ตั้งเวลาทุกวัน</string>
     <string name="player_schedule_recording">ตั้งเวลา</string>

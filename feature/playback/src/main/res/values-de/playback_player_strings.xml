@@ -159,6 +159,7 @@
     <string name="player_resume_start_over">Beginnen Sie von vorne</string>
     <string name="player_resume_title">Setzen Sie die Wiedergabe fort</string>
     <string name="player_retry">Versuchen Sie es noch einmal</string>
+    <string name="player_action_back">Zurück</string>
     <string name="player_rewind">Zurückspulen</string>
     <string name="player_schedule_daily_recording">Planen Sie täglich</string>
     <string name="player_schedule_recording">Zeitplan</string>

@@ -159,6 +159,7 @@
     <string name="player_resume_start_over">Kezdje újra</string>
     <string name="player_resume_title">Lejátszás folytatása</string>
     <string name="player_retry">Újrapróbálás</string>
+    <string name="player_action_back">Vissza</string>
     <string name="player_rewind">Visszatekerés</string>
     <string name="player_schedule_daily_recording">Napi ütemezés</string>
     <string name="player_schedule_recording">Ütemezés</string>

@@ -2,6 +2,7 @@ package com.streamvault.feature.playback.player
 
 import android.net.Uri
 import android.os.SystemClock
+import com.streamvault.core.navigation.LastPlayedMediaTracker
 import com.streamvault.core.navigation.StremioPlaybackReference
 import com.streamvault.core.navigation.StremioSubtitlePlaybackSource
 import androidx.lifecycle.ViewModel
@@ -254,6 +255,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun playMovie(movie: com.streamvault.domain.model.Movie, showResumePrompt: Boolean = false) {
+        LastPlayedMediaTracker.recordMoviePlayed(movie.id)
         prepare(
             streamUrl = movie.streamUrl,
             epgChannelId = null,
@@ -303,6 +305,8 @@ class PlayerViewModel @Inject constructor(
     internal var lastRecordedVodVariantObservationSignature: String? = null
     internal val playbackSessionCoordinator = PlaybackSessionCoordinator(viewModelScope)
     internal val episodeSourceState = PlayerEpisodeSourceState()
+    var lastZapDirection: ZapDirection = ZapDirection.NONE
+    internal var consecutiveAutoSkipCount: Int = 0
     private val playerRecoveryExecutionPort = PlayerRecoveryExecutionPortAdapter(
         appPackageName = appContext.packageName,
         engineCoordinator = playerEngineCoordinator,
@@ -356,7 +360,14 @@ class PlayerViewModel @Inject constructor(
                 showPlayerNotice(resolvePlaybackErrorMessage(error), type, buildRecoveryActions(type))
                 true
             } else false
-        }
+        },
+        getLastZapDirection = { lastZapDirection },
+        getConsecutiveAutoSkipCount = { consecutiveAutoSkipCount },
+        incrementConsecutiveAutoSkipCount = { ++consecutiveAutoSkipCount },
+        resetConsecutiveAutoSkipCount = { consecutiveAutoSkipCount = 0 },
+        playNext = { playNext() },
+        playPrevious = { playPrevious() },
+        isLivePlayback = { currentContentType == ContentType.LIVE }
     )
     internal val prepareRequestVersion: Long
         get() = playbackSessionCoordinator.currentId
@@ -675,6 +686,7 @@ class PlayerViewModel @Inject constructor(
                 }
                 lastObservedPlaybackState = state
                 if (state == PlaybackState.READY && readySideEffectsRequestVersion == prepareRequestVersion) {
+                    consecutiveAutoSkipCount = 0
                     zapBufferWatchdogJob?.cancel()
                     dismissRecoveredNoticeIfPresent()
                     if (currentContentType == ContentType.LIVE && !isCatchUpPlayback()) {
@@ -1654,6 +1666,13 @@ class PlayerViewModel @Inject constructor(
         stremioMediaRequestHeaders: Map<String, String> = emptyMap(),
         stremioInlineSubtitles: List<StremioSubtitlePlaybackSource> = emptyList()
     ) {
+        lastZapDirection = ZapDirection.NONE
+        consecutiveAutoSkipCount = 0
+        if (contentType.equals("CHANNEL", ignoreCase = true) || contentType.equals(ContentType.LIVE.name, ignoreCase = true)) {
+            LastPlayedMediaTracker.recordChannelPlayed(internalChannelId)
+        } else if (contentType.equals(ContentType.MOVIE.name, ignoreCase = true)) {
+            LastPlayedMediaTracker.recordMoviePlayed(internalChannelId)
+        }
         val hasArchiveRequest = hasArchivePlaybackIdentity(
             contentType = contentType,
             archiveStartMs = archiveStartMs,

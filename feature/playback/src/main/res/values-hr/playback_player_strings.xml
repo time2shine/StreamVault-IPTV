@@ -221,6 +221,7 @@
     <string name="player_resume_start_over">Kreni ispočetka</string>
     <string name="player_resume_title">Nastavi reprodukciju</string>
     <string name="player_retry">Pokušaj ponovno</string>
+    <string name="player_action_back">Natrag</string>
     <string name="player_rewind">Premotaj unatrag</string>
     <string name="player_schedule_daily_recording">Zakaži dnevno</string>
     <string name="player_schedule_recording">Zakaži</string>

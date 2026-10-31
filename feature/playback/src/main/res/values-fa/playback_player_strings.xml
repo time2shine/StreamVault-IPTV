@@ -220,6 +220,7 @@
     <string name="player_resume_start_over">شروع از ابتدا</string>
     <string name="player_resume_title">ادامه پخش</string>
     <string name="player_retry">تلاش دوباره</string>
+    <string name="player_action_back">بازگشت</string>
     <string name="player_rewind">عقب بردن</string>
     <string name="player_schedule_daily_recording">زمانبندی روزانه</string>
     <string name="player_schedule_recording">زمانبندی</string>

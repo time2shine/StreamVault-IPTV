@@ -220,6 +220,7 @@
     <string name="player_resume_start_over">शुरू से चलाएँ</string>
     <string name="player_resume_title">प्लेबैक जारी रखें</string>
     <string name="player_retry">फिर से प्रयास करें</string>
+    <string name="player_action_back">वापस</string>
     <string name="player_rewind">रिवाइंड</string>
     <string name="player_schedule_daily_recording">रोज़ाना शेड्यूल करें</string>
     <string name="player_schedule_recording">शेड्यूल करें</string>

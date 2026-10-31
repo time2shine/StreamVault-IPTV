@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.streamvault.core.navigation.AppDestination
+import com.streamvault.core.navigation.LastPlayedMediaTracker
 import com.streamvault.core.ui.components.shell.AppMessageState
 import com.streamvault.core.ui.components.SearchInput
 import com.streamvault.core.ui.design.FocusRestoreHost
@@ -81,9 +82,9 @@ fun MoviesScreen(
     }
 
     FocusRestoreHost(
-        enabled = lastSelectedMovieId != null,
+        enabled = (LastPlayedMediaTracker.lastPlayedMovieId ?: lastSelectedMovieId) != null,
         onRestore = {
-            val targetId = lastSelectedMovieId ?: return@FocusRestoreHost
+            val targetId = LastPlayedMediaTracker.lastPlayedMovieId ?: lastSelectedMovieId ?: return@FocusRestoreHost
             for (attempt in 0..6) {
                 delay(80)
                 if (movieFocusRequesters[targetId]?.requestFocusSafely(tag = "MoviesScreen", target = "Movie $targetId") == true) {
@@ -117,6 +118,7 @@ fun MoviesScreen(
                             uiState = uiState,
                             onMovieClick = { movie ->
                                 lastSelectedMovieId = movie.id
+                                LastPlayedMediaTracker.recordMoviePlayed(movie.id)
                                 onMovieClick(movie)
                             },
                             movieFocusRequesters = movieFocusRequesters,
@@ -129,10 +131,14 @@ fun MoviesScreen(
                             uiState = uiState,
                             onMovieClick = { movie ->
                                 lastSelectedMovieId = movie.id
+                                LastPlayedMediaTracker.recordMoviePlayed(movie.id)
                                 onMovieClick(movie)
                             },
                             movieFocusRequesters = movieFocusRequesters,
-                            onContinueWatchingPlay = onContinueWatchingPlay,
+                            onContinueWatchingPlay = { history ->
+                                LastPlayedMediaTracker.recordMoviePlayed(history.contentId)
+                                onContinueWatchingPlay(history)
+                            },
                             onSelectCategory = viewModel::selectCategory
                         )
                     }

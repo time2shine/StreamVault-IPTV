@@ -161,6 +161,7 @@
     <string name="player_resume_start_over">Přehrát od začátku</string>
     <string name="player_resume_title">Obnovit přehrávání</string>
     <string name="player_retry">Zkuste to znovu</string>
+    <string name="player_action_back">Zpět</string>
     <string name="player_rewind">Přetočit zpět</string>
     <string name="player_schedule_daily_recording">Denní rozvrh</string>
     <string name="player_schedule_recording">Rozvrh</string>
