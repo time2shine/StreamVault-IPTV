@@ -336,22 +336,10 @@ fun ChannelCard(
                 if (channel.errorCount > 0) {
                     StatusPill(label = stringResource(R.string.badge_error), containerColor = AccentRed, cornerRadius = 4.dp, horizontalPadding = 6.dp, verticalPadding = 2.dp)
                 }
-                if (hasUsableArchive) {
-                    StatusPill(label = stringResource(R.string.badge_catch_up), containerColor = Primary, cornerRadius = 4.dp, horizontalPadding = 6.dp, verticalPadding = 2.dp)
-                }
                 if (isRecording) {
                     StatusPill(label = stringResource(R.string.badge_recording), containerColor = AccentRed, cornerRadius = 4.dp, horizontalPadding = 6.dp, verticalPadding = 2.dp)
                 } else if (isScheduledRecording) {
                     StatusPill(label = stringResource(R.string.badge_scheduled), containerColor = AccentAmber, cornerRadius = 4.dp, horizontalPadding = 6.dp, verticalPadding = 2.dp)
-                }
-                if (countryFlag == null) {
-                    StatusPill(
-                        label = stringResource(R.string.card_live_badge),
-                        containerColor = AccentRed,
-                        cornerRadius = 4.dp,
-                        horizontalPadding = 6.dp,
-                        verticalPadding = 2.dp
-                    )
                 }
             }
         }
