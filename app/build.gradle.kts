@@ -548,6 +548,7 @@ dependencies {
     // Image Loading
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
+    implementation(libs.coil.svg)
 
     // Core
     implementation(libs.core.ktx)

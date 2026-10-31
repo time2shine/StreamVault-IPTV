@@ -9,6 +9,7 @@ import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.crossfade
+import coil3.svg.SvgDecoder
 import com.streamvault.app.diagnostics.CrashReportStore
 import com.streamvault.app.diagnostics.RuntimeDiagnosticsManager
 import com.streamvault.core.ui.accessibility.isReducedMotionEnabled
@@ -78,6 +79,7 @@ class StreamVaultApp : Application(), SingletonImageLoader.Factory {
                         callFactory = { imageOkHttpClient }
                     )
                 )
+                add(SvgDecoder.Factory())
             }
             .memoryCache {
                 MemoryCache.Builder()

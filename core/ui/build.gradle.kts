@@ -99,6 +99,7 @@ dependencies {
     implementation(libs.activity.compose)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
+    implementation(libs.coil.svg)
 
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)
