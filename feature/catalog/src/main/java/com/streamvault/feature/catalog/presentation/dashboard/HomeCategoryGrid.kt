@@ -117,12 +117,30 @@ internal fun formatBanglaNewsDisplayName(name: String): String {
     }
 }
 
-internal fun resolveBanglaNewsFlag(name: String): String? {
-    val trimmed = name.trim()
+private val KOLKATA_NEWS_KEYWORDS = listOf(
+    "abp ananda",
+    "ak bangla",
+    "ananda barta",
+    "calcutta news",
+    "high news",
+    "kolkata",
+    "ktv bangla",
+    "news18 bangla",
+    "r plus news",
+    "republic bangla",
+    "tv9 bangla",
+    "zee 24 ghanta",
+    "zillar barta"
+)
+
+internal fun resolveBanglaNewsFlag(name: String, epgId: String? = null): String? {
+    val trimmed = name.trim().lowercase(Locale.ROOT)
+    val epg = epgId?.trim()?.lowercase(Locale.ROOT) ?: ""
     return when {
-        trimmed.startsWith("BD |", ignoreCase = true) || trimmed.startsWith("BD|", ignoreCase = true) -> "🇧🇩"
-        trimmed.startsWith("IN |", ignoreCase = true) || trimmed.startsWith("IN|", ignoreCase = true) -> "🇮🇳"
-        else -> null
+        trimmed.startsWith("bd |") || trimmed.startsWith("bd|") -> "bd"
+        trimmed.startsWith("in |") || trimmed.startsWith("in|") -> "in"
+        KOLKATA_NEWS_KEYWORDS.any { trimmed.contains(it) } || epg.endsWith(".in") -> "in"
+        else -> "bd"
     }
 }
 
@@ -320,12 +338,7 @@ fun HomeCategoryChannelListView(
         if (isBanglaNewsCategory) {
             filtered.sortedWith(
                 compareBy<Channel> { ch ->
-                    val trimmed = ch.name.trim()
-                    when {
-                        trimmed.startsWith("BD |", ignoreCase = true) || trimmed.startsWith("BD|", ignoreCase = true) -> 0
-                        trimmed.startsWith("IN |", ignoreCase = true) || trimmed.startsWith("IN|", ignoreCase = true) -> 1
-                        else -> 2
-                    }
+                    if (resolveBanglaNewsFlag(ch.name, ch.epgChannelId) == "bd") 0 else 1
                 }.thenBy { ch ->
                     formatBanglaNewsDisplayName(ch.name).lowercase(Locale.ROOT)
                 }
@@ -664,7 +677,7 @@ fun HomeCategoryChannelListView(
                                 isRecording = channel.id in recordingChannelIds,
                                 isScheduledRecording = channel.id in scheduledChannelIds,
                                 displayName = if (isBanglaNewsCategory) formatBanglaNewsDisplayName(channel.name) else null,
-                                countryFlag = if (isBanglaNewsCategory) resolveBanglaNewsFlag(channel.name) else null,
+                                countryFlag = if (isBanglaNewsCategory) resolveBanglaNewsFlag(channel.name, channel.epgChannelId) else null,
                                 onClick = {
                                     lastSelectedChannelId = channel.id
                                     LastPlayedMediaTracker.recordChannelPlayed(channel.id)
