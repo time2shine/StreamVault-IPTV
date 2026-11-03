@@ -76,4 +76,27 @@ class StreamTypeResolverTest {
         assertThat(StreamTypeResolver.resolve("http://example.com/stream"))
             .isEqualTo(ResolvedStreamType.UNKNOWN)
     }
+
+    @Test
+    fun `streamInfo with m3u8 url resolves to HLS even when streamType is PROGRESSIVE`() {
+        val streamInfo = com.streamvault.domain.model.StreamInfo(
+            url = "http://103.135.253.32:8080/Jalsha_movies-HD/index.m3u8",
+            streamType = com.streamvault.domain.model.StreamType.PROGRESSIVE,
+            containerExtension = "mp4",
+            playbackContentKind = com.streamvault.domain.model.PlaybackContentKind.ON_DEMAND
+        )
+        assertThat(StreamTypeResolver.resolve(streamInfo))
+            .isEqualTo(ResolvedStreamType.HLS)
+    }
+
+    @Test
+    fun `streamInfo with mpd url resolves to DASH even when streamType is PROGRESSIVE`() {
+        val streamInfo = com.streamvault.domain.model.StreamInfo(
+            url = "http://example.com/stream/manifest.mpd",
+            streamType = com.streamvault.domain.model.StreamType.PROGRESSIVE,
+            containerExtension = "mp4"
+        )
+        assertThat(StreamTypeResolver.resolve(streamInfo))
+            .isEqualTo(ResolvedStreamType.DASH)
+    }
 }

@@ -777,6 +777,14 @@ class MovieRepositoryImpl @Inject constructor(
             fallbackContainerExtension = movie.containerExtension
         )?.let { resolvedStream ->
             val ext = resolvedStream.containerExtension ?: movie.containerExtension
+            val isChannel = movie.categoryName?.contains("channel", ignoreCase = true) == true ||
+                movie.categoryName?.equals("Movie Channels", ignoreCase = true) == true ||
+                resolvedStream.url.contains(".m3u8", ignoreCase = true)
+            val streamType = when {
+                resolvedStream.url.contains(".m3u8", ignoreCase = true) -> StreamType.HLS
+                resolvedStream.url.endsWith(".ts", ignoreCase = true) && isChannel -> StreamType.MPEG_TS
+                else -> StreamType.fromContainerExtension(ext)
+            }
             Result.success(
                 StreamInfo(
                     url = resolvedStream.url,
@@ -787,10 +795,10 @@ class MovieRepositoryImpl @Inject constructor(
                     allowInvalidSsl = resolvedStream.allowInvalidSsl,
                     proxyHost = resolvedStream.proxyHost,
                     proxyPort = resolvedStream.proxyPort,
-                    streamType = StreamType.fromContainerExtension(ext),
+                    streamType = streamType,
                     containerExtension = ext,
                     expirationTime = resolvedStream.expirationTime,
-                    playbackContentKind = PlaybackContentKind.ON_DEMAND
+                    playbackContentKind = if (isChannel) PlaybackContentKind.LIVE else PlaybackContentKind.ON_DEMAND
                 ).withM3uPlaybackMetadata(persistedMovie?.playbackMetadataJson)
             )
         } ?: Result.error("No stream URL available for movie: ${movie.name}")

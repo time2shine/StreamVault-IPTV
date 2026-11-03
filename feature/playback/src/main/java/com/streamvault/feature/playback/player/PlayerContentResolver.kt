@@ -143,10 +143,14 @@ internal suspend fun resolvePlayerPlaybackStreamInfo(
                     val streamInfoResult = movieRepository.getStreamInfo(movie)
                     if (streamInfoResult.isSuccess) {
                         streamInfoResult.getOrNull()?.let { resolved ->
+                            val isChannel = movie.categoryName?.contains("channel", ignoreCase = true) == true ||
+                                movie.categoryName?.equals("Movie Channels", ignoreCase = true) == true ||
+                                resolved.url.contains(".m3u8", ignoreCase = true)
+                            val resolvedKind = if (isChannel) PlaybackContentKind.LIVE else resolved.playbackContentKind
                             return PlayerPlaybackStreamResolution(
                                 streamInfo = resolved.copy(
                                     title = resolved.title ?: currentTitle,
-                                    playbackContentKind = PlaybackContentKind.ON_DEMAND
+                                    playbackContentKind = resolvedKind
                                 )
                             )
                         }
@@ -211,6 +215,15 @@ internal suspend fun resolvePlayerPlaybackStreamInfo(
         )) {
         is Result.Success -> resolution.data?.let { resolved ->
             val ext = resolved.containerExtension ?: fallbackContainerExtension
+            val isHls = resolved.url.contains(".m3u8", ignoreCase = true)
+            val streamType = when {
+                isHls -> StreamType.HLS
+                else -> StreamType.fromContainerExtension(ext)
+            }
+            val contentKind = when {
+                isHls && (contentType == ContentType.MOVIE || contentType == ContentType.VOD) -> PlaybackContentKind.LIVE
+                else -> contentType.toPlaybackContentKind()
+            }
             return PlayerPlaybackStreamResolution(
                 streamInfo = StreamInfo(
                     url = resolved.url,
@@ -221,10 +234,10 @@ internal suspend fun resolvePlayerPlaybackStreamInfo(
                     allowInvalidSsl = resolved.allowInvalidSsl,
                     proxyHost = resolved.proxyHost,
                     proxyPort = resolved.proxyPort,
-                    streamType = StreamType.fromContainerExtension(ext),
+                    streamType = streamType,
                     containerExtension = ext,
                     expirationTime = resolved.expirationTime,
-                    playbackContentKind = contentType.toPlaybackContentKind(),
+                    playbackContentKind = contentKind,
                     livePlaybackIdentity = livePlaybackIdentityOrNull(providerId, internalContentId, contentType)
                 )
             )

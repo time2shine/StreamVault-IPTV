@@ -1,5 +1,6 @@
 package com.streamvault.player.playback
 
+import com.streamvault.domain.model.PlaybackContentKind
 import com.streamvault.domain.model.StreamInfo
 import com.streamvault.domain.model.StreamType
 import java.net.URI
@@ -40,6 +41,22 @@ object StreamTypeResolver {
     private val hlsLiveAliases = setOf("sd", "hd", "fhd", "uhd", "4k", "playlist", "master", "index")
 
     fun resolve(streamInfo: StreamInfo, mimeType: String? = null): ResolvedStreamType {
+        // If the resolved URL itself contains a definitive manifest format (.m3u8, .mpd, .ism),
+        // that must ALWAYS override any fallback or guessed container extension (e.g. .mp4).
+        val urlLower = streamInfo.url.substringBefore('?').lowercase(Locale.ROOT)
+        if (urlLower.contains(".m3u8") || streamInfo.url.contains(".m3u8", ignoreCase = true)) {
+            return ResolvedStreamType.HLS
+        }
+        if (urlLower.contains(".mpd") || streamInfo.url.contains(".mpd", ignoreCase = true)) {
+            return ResolvedStreamType.DASH
+        }
+        if (urlLower.contains(".ism") || urlLower.contains(".isml")) {
+            return ResolvedStreamType.SMOOTH_STREAMING
+        }
+        if (urlLower.endsWith(".ts") && (streamInfo.playbackContentKind == PlaybackContentKind.LIVE || isLive(streamInfo))) {
+            return ResolvedStreamType.MPEG_TS_LIVE
+        }
+
         return when (streamInfo.streamType) {
             StreamType.HLS -> ResolvedStreamType.HLS
             StreamType.DASH -> ResolvedStreamType.DASH
