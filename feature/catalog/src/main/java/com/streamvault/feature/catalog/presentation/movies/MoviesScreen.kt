@@ -381,7 +381,7 @@ private fun ErrorContent(message: String) {
         contentAlignment = Alignment.Center
     ) {
         AppMessageState(
-            title = stringResource(R.string.home_error_load_failed),
+            title = stringResource(R.string.settings_status_error),
             subtitle = message
         )
     }

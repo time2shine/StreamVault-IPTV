@@ -12,6 +12,7 @@ import com.streamvault.domain.repository.PlaybackHistoryRepository
 import com.streamvault.domain.repository.ProviderRepository
 import com.streamvault.domain.repository.SeriesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -74,6 +75,8 @@ class SeriesViewModel @Inject constructor(
     private var activeProviderId: Long = 0L
     private var loadShelvesJob: Job? = null
     private var searchJob: Job? = null
+    private var isInitialSyncPending: Boolean = false
+    private var initialSyncTriggered: Boolean = false
 
     init {
         observeActiveProvider()
@@ -99,12 +102,16 @@ class SeriesViewModel @Inject constructor(
                         return@collectLatest
                     }
 
-                    activeProviderId = provider.id
+                    if (activeProviderId != provider.id) {
+                        activeProviderId = provider.id
+                        initialSyncTriggered = false
+                        isInitialSyncPending = false
+                    }
                     val isSyncActive = syncManager?.currentSyncState(provider.id)?.isSyncing == true
                     _uiState.update {
                         it.copy(
                             hasProviders = true,
-                            isSyncing = isSyncActive,
+                            isSyncing = isSyncActive || isInitialSyncPending,
                             isLoading = it.shelves.isEmpty()
                         )
                     }
@@ -122,10 +129,10 @@ class SeriesViewModel @Inject constructor(
         syncFlow.collectLatest { syncState ->
             val syncing = syncState.isSyncing
             _uiState.update { current ->
-                val shouldKeepLoading = current.shelves.isEmpty() && (syncing || current.isLoading)
+                val shouldKeepLoading = current.shelves.isEmpty() && (syncing || isInitialSyncPending)
                 current.copy(
-                    isSyncing = syncing,
-                    isLoading = shouldKeepLoading
+                    isSyncing = syncing || isInitialSyncPending,
+                    isLoading = if (current.shelves.isNotEmpty()) false else shouldKeepLoading
                 )
             }
         }
@@ -141,7 +148,9 @@ class SeriesViewModel @Inject constructor(
         if (activeProviderId > 0L) {
             viewModelScope.launch {
                 _uiState.update { it.copy(isLoading = true, isSyncing = true) }
-                runCatching { seriesRepository.refreshSeries(activeProviderId) }
+                runCatching {
+                    providerRepository.refreshProviderData(activeProviderId, force = true)
+                }
                 loadSeriesShelves(activeProviderId)
             }
         }
@@ -151,14 +160,42 @@ class SeriesViewModel @Inject constructor(
         loadShelvesJob?.cancel()
         loadShelvesJob = viewModelScope.launch {
             try {
+                // If library count is 0, trigger background catalog sync so series start loading immediately
+                val libraryCount = runCatching { seriesRepository.getLibraryCount(providerId).first() }.getOrDefault(0)
+                val initialSyncActive = syncManager?.currentSyncState(providerId)?.isSyncing == true
+
+                if (libraryCount == 0 && !initialSyncTriggered && !initialSyncActive) {
+                    initialSyncTriggered = true
+                    isInitialSyncPending = true
+                    _uiState.update { it.copy(isLoading = true, isSyncing = true) }
+                    launch {
+                        runCatching {
+                            providerRepository.refreshProviderData(providerId, force = false)
+                        }
+                        isInitialSyncPending = false
+                        val active = syncManager?.currentSyncState(providerId)?.isSyncing == true
+                        val count = runCatching { seriesRepository.getLibraryCount(providerId).first() }.getOrDefault(0)
+                        _uiState.update { current ->
+                            current.copy(
+                                isLoading = current.shelves.isEmpty() && (active || (count == 0 && isInitialSyncPending)),
+                                isSyncing = active
+                            )
+                        }
+                    }
+                }
+
                 seriesRepository.getCategories(providerId).collectLatest { allCategories ->
+                    val isSyncActive = syncManager?.currentSyncState(providerId)?.isSyncing == true
+                    val currentCount = runCatching { seriesRepository.getLibraryCount(providerId).first() }.getOrDefault(0)
+
                     if (allCategories.isEmpty()) {
-                        val isSyncActive = syncManager?.currentSyncState(providerId)?.isSyncing == true
+                        val stillLoading = isSyncActive || isInitialSyncPending || (currentCount == 0 && isInitialSyncPending)
                         _uiState.update {
                             it.copy(
-                                isLoading = isSyncActive,
-                                isSyncing = isSyncActive,
-                                shelves = emptyList()
+                                isLoading = stillLoading,
+                                isSyncing = isSyncActive || isInitialSyncPending,
+                                shelves = emptyList(),
+                                errorMessage = null
                             )
                         }
                         return@collectLatest
@@ -167,6 +204,7 @@ class SeriesViewModel @Inject constructor(
                     val counts = try {
                         seriesRepository.getCategoryItemCounts(providerId).first()
                     } catch (e: Exception) {
+                        if (e is CancellationException) throw e
                         emptyMap()
                     }
 
@@ -182,6 +220,7 @@ class SeriesViewModel @Inject constructor(
                             val rawSeries = try {
                                 seriesRepository.getSeriesByCategoryPreview(providerId, catId, PREVIEW_ROW_LIMIT).first()
                             } catch (e: Exception) {
+                                if (e is CancellationException) throw e
                                 emptyList()
                             }
                             if (rawSeries.isEmpty()) return@mapNotNull null
@@ -198,19 +237,20 @@ class SeriesViewModel @Inject constructor(
                         }
                     }
 
-                    val isSyncActive = syncManager?.currentSyncState(providerId)?.isSyncing == true
-                    val stillLoading = builtShelves.isEmpty() && isSyncActive
+                    val activeNow = syncManager?.currentSyncState(providerId)?.isSyncing == true
+                    val stillLoading = builtShelves.isEmpty() && (activeNow || isInitialSyncPending || (currentCount == 0 && isInitialSyncPending))
 
                     _uiState.update {
                         it.copy(
                             shelves = builtShelves,
                             isLoading = stillLoading,
-                            isSyncing = isSyncActive,
+                            isSyncing = activeNow || isInitialSyncPending,
                             errorMessage = null
                         )
                     }
                 }
             } catch (e: Exception) {
+                if (e is CancellationException) throw e
                 logger.warning("Error loading series shelves: ${e.message}")
                 _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
             }
@@ -284,6 +324,7 @@ class SeriesViewModel @Inject constructor(
                     )
                 }
             } catch (e: Exception) {
+                if (e is CancellationException) throw e
                 _uiState.update { it.copy(isLoadingSelectedCategory = false) }
             }
         }
@@ -313,6 +354,7 @@ class SeriesViewModel @Inject constructor(
                     )
                 }
             } catch (e: Exception) {
+                if (e is CancellationException) throw e
                 _uiState.update { it.copy(isLoadingSelectedCategory = false) }
             }
         }
@@ -334,6 +376,7 @@ class SeriesViewModel @Inject constructor(
                 }
                 _uiState.update { it.copy(searchResults = results, isSearching = false) }
             } catch (e: Exception) {
+                if (e is CancellationException) throw e
                 _uiState.update { it.copy(searchResults = emptyList(), isSearching = false) }
             }
         }

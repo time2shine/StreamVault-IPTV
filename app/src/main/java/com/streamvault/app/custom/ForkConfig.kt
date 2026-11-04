@@ -32,5 +32,5 @@ object ForkConfig {
     const val DAILY_SYNC_INTERVAL_MILLIS = 24 * 60 * 60 * 1000L
 
     /** Initial delay after startup before running background sync (ensures snappy initial UI/playback) */
-    const val INITIAL_BACKGROUND_SYNC_DELAY_MILLIS = 8_000L
+    const val INITIAL_BACKGROUND_SYNC_DELAY_MILLIS = 2_000L
 }
