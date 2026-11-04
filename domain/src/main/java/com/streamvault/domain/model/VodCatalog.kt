@@ -8,14 +8,14 @@ sealed interface VodCatalogItem {
 
     data class MovieItem(val movie: Movie) : VodCatalogItem {
         override val stableId: String = "movie:${movie.id}"
-        override val title: String = movie.name
+        override val title: String = movie.displayTitle
         override val categoryId: Long? = movie.categoryId
         override val sortTimestamp: Long = movie.addedAt
     }
 
     data class SeriesItem(val series: Series) : VodCatalogItem {
         override val stableId: String = "series:${series.id}"
-        override val title: String = series.name
+        override val title: String = series.displayTitle
         override val categoryId: Long? = series.categoryId
         override val sortTimestamp: Long = series.lastModified
     }

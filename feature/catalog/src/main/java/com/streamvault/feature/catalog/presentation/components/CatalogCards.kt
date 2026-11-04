@@ -573,16 +573,7 @@ fun MovieCard(
             }
 
             val hasRating = showRating && movie.rating > 0f
-            val isRecent = remember(movie.addedAt) {
-                if (movie.addedAt > 0L) {
-                    val nowSec = System.currentTimeMillis() / 1000L
-                    val thirtyDaysSec = 30L * 24 * 3600L
-                    val cutoffSec = nowSec - thirtyDaysSec
-                    val cutoffMillis = System.currentTimeMillis() - (30L * 24 * 3600 * 1000L)
-                    (movie.addedAt in cutoffSec..100_000_000_000L) || (movie.addedAt >= cutoffMillis)
-                } else false
-            }
-            val hasNewTag = showNewBadge ?: (movie.hasNewBadge || isRecent)
+            val hasNewTag = showNewBadge ?: movie.isNew
 
             if (hasRating || hasNewTag) {
                 Row(
@@ -730,7 +721,7 @@ fun SeriesCard(
             }
 
             val hasRating = series.rating > 0f
-            val hasNewTag = series.hasNewBadge
+            val hasNewTag = series.isNew
 
             if (hasRating || hasNewTag) {
                 Row(

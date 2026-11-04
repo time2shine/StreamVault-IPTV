@@ -330,11 +330,7 @@ class SeriesViewModel @Inject constructor(
         val cutoffSec = nowSec - thirtyDaysSec
 
         return seriesList.sortedWith(
-            compareByDescending<Series> { it.hasNewBadge }
-                .thenByDescending { s ->
-                    val isRecent = s.lastModified >= cutoffSec
-                    if (isRecent) 1 else 0
-                }
+            compareByDescending<Series> { it.isNew }
                 .thenByDescending { extractReleaseYear(it) }
                 .thenByDescending { it.rating }
                 .thenBy(String.CASE_INSENSITIVE_ORDER) { it.displayTitle }

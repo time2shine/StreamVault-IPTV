@@ -497,7 +497,7 @@ private fun MovieDetailHeroText(
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             StatusPill(label = stringResource(R.string.nav_movies), containerColor = AppColors.BrandMuted)
-            if (movie.hasNewBadge) {
+            if (movie.isNew) {
                 StatusPill(
                     label = stringResource(R.string.badge_new),
                     containerColor = AppColors.Live,

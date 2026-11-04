@@ -55,4 +55,31 @@ class MovieDisplayTitleTest {
         assertFalse(movie.hasNewBadge)
         assertEquals("Inception (2010)", movie.displayTitle)
     }
+
+    @Test
+    fun `isRecentlyAdded returns true for timestamps within 30 days`() {
+        val nowMillis = System.currentTimeMillis()
+        val nowSec = nowMillis / 1000L
+        // 5 days ago in seconds
+        val fiveDaysAgoSec = nowSec - (5 * 86400L)
+        val recentMovie = Movie(
+            id = 1L,
+            name = "Gladiator II",
+            streamUrl = "http://example.com/2.mp4",
+            addedAt = fiveDaysAgoSec
+        )
+        assertTrue(recentMovie.isRecentlyAdded(nowMillis = nowMillis))
+        assertTrue(recentMovie.isNew)
+
+        // 45 days ago in seconds
+        val fortyFiveDaysAgoSec = nowSec - (45 * 86400L)
+        val olderMovie = Movie(
+            id = 2L,
+            name = "Gladiator",
+            streamUrl = "http://example.com/1.mp4",
+            addedAt = fortyFiveDaysAgoSec
+        )
+        assertFalse(olderMovie.isRecentlyAdded(nowMillis = nowMillis))
+        assertFalse(olderMovie.isNew)
+    }
 }

@@ -41,6 +41,17 @@ data class Movie(
     val hasNewBadge: Boolean = name.contains("🆕") || name.contains("\uD83C\uDD95") ||
         name.contains("[NEW]", ignoreCase = true) || name.contains("(NEW)", ignoreCase = true)
 
+    fun isRecentlyAdded(nowMillis: Long = System.currentTimeMillis(), days: Long = 30L): Boolean {
+        if (addedAt <= 0L) return false
+        val nowSec = nowMillis / 1000L
+        val windowSec = days * 86400L
+        val cutoffSec = nowSec - windowSec
+        val cutoffMillis = nowMillis - (windowSec * 1000L)
+        return (addedAt in cutoffSec..100_000_000_000L) || (addedAt >= cutoffMillis)
+    }
+
+    val isNew: Boolean get() = hasNewBadge || isRecentlyAdded()
+
     val displayTitle: String = if (!hasNewBadge) {
         name
     } else {

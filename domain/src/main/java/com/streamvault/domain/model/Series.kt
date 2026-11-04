@@ -39,6 +39,17 @@ data class Series(
 ) {
     val hasNewBadge: Boolean = name.contains("🆕") || name.contains("\uD83C\uDD95")
 
+    fun isRecentlyAdded(nowMillis: Long = System.currentTimeMillis(), days: Long = 30L): Boolean {
+        if (lastModified <= 0L) return false
+        val nowSec = nowMillis / 1000L
+        val windowSec = days * 86400L
+        val cutoffSec = nowSec - windowSec
+        val cutoffMillis = nowMillis - (windowSec * 1000L)
+        return (lastModified in cutoffSec..100_000_000_000L) || (lastModified >= cutoffMillis)
+    }
+
+    val isNew: Boolean get() = hasNewBadge || isRecentlyAdded()
+
     val displayTitle: String = if (!hasNewBadge) {
         name
     } else {
