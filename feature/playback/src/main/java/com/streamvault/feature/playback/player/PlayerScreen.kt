@@ -74,6 +74,7 @@ import com.streamvault.feature.playback.cast.CastConnectionState
 import com.streamvault.feature.playback.api.PlaybackPictureInPictureState
 import com.streamvault.feature.playback.api.PlaybackPlatformHost
 import com.streamvault.core.ui.design.requestFocusSafely
+import com.streamvault.core.ui.layout.isPortraitLayout
 import com.streamvault.core.ui.platform.rememberNotificationPermissionGate
 import com.streamvault.feature.playback.player.overlay.ChannelInfoOverlay
 import com.streamvault.feature.playback.player.overlay.CategoryListOverlay
@@ -140,14 +141,19 @@ fun PlayerScreen(
 ) {
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val isTelevisionDevice = rememberIsTelevisionDevice()
-    val sideOverlayWidth = if (screenWidth < 700.dp) {
+    val isPortrait = isPortraitLayout()
+    val sideOverlayWidth = if (!isTelevisionDevice && isPortrait) {
+        (screenWidth * 0.88f).coerceIn(300.dp, 420.dp)
+    } else if (screenWidth < 700.dp) {
         (screenWidth * 0.62f).coerceIn(220.dp, 300.dp)
     } else if (!isTelevisionDevice && screenWidth < 1280.dp) {
         (screenWidth * 0.4f).coerceIn(320.dp, 420.dp)
     } else {
         350.dp
     }
-    val epgOverlayWidth = if (screenWidth < 700.dp) {
+    val epgOverlayWidth = if (!isTelevisionDevice && isPortrait) {
+        (screenWidth * 0.90f).coerceIn(320.dp, 440.dp)
+    } else if (screenWidth < 700.dp) {
         (screenWidth * 0.68f).coerceIn(240.dp, 320.dp)
     } else if (!isTelevisionDevice && screenWidth < 1280.dp) {
         (screenWidth * 0.46f).coerceIn(360.dp, 500.dp)

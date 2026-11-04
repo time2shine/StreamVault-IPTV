@@ -60,6 +60,7 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import com.streamvault.feature.playback.R
 import com.streamvault.core.ui.device.rememberIsTelevisionDevice
+import com.streamvault.core.ui.layout.isPortraitLayout
 import com.streamvault.core.ui.components.shell.StatusPill
 import com.streamvault.core.ui.design.AppColors
 import com.streamvault.domain.playback.archivePlaybackCapability
@@ -131,11 +132,16 @@ fun ChannelListOverlay(
     ) {
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val isTelevisionDevice = rememberIsTelevisionDevice()
-            val panelModifier = if (maxWidth < 700.dp) {
+            val isPortrait = isPortraitLayout()
+            val panelModifier = if (!isTelevisionDevice && isPortrait) {
                 Modifier
-                    .fillMaxWidth(0.9f)
+                    .fillMaxSize()
+                    .padding(horizontal = 6.dp, vertical = 12.dp)
+            } else if (maxWidth < 700.dp) {
+                Modifier
+                    .fillMaxWidth(0.95f)
                     .fillMaxHeight()
-                    .padding(20.dp)
+                    .padding(horizontal = 10.dp, vertical = 16.dp)
             } else if (!isTelevisionDevice && maxWidth < 1280.dp) {
                 Modifier
                     .fillMaxWidth(0.5f)
@@ -327,16 +333,19 @@ fun ChannelListOverlay(
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                                        .padding(
+                                            horizontal = if (isPortrait) 10.dp else 16.dp,
+                                            vertical = if (isPortrait) 8.dp else 10.dp
+                                        ),
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(if (isPortrait) 8.dp else 10.dp)
                                 ) {
                                     Text(
                                         text = channelNumber.toString().padStart(2, '0'),
                                         style = MaterialTheme.typography.labelSmall.copy(fontSize = 13.sp),
                                         color = Color.White.copy(alpha = 0.72f),
                                         textAlign = TextAlign.Start,
-                                        modifier = Modifier.width(32.dp)
+                                        modifier = Modifier.width(if (isPortrait) 26.dp else 32.dp)
                                     )
                                     Column(
                                         modifier = Modifier
@@ -344,7 +353,10 @@ fun ChannelListOverlay(
                                     ) {
                                         Text(
                                             text = channel.name,
-                                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp, fontWeight = FontWeight.SemiBold),
+                                            style = MaterialTheme.typography.bodyLarge.copy(
+                                                fontSize = if (isPortrait) 15.sp else 16.sp,
+                                                fontWeight = FontWeight.SemiBold
+                                            ),
                                             color = Color.White,
                                             maxLines = 1,
                                             overflow = if (isFocused) TextOverflow.Clip else TextOverflow.Ellipsis,
@@ -371,18 +383,27 @@ fun ChannelListOverlay(
                                             )
                                         }
                                     }
-                                    if (isSelected) {
-                                        StatusPill(
-                                            label = stringResource(R.string.player_channel_selected),
-                                            containerColor = AppColors.BrandMuted
-                                        )
-                                    }
-                                    if (channel.archivePlaybackCapability().canBuildReplayCandidate) {
-                                        StatusPill(
-                                            label = stringResource(R.string.player_archive_badge),
-                                            containerColor = AppColors.Warning,
-                                            contentColor = Color.Black
-                                        )
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        if (isSelected) {
+                                            StatusPill(
+                                                label = stringResource(R.string.player_channel_selected),
+                                                containerColor = AppColors.BrandMuted,
+                                                horizontalPadding = if (isPortrait) 7.dp else 10.dp,
+                                                verticalPadding = if (isPortrait) 2.dp else 4.dp
+                                            )
+                                        }
+                                        if (channel.archivePlaybackCapability().canBuildReplayCandidate) {
+                                            StatusPill(
+                                                label = stringResource(R.string.player_archive_badge),
+                                                containerColor = AppColors.Warning,
+                                                contentColor = Color.Black,
+                                                horizontalPadding = if (isPortrait) 7.dp else 10.dp,
+                                                verticalPadding = if (isPortrait) 2.dp else 4.dp
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -559,10 +580,15 @@ fun EpgOverlay(
                 .align(Alignment.CenterEnd)
         ) {
             val isTelevisionDevice = rememberIsTelevisionDevice()
-            val panelModifier = if (maxWidth < 700.dp) {
+            val isPortrait = isPortraitLayout()
+            val panelModifier = if (!isTelevisionDevice && isPortrait) {
                 Modifier
-                    .fillMaxWidth(0.9f)
-                    .padding(24.dp)
+                    .fillMaxSize()
+                    .padding(horizontal = 6.dp, vertical = 12.dp)
+            } else if (maxWidth < 700.dp) {
+                Modifier
+                    .fillMaxWidth(0.95f)
+                    .padding(horizontal = 10.dp, vertical = 16.dp)
             } else if (!isTelevisionDevice && maxWidth < 1280.dp) {
                 Modifier
                     .fillMaxWidth(0.54f)
@@ -1187,11 +1213,16 @@ fun CategoryListOverlay(
     ) {
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             val isTelevisionDevice = rememberIsTelevisionDevice()
-            val panelModifier = if (maxWidth < 700.dp) {
+            val isPortrait = isPortraitLayout()
+            val panelModifier = if (!isTelevisionDevice && isPortrait) {
                 Modifier
-                    .fillMaxWidth(0.9f)
+                    .fillMaxSize()
+                    .padding(horizontal = 6.dp, vertical = 12.dp)
+            } else if (maxWidth < 700.dp) {
+                Modifier
+                    .fillMaxWidth(0.95f)
                     .fillMaxHeight()
-                    .padding(20.dp)
+                    .padding(horizontal = 10.dp, vertical = 16.dp)
             } else if (!isTelevisionDevice && maxWidth < 1280.dp) {
                 Modifier
                     .fillMaxWidth(0.5f)
