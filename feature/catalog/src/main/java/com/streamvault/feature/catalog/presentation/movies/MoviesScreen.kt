@@ -62,6 +62,7 @@ import com.streamvault.domain.model.PlaybackHistory
 import com.streamvault.feature.catalog.R
 import com.streamvault.feature.catalog.api.CatalogNavigationChrome
 import com.streamvault.feature.catalog.api.CatalogScaffoldContent
+import com.streamvault.feature.catalog.presentation.components.CatalogShelvesSkeleton
 import com.streamvault.feature.catalog.presentation.components.CategoryRow
 import com.streamvault.feature.catalog.presentation.components.ContinueWatchingRow
 import com.streamvault.feature.catalog.presentation.components.MovieCard
@@ -105,13 +106,21 @@ fun MoviesScreen(
             Box(modifier = Modifier.fillMaxSize()) {
                 when {
                     uiState.isLoading && uiState.shelves.isEmpty() -> {
-                        LoadingContent()
+                        CatalogShelvesSkeleton(
+                            statusTitle = stringResource(
+                                if (uiState.isSyncing) R.string.movies_syncing_title else R.string.movies_loading
+                            ),
+                            isSyncing = uiState.isSyncing
+                        )
                     }
                     !uiState.hasProviders -> {
                         NoProvidersContent()
                     }
                     uiState.errorMessage != null && uiState.shelves.isEmpty() -> {
                         ErrorContent(message = uiState.errorMessage ?: "")
+                    }
+                    uiState.shelves.isEmpty() && !uiState.isLoading -> {
+                        NoMoviesContent(onRefresh = viewModel::refresh)
                     }
                     uiState.selectedCategory != null -> {
                         CategoryGridContent(
@@ -375,5 +384,33 @@ private fun ErrorContent(message: String) {
             title = stringResource(R.string.home_error_load_failed),
             subtitle = message
         )
+    }
+}
+
+@Composable
+private fun NoMoviesContent(onRefresh: () -> Unit) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(horizontal = 32.dp)
+        ) {
+            AppMessageState(
+                title = stringResource(R.string.movies_no_found),
+                subtitle = stringResource(R.string.movies_no_found_subtitle)
+            )
+            androidx.tv.material3.Button(
+                onClick = onRefresh,
+                colors = androidx.tv.material3.ButtonDefaults.colors(
+                    containerColor = com.streamvault.core.ui.design.browse.Primary,
+                    contentColor = Color.White
+                )
+            ) {
+                Text(text = stringResource(R.string.movies_sync_action))
+            }
+        }
     }
 }

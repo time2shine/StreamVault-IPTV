@@ -2,9 +2,11 @@ package com.streamvault.feature.catalog.presentation.movies
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.streamvault.data.sync.ProviderSyncStateSource
 import com.streamvault.domain.model.ContentType
 import com.streamvault.domain.model.Movie
 import com.streamvault.domain.model.PlaybackHistory
+import com.streamvault.domain.model.SyncState
 import com.streamvault.domain.repository.MovieRepository
 import com.streamvault.domain.repository.PlaybackHistoryRepository
 import com.streamvault.domain.repository.ProviderRepository
@@ -58,7 +60,8 @@ data class MoviesUiState(
 class MoviesViewModel @Inject constructor(
     private val providerRepository: ProviderRepository,
     private val movieRepository: MovieRepository,
-    private val playbackHistoryRepository: PlaybackHistoryRepository
+    private val playbackHistoryRepository: PlaybackHistoryRepository,
+    private val syncManager: ProviderSyncStateSource? = null
 ) : ViewModel() {
 
     companion object {
@@ -88,6 +91,7 @@ class MoviesViewModel @Inject constructor(
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
+                                isSyncing = false,
                                 hasProviders = allProviders.isNotEmpty(),
                                 shelves = emptyList(),
                                 continueWatching = emptyList(),
@@ -98,12 +102,34 @@ class MoviesViewModel @Inject constructor(
                     }
 
                     activeProviderId = provider.id
-                    _uiState.update { it.copy(hasProviders = true, isLoading = it.shelves.isEmpty()) }
+                    val isSyncActive = syncManager?.currentSyncState(provider.id)?.isSyncing == true
+                    _uiState.update {
+                        it.copy(
+                            hasProviders = true,
+                            isSyncing = isSyncActive,
+                            isLoading = it.shelves.isEmpty()
+                        )
+                    }
 
-                    // Launch concurrent loaders for history and movie shelves
+                    // Launch concurrent loaders for history, sync state, and movie shelves
                     launch { observeHistory(provider.id) }
+                    launch { observeSyncState(provider.id) }
                     launch { loadMovieShelves(provider.id) }
                 }
+        }
+    }
+
+    private suspend fun observeSyncState(providerId: Long) {
+        val syncFlow = syncManager?.syncStateForProvider(providerId) ?: return
+        syncFlow.collectLatest { syncState ->
+            val syncing = syncState.isSyncing
+            _uiState.update { current ->
+                val shouldKeepLoading = current.shelves.isEmpty() && (syncing || current.isLoading)
+                current.copy(
+                    isSyncing = syncing,
+                    isLoading = shouldKeepLoading
+                )
+            }
         }
     }
 
@@ -113,13 +139,30 @@ class MoviesViewModel @Inject constructor(
         }
     }
 
+    fun refresh() {
+        if (activeProviderId > 0L) {
+            viewModelScope.launch {
+                _uiState.update { it.copy(isLoading = true, isSyncing = true) }
+                runCatching { movieRepository.refreshMovies(activeProviderId) }
+                loadMovieShelves(activeProviderId)
+            }
+        }
+    }
+
     private fun loadMovieShelves(providerId: Long) {
         loadShelvesJob?.cancel()
         loadShelvesJob = viewModelScope.launch {
             try {
                 movieRepository.getCategories(providerId).collectLatest { allCategories ->
                     if (allCategories.isEmpty()) {
-                        _uiState.update { it.copy(isLoading = false, shelves = emptyList()) }
+                        val isSyncActive = syncManager?.currentSyncState(providerId)?.isSyncing == true
+                        _uiState.update {
+                            it.copy(
+                                isLoading = isSyncActive,
+                                isSyncing = isSyncActive,
+                                shelves = emptyList()
+                            )
+                        }
                         return@collectLatest
                     }
 
@@ -164,10 +207,14 @@ class MoviesViewModel @Inject constructor(
                         }
                     }
 
+                    val isSyncActive = syncManager?.currentSyncState(providerId)?.isSyncing == true
+                    val stillLoading = builtShelves.isEmpty() && isSyncActive
+
                     _uiState.update {
                         it.copy(
                             shelves = builtShelves,
-                            isLoading = false,
+                            isLoading = stillLoading,
+                            isSyncing = isSyncActive,
                             errorMessage = null
                         )
                     }
