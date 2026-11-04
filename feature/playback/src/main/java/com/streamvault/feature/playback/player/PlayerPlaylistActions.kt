@@ -10,6 +10,8 @@ import com.streamvault.domain.model.ContentType
 import com.streamvault.domain.model.Favorite
 import com.streamvault.domain.model.VirtualCategoryIds
 import com.streamvault.domain.repository.ChannelRepository
+import com.streamvault.feature.playback.R
+import com.streamvault.player.PlaybackState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
@@ -254,24 +256,35 @@ internal fun PlayerViewModel.loadPlaylist(
             channelList = displayedChannels
             currentChannelFlowList.value = displayedChannels
             val targetId = if (currentContentId != -1L) currentContentId else initialChannelId
-            if (targetId != -1L) {
-                currentChannelIndex = channelList.indexOfFirst { it.id == targetId }
-            }
-            if (currentChannelIndex == -1) {
-                currentChannelIndex = channelList.indexOfFirst { it.streamUrl == currentStreamUrl }
-            }
+            val resolvedIndex = resolveLiveChannelIndex(
+                channelList = displayedChannels,
+                currentChannelIndex = currentChannelIndex,
+                currentContentId = targetId,
+                currentStreamUrl = currentStreamUrl,
+                resolvedStreamUrl = currentResolvedPlaybackUrl,
+                remoteStreamId = currentRemoteContentId?.toLongOrNull(),
+                title = currentTitle
+            )
 
-            if (currentChannelIndex != -1) {
-                currentChannelFlow.value = channelList[currentChannelIndex].sanitizedForPlayer()
+            if (resolvedIndex != -1) {
+                currentChannelIndex = resolvedIndex
+                currentChannelFlow.value = channelList[resolvedIndex].sanitizedForPlayer()
                 refreshCurrentChannelRecording()
-                val channel = channelList[currentChannelIndex]
-                displayChannelNumberFlow.value = resolveChannelNumber(channel, currentChannelIndex)
-            } else if (displayedChannels.isNotEmpty() && currentContentId != -1L) {
-                showPlayerNotice(
-                    message = "Channel not found in current playlist",
-                    recoveryType = PlayerRecoveryType.SOURCE,
-                    actions = listOf(PlayerNoticeAction.OPEN_GUIDE)
-                )
+                val channel = channelList[resolvedIndex]
+                displayChannelNumberFlow.value = resolveChannelNumber(channel, resolvedIndex)
+            } else {
+                currentChannelIndex = -1
+                val isActivelyPlaying = playerEngine.playbackState.value == PlaybackState.READY ||
+                    playerEngine.playbackState.value == PlaybackState.BUFFERING ||
+                    playerEngine.isPlaying.value
+
+                if (!isActivelyPlaying && displayedChannels.isNotEmpty() && currentContentId != -1L) {
+                    showPlayerNotice(
+                        message = appContext.getString(R.string.player_channel_not_found),
+                        recoveryType = PlayerRecoveryType.SOURCE,
+                        actions = listOf(PlayerNoticeAction.OPEN_GUIDE)
+                    )
+                }
             }
         }
     }

@@ -2011,7 +2011,10 @@ class PlayerViewModel @Inject constructor(
             channelList = channelList,
             currentChannelIndex = currentChannelIndex,
             currentContentId = currentContentId,
-            currentStreamUrl = currentStreamUrl
+            currentStreamUrl = currentStreamUrl,
+            resolvedStreamUrl = currentResolvedPlaybackUrl,
+            remoteStreamId = currentRemoteContentId?.toLongOrNull(),
+            title = currentTitle
         )
         return currentChannelIndex
     }

@@ -30,10 +30,15 @@ internal fun PlayerViewModel.finalizePreparedPlaybackContext(
         loadPlaylist(categoryId, providerId, isVirtual, internalChannelId)
     } else {
         if (channelList.isNotEmpty() && internalChannelId != -1L) {
-            currentChannelIndex = channelList.indexOfFirst { it.id == internalChannelId }
-            if (currentChannelIndex == -1) {
-                currentChannelIndex = channelList.indexOfFirst { it.streamUrl == streamUrl }
-            }
+            currentChannelIndex = resolveLiveChannelIndex(
+                channelList = channelList,
+                currentChannelIndex = currentChannelIndex,
+                currentContentId = internalChannelId,
+                currentStreamUrl = streamUrl,
+                resolvedStreamUrl = currentResolvedPlaybackUrl,
+                remoteStreamId = currentRemoteContentId?.toLongOrNull(),
+                title = currentTitle
+            )
         }
     }
 
