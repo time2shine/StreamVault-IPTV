@@ -12,4 +12,9 @@
   <string name="welcome_setup_later">Thiết lập sau</string>
   <string name="welcome_loading_subtitle">Đang mở màn hình phù hợp cho thiết bị này.</string>
 <string name="welcome_dont_ask_again">Đừng hỏi tôi lại</string>
+  <string name="welcome_offline_title">Không có kết nối Internet</string>
+  <string name="welcome_offline_subtitle">Kết nối TV của bạn với internet để tải danh sách kênh và phim.</string>
+  <string name="welcome_action_retry">Thử kết nối lại</string>
+  <string name="welcome_action_network_settings">Cài đặt mạng</string>
+  <string name="welcome_action_manual_setup">Thiết lập thủ công</string>
 </resources>

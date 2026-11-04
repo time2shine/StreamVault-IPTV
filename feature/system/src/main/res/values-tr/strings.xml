@@ -12,4 +12,9 @@
   <string name="welcome_setup_later">Daha sonra kur</string>
   <string name="welcome_loading_subtitle">Bu cihaz için doğru ekran açılıyor.</string>
 <string name="welcome_dont_ask_again">Bana bir daha sorma</string>
+  <string name="welcome_offline_title">İnternet Bağlantısı Yok</string>
+  <string name="welcome_offline_subtitle">Kanallarınızı ve filmlerinizi yüklemek için televizyonunuzu internete bağlayın.</string>
+  <string name="welcome_action_retry">Bağlantıyı Yeniden Dene</string>
+  <string name="welcome_action_network_settings">Ağ Ayarları</string>
+  <string name="welcome_action_manual_setup">Manuel Kurulum</string>
 </resources>

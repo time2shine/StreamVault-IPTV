@@ -12,4 +12,9 @@
   <string name="welcome_setup_later">Later instellen</string>
   <string name="welcome_loading_subtitle">Het juiste scherm voor dit apparaat openen.</string>
 <string name="welcome_dont_ask_again">Vraag het me niet opnieuw</string>
+  <string name="welcome_offline_title">Geen internetverbinding</string>
+  <string name="welcome_offline_subtitle">Verbind je tv met internet om je zenders en films te laden.</string>
+  <string name="welcome_action_retry">Opnieuw verbinden</string>
+  <string name="welcome_action_network_settings">Netwerkinstellingen</string>
+  <string name="welcome_action_manual_setup">Handmatige configuratie</string>
 </resources>

@@ -12,4 +12,9 @@
   <string name="welcome_setup_later">إعداد لاحقًا</string>
   <string name="welcome_loading_subtitle">جارٍ فتح الشاشة المناسبة لهذا الجهاز.</string>
 <string name="welcome_dont_ask_again">لا تسألني مرة أخرى</string>
+  <string name="welcome_offline_title">لا يوجد اتصال بالإنترنت</string>
+  <string name="welcome_offline_subtitle">يرجى توصيل التلفزيون بالإنترنت لتحميل القنوات والأفلام.</string>
+  <string name="welcome_action_retry">إعادة محاولة الاتصال</string>
+  <string name="welcome_action_network_settings">إعدادات الشبكة</string>
+  <string name="welcome_action_manual_setup">إعداد يدوي</string>
 </resources>

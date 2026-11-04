@@ -12,4 +12,9 @@
   <string name="welcome_tagline">Prémiové IPTV do obývačky</string>
   <string name="welcome_subtitle">Pohodlne si vychutnajte živé kanály, spätné prehrávanie, filmy a seriály v natívnom prostredí Android TV.</string>
 <string name="welcome_dont_ask_again">Už sa ma nepýtaj</string>
+  <string name="welcome_offline_title">Žiadne internetové pripojenie</string>
+  <string name="welcome_offline_subtitle">Pripojte televízor k internetu pre načítanie kanálov a filmov.</string>
+  <string name="welcome_action_retry">Skúsiť znova</string>
+  <string name="welcome_action_network_settings">Nastavenia siete</string>
+  <string name="welcome_action_manual_setup">Ručné nastavenie</string>
 </resources>

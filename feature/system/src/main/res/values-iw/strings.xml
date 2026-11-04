@@ -12,4 +12,9 @@
   <string name="welcome_tagline">IPTV פרימיום לסלון</string>
   <string name="welcome_subtitle">הישען אחורה אל ערוצים חיים, צפייה בהתעדכנות, סרטים וסדרות עם חווית Android TV של צד ראשון.</string>
 <string name="welcome_dont_ask_again">לא לשאול אותי שוב</string>
+  <string name="welcome_offline_title">אין חיבור לאינטרנט</string>
+  <string name="welcome_offline_subtitle">חבר את הטלוויזיה לאינטרנט כדי לטעון את הערוצים והסרטים שלך.</string>
+  <string name="welcome_action_retry">נסה להתחבר שוב</string>
+  <string name="welcome_action_network_settings">הגדרות רשת</string>
+  <string name="welcome_action_manual_setup">הגדרה ידנית</string>
 </resources>

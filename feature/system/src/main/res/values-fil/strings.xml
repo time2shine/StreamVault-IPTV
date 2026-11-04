@@ -12,4 +12,9 @@
   <string name="welcome_tagline">Premium IPTV para sa living room</string>
   <string name="welcome_subtitle">Mag-relax at manood ng mga live channel, catch-up, pelikula, at serye sa first-party na Android TV experience.</string>
 <string name="welcome_dont_ask_again">Huwag na akong tanungin muli</string>
+  <string name="welcome_offline_title">Walang Koneksyon sa Internet</string>
+  <string name="welcome_offline_subtitle">Ikonekta ang iyong TV sa internet upang mai-load ang iyong mga channel at pelikula.</string>
+  <string name="welcome_action_retry">Subukan Muli ang Koneksyon</string>
+  <string name="welcome_action_network_settings">Mga Setting ng Network</string>
+  <string name="welcome_action_manual_setup">Mano-manong Setup</string>
 </resources>

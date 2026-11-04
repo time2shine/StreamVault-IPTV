@@ -12,4 +12,9 @@
   <string name="welcome_setup_later">나중에 설정</string>
   <string name="welcome_loading_subtitle">이 기기에 맞는 화면을 여는 중입니다.</string>
 <string name="welcome_dont_ask_again">다시 묻지 않기</string>
+  <string name="welcome_offline_title">인터넷에 연결되지 않음</string>
+  <string name="welcome_offline_subtitle">채널과 영화를 불러오려면 TV를 인터넷에 연결하세요.</string>
+  <string name="welcome_action_retry">연결 재시도</string>
+  <string name="welcome_action_network_settings">네트워크 설정</string>
+  <string name="welcome_action_manual_setup">수동 설정</string>
 </resources>

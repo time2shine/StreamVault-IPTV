@@ -30,4 +30,6 @@ interface SystemWelcomePort {
         get() = flowOf(false)
 
     suspend fun setDontAskProviderSetupAgain(dontAskAgain: Boolean) = Unit
+
+    suspend fun markDefaultProviderSeeded() = Unit
 }

@@ -7,6 +7,7 @@ import com.streamvault.domain.repository.ProviderRepository
 import com.streamvault.domain.sync.Section
 import com.streamvault.domain.usecase.M3uProviderSetupCommand
 import com.streamvault.domain.usecase.ValidateAndAddProvider
+import com.streamvault.domain.usecase.ValidateAndAddProviderResult
 import com.streamvault.domain.usecase.XtreamProviderSetupCommand
 import com.streamvault.feature.system.api.SystemWelcomePort
 import com.streamvault.feature.system.api.WelcomeDevProviderConfig
@@ -136,6 +137,104 @@ class WelcomeViewModelTest {
         verifyBlocking(validateAndAddProvider, never()) { loginXtream(any(), anyOrNull()) }
     }
 
+    @Test
+    fun bootstrapFailureSetsOfflineErrorAndDoesNotMarkSeeded() = runTest {
+        val repository = emptyProviderRepository()
+        val validateAndAddProvider = mock<ValidateAndAddProvider>()
+        whenever(validateAndAddProvider.loginXtream(any(), anyOrNull())).thenReturn(
+            ValidateAndAddProviderResult.Error("Network unreachable")
+        )
+        val config = WelcomeDevProviderConfig(
+            xtreamServer = "https://xtream.example",
+            xtreamUsername = "user",
+            xtreamPassword = "pass",
+            xtreamName = "Seeded Xtream",
+        )
+        val port = TestSystemWelcomePort(config)
+        val viewModel = WelcomeViewModel(
+            providerRepository = repository,
+            validateAndAddProvider = validateAndAddProvider,
+            welcomePort = port,
+        )
+        advanceUntilIdle()
+
+        assertThat(viewModel.isOfflineError.value).isTrue()
+        assertThat(viewModel.hasProviders.value).isFalse()
+        assertThat(port.isSeeded).isFalse()
+    }
+
+    @Test
+    fun bootstrapSuccessSetsProvidersTrueAndMarksSeeded() = runTest {
+        val repository = emptyProviderRepository()
+        val validateAndAddProvider = mock<ValidateAndAddProvider>()
+        val provider = providerFixture().copy(
+            id = 42L,
+            name = "Seeded Xtream",
+            type = ProviderType.XTREAM_CODES
+        )
+        whenever(validateAndAddProvider.loginXtream(any(), anyOrNull())).thenReturn(
+            ValidateAndAddProviderResult.Success(provider)
+        )
+        val config = WelcomeDevProviderConfig(
+            xtreamServer = "https://xtream.example",
+            xtreamUsername = "user",
+            xtreamPassword = "pass",
+            xtreamName = "Seeded Xtream",
+        )
+        val port = TestSystemWelcomePort(config)
+        val viewModel = WelcomeViewModel(
+            providerRepository = repository,
+            validateAndAddProvider = validateAndAddProvider,
+            welcomePort = port,
+        )
+        advanceUntilIdle()
+
+        assertThat(viewModel.isOfflineError.value).isFalse()
+        assertThat(viewModel.hasProviders.value).isTrue()
+        assertThat(port.isSeeded).isTrue()
+        verifyBlocking(repository) { setActiveProvider(42L) }
+    }
+
+    @Test
+    fun retryBootstrapReAttemptsLogin() = runTest {
+        val repository = emptyProviderRepository()
+        val validateAndAddProvider = mock<ValidateAndAddProvider>()
+        whenever(validateAndAddProvider.loginXtream(any(), anyOrNull()))
+            .thenReturn(ValidateAndAddProviderResult.Error("Offline"))
+            .thenReturn(
+                ValidateAndAddProviderResult.Success(
+                    providerFixture().copy(
+                        id = 42L,
+                        name = "Seeded Xtream",
+                        type = ProviderType.XTREAM_CODES
+                    )
+                )
+            )
+        val config = WelcomeDevProviderConfig(
+            xtreamServer = "https://xtream.example",
+            xtreamUsername = "user",
+            xtreamPassword = "pass",
+            xtreamName = "Seeded Xtream",
+        )
+        val port = TestSystemWelcomePort(config)
+        val viewModel = WelcomeViewModel(
+            providerRepository = repository,
+            validateAndAddProvider = validateAndAddProvider,
+            welcomePort = port,
+        )
+        advanceUntilIdle()
+
+        assertThat(viewModel.isOfflineError.value).isTrue()
+        assertThat(viewModel.hasProviders.value).isFalse()
+
+        viewModel.retryBootstrap()
+        advanceUntilIdle()
+
+        assertThat(viewModel.isOfflineError.value).isFalse()
+        assertThat(viewModel.hasProviders.value).isTrue()
+        assertThat(port.isSeeded).isTrue()
+    }
+
     private fun createViewModel(
         repository: ProviderRepository,
         validateAndAddProvider: ValidateAndAddProvider,
@@ -162,7 +261,12 @@ class WelcomeViewModelTest {
     private class TestSystemWelcomePort(
         override val devProviderConfig: WelcomeDevProviderConfig,
     ) : SystemWelcomePort {
+        var isSeeded = false
         override val syncProgress: Flow<WelcomeSyncProgress?> =
             MutableStateFlow<WelcomeSyncProgress?>(null)
+
+        override suspend fun markDefaultProviderSeeded() {
+            isSeeded = true
+        }
     }
 }

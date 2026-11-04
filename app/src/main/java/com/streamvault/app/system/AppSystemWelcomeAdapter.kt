@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.map
 @Singleton
 class AppSystemWelcomeAdapter private constructor(
     private val syncProgressBus: SyncProgressBus,
-    override val devProviderConfig: WelcomeDevProviderConfig,
+    private val context: Context?,
     private val preferencesRepository: PreferencesRepository?,
     @Suppress("UNUSED_PARAMETER") ignored: Unit,
 ) : SystemWelcomePort {
@@ -30,7 +30,7 @@ class AppSystemWelcomeAdapter private constructor(
         preferencesRepository: PreferencesRepository,
     ) : this(
         syncProgressBus = syncProgressBus,
-        devProviderConfig = resolveDevProviderConfig(context),
+        context = context,
         preferencesRepository = preferencesRepository,
         ignored = Unit,
     )
@@ -40,14 +40,25 @@ class AppSystemWelcomeAdapter private constructor(
         devProviderConfig: WelcomeDevProviderConfig,
     ) : this(
         syncProgressBus = syncProgressBus,
-        devProviderConfig = devProviderConfig,
+        context = null,
         preferencesRepository = null,
         ignored = Unit,
-    )
+    ) {
+        this.injectedDevProviderConfig = devProviderConfig
+    }
+
+    private var injectedDevProviderConfig: WelcomeDevProviderConfig? = null
+
+    override val devProviderConfig: WelcomeDevProviderConfig
+        get() = injectedDevProviderConfig ?: resolveDevProviderConfig(context)
+
+    override suspend fun markDefaultProviderSeeded() {
+        context?.let { ForkPreferences.setHasEverSeededDefaultProvider(it, true) }
+    }
 
     companion object {
-        internal fun resolveDevProviderConfig(context: Context): WelcomeDevProviderConfig {
-            val alreadySeeded = ForkPreferences.hasEverSeededDefaultProvider(context)
+        internal fun resolveDevProviderConfig(context: Context?): WelcomeDevProviderConfig {
+            val alreadySeeded = context?.let { ForkPreferences.hasEverSeededDefaultProvider(it) } ?: false
             val defaultXtreamServer = if (alreadySeeded) "" else ForkConfig.DEFAULT_XTREAM_URL
             val defaultXtreamUsername = if (alreadySeeded) "" else ForkConfig.DEFAULT_XTREAM_USERNAME
             val defaultXtreamPassword = if (alreadySeeded) "" else ForkConfig.DEFAULT_XTREAM_PASSWORD
@@ -57,10 +68,6 @@ class AppSystemWelcomeAdapter private constructor(
             val xtreamUsername = BuildConfig.XTREAM_DEV_USERNAME.ifBlank { defaultXtreamUsername }
             val xtreamPassword = BuildConfig.XTREAM_DEV_PASSWORD.ifBlank { defaultXtreamPassword }
             val xtreamName = BuildConfig.XTREAM_DEV_NAME.ifBlank { defaultXtreamName }
-
-            if (!alreadySeeded && xtreamServer == ForkConfig.DEFAULT_XTREAM_URL) {
-                ForkPreferences.setHasEverSeededDefaultProvider(context, true)
-            }
 
             return WelcomeDevProviderConfig(
                 xtreamServer = xtreamServer,

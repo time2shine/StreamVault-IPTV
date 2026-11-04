@@ -47,6 +47,8 @@ import androidx.tv.material3.Surface
 import androidx.tv.material3.SurfaceDefaults
 import androidx.tv.material3.Text
 import com.streamvault.feature.system.R
+import android.content.Intent
+import androidx.compose.ui.platform.LocalContext
 import com.streamvault.core.ui.components.shell.StatusPill
 import com.streamvault.core.ui.design.BrowseColors as AppColors
 import com.streamvault.core.ui.interaction.TvButton
@@ -54,6 +56,7 @@ import com.streamvault.domain.repository.ProviderRepository
 import com.streamvault.domain.sync.Section
 import com.streamvault.domain.usecase.M3uProviderSetupCommand
 import com.streamvault.domain.usecase.ValidateAndAddProvider
+import com.streamvault.domain.usecase.ValidateAndAddProviderResult
 import com.streamvault.domain.usecase.XtreamProviderSetupCommand
 import com.streamvault.feature.system.api.SystemWelcomePort
 import com.streamvault.feature.system.api.WelcomeSyncProgress
@@ -86,6 +89,12 @@ class WelcomeViewModel @Inject constructor(
     private val _dontAskProviderSetupAgain = MutableStateFlow(false)
     val dontAskProviderSetupAgain: StateFlow<Boolean> = _dontAskProviderSetupAgain.asStateFlow()
 
+    private val _isOfflineError = MutableStateFlow(false)
+    val isOfflineError: StateFlow<Boolean> = _isOfflineError.asStateFlow()
+
+    private val _isBootstrapping = MutableStateFlow(false)
+    val isBootstrapping: StateFlow<Boolean> = _isBootstrapping.asStateFlow()
+
     private val acceptingProgress = MutableStateFlow(true)
 
     val syncProgress: StateFlow<WelcomeSyncProgress?> =
@@ -100,17 +109,30 @@ class WelcomeViewModel @Inject constructor(
             _dontAskAgainAtStartup.value = savedPreference
         }
         viewModelScope.launch {
-            maybeSeedDevProvider()
+            val existing = providerRepository.getProviders().first()
+            if (existing.isNotEmpty()) {
+                _hasProviders.value = true
+                _isBootstrapping.value = false
+                _isOfflineError.value = false
+                acceptingProgress.value = false
+            } else {
+                startBootstrap()
+            }
             providerRepository.getProviders()
                 .map { it.isNotEmpty() }
-                .collect { _hasProviders.value = it }
+                .collect { has ->
+                    if (has) {
+                        _hasProviders.value = true
+                        _isOfflineError.value = false
+                        _isBootstrapping.value = false
+                        acceptingProgress.value = false
+                    }
+                }
         }
-        viewModelScope.launch {
-            _hasProviders
-                .filterNotNull()
-                .first()
-            acceptingProgress.value = false
-        }
+    }
+
+    fun retryBootstrap() {
+        startBootstrap()
     }
 
     fun setDontAskProviderSetupAgain(dontAskAgain: Boolean) {
@@ -127,35 +149,124 @@ class WelcomeViewModel @Inject constructor(
         }
     }
 
-    private suspend fun maybeSeedDevProvider() {
-        if (providerRepository.getProviders().first().isNotEmpty()) return
+    private fun startBootstrap() {
+        viewModelScope.launch {
+            if (providerRepository.getProviders().first().isNotEmpty()) {
+                _hasProviders.value = true
+                _isBootstrapping.value = false
+                _isOfflineError.value = false
+                acceptingProgress.value = false
+                return@launch
+            }
 
-        val devConfig = welcomePort.devProviderConfig
-        val xtreamServer = devConfig.xtreamServer
-        val xtreamUser = devConfig.xtreamUsername
-        val xtreamPass = devConfig.xtreamPassword
-        if (xtreamServer.isNotBlank() && xtreamUser.isNotBlank() && xtreamPass.isNotBlank()) {
-            validateAndAddProvider.loginXtream(
-                XtreamProviderSetupCommand(
-                    serverUrl = xtreamServer,
-                    username = xtreamUser,
-                    password = xtreamPass,
-                    name = devConfig.xtreamName.ifBlank { "Dev (seeded)" },
-                    xtreamFastSyncEnabled = true
-                )
-            )
-            return
-        }
+            val devConfig = welcomePort.devProviderConfig
+            val xtreamServer = devConfig.xtreamServer
+            val xtreamUser = devConfig.xtreamUsername
+            val xtreamPass = devConfig.xtreamPassword
 
-        val m3uUrl = devConfig.m3uUrl
-        if (m3uUrl.isNotBlank()) {
-            validateAndAddProvider.addM3u(
-                M3uProviderSetupCommand(
-                    url = m3uUrl,
-                    name = devConfig.m3uName.ifBlank { "Dev M3U (seeded)" },
-                    m3uVodClassificationEnabled = devConfig.m3uVodClassificationEnabled
-                )
-            )
+            if (xtreamServer.isNotBlank() && xtreamUser.isNotBlank() && xtreamPass.isNotBlank()) {
+                _isBootstrapping.value = true
+                _isOfflineError.value = false
+                acceptingProgress.value = true
+
+                val result = runCatching {
+                    validateAndAddProvider.loginXtream(
+                        XtreamProviderSetupCommand(
+                            serverUrl = xtreamServer,
+                            username = xtreamUser,
+                            password = xtreamPass,
+                            name = devConfig.xtreamName.ifBlank { "Rokon IPTV" },
+                            xtreamFastSyncEnabled = true
+                        )
+                    )
+                }.getOrNull()
+
+                when (result) {
+                    is ValidateAndAddProviderResult.Success -> {
+                        runCatching { providerRepository.setActiveProvider(result.provider.id) }
+                        welcomePort.markDefaultProviderSeeded()
+                        _isBootstrapping.value = false
+                        _isOfflineError.value = false
+                        _hasProviders.value = true
+                        acceptingProgress.value = false
+                    }
+                    is ValidateAndAddProviderResult.SavedWithWarning -> {
+                        runCatching { providerRepository.setActiveProvider(result.provider.id) }
+                        welcomePort.markDefaultProviderSeeded()
+                        _isBootstrapping.value = false
+                        _isOfflineError.value = false
+                        _hasProviders.value = true
+                        acceptingProgress.value = false
+                    }
+                    is ValidateAndAddProviderResult.Error,
+                    is ValidateAndAddProviderResult.ValidationError,
+                    is ValidateAndAddProviderResult.VerificationInconclusive,
+                    is ValidateAndAddProviderResult.TransportConsentRequired,
+                    null -> {
+                        val has = providerRepository.getProviders().first().isNotEmpty()
+                        _isBootstrapping.value = false
+                        _hasProviders.value = has
+                        if (!has) {
+                            _isOfflineError.value = true
+                        }
+                    }
+                }
+                return@launch
+            }
+
+            val m3uUrl = devConfig.m3uUrl
+            if (m3uUrl.isNotBlank()) {
+                _isBootstrapping.value = true
+                _isOfflineError.value = false
+                acceptingProgress.value = true
+
+                val result = runCatching {
+                    validateAndAddProvider.addM3u(
+                        M3uProviderSetupCommand(
+                            url = m3uUrl,
+                            name = devConfig.m3uName.ifBlank { "Dev M3U (seeded)" },
+                            m3uVodClassificationEnabled = devConfig.m3uVodClassificationEnabled
+                        )
+                    )
+                }.getOrNull()
+
+                when (result) {
+                    is ValidateAndAddProviderResult.Success -> {
+                        runCatching { providerRepository.setActiveProvider(result.provider.id) }
+                        welcomePort.markDefaultProviderSeeded()
+                        _isBootstrapping.value = false
+                        _isOfflineError.value = false
+                        _hasProviders.value = true
+                        acceptingProgress.value = false
+                    }
+                    is ValidateAndAddProviderResult.SavedWithWarning -> {
+                        runCatching { providerRepository.setActiveProvider(result.provider.id) }
+                        welcomePort.markDefaultProviderSeeded()
+                        _isBootstrapping.value = false
+                        _isOfflineError.value = false
+                        _hasProviders.value = true
+                        acceptingProgress.value = false
+                    }
+                    is ValidateAndAddProviderResult.Error,
+                    is ValidateAndAddProviderResult.ValidationError,
+                    is ValidateAndAddProviderResult.VerificationInconclusive,
+                    is ValidateAndAddProviderResult.TransportConsentRequired,
+                    null -> {
+                        val has = providerRepository.getProviders().first().isNotEmpty()
+                        _isBootstrapping.value = false
+                        _hasProviders.value = has
+                        if (!has) {
+                            _isOfflineError.value = true
+                        }
+                    }
+                }
+                return@launch
+            }
+
+            _isBootstrapping.value = false
+            _isOfflineError.value = false
+            _hasProviders.value = false
+            acceptingProgress.value = false
         }
     }
 }
@@ -169,13 +280,15 @@ fun WelcomeScreen(
 ) {
     val hasProviders by viewModel.hasProviders.collectAsStateWithLifecycle()
     val syncProgress by viewModel.syncProgress.collectAsStateWithLifecycle()
+    val isOfflineError by viewModel.isOfflineError.collectAsStateWithLifecycle()
+    val isBootstrapping by viewModel.isBootstrapping.collectAsStateWithLifecycle()
     val dontAskAgainAtStartup by viewModel.dontAskAgainAtStartup.collectAsStateWithLifecycle()
     val dontAskProviderSetupAgain by viewModel.dontAskProviderSetupAgain.collectAsStateWithLifecycle()
 
-    LaunchedEffect(hasProviders, startupReady, dontAskAgainAtStartup) {
+    LaunchedEffect(hasProviders, startupReady, dontAskAgainAtStartup, isOfflineError) {
         when (hasProviders) {
             true -> if (startupReady) onNavigateToHome()
-            false -> if (startupReady && dontAskAgainAtStartup == true) onNavigateToHome()
+            false -> if (!isOfflineError && startupReady && dontAskAgainAtStartup == true) onNavigateToHome()
             null -> Unit
         }
     }
@@ -187,7 +300,10 @@ fun WelcomeScreen(
 
     WelcomeContent(
         hasProviders = displayedProviderState,
+        isOfflineError = isOfflineError,
+        isBootstrapping = isBootstrapping,
         syncProgress = syncProgress,
+        onRetry = viewModel::retryBootstrap,
         onNavigateToHome = { viewModel.continueAfterSaving(onNavigateToHome) },
         onNavigateToSetup = { viewModel.continueAfterSaving(onNavigateToSetup) },
         dontAskAgain = dontAskProviderSetupAgain,
@@ -198,7 +314,10 @@ fun WelcomeScreen(
 @Composable
 internal fun WelcomeContent(
     hasProviders: Boolean?,
+    isOfflineError: Boolean = false,
+    isBootstrapping: Boolean = false,
     syncProgress: WelcomeSyncProgress?,
+    onRetry: () -> Unit = {},
     onNavigateToHome: () -> Unit,
     onNavigateToSetup: () -> Unit,
     dontAskAgain: Boolean = false,
@@ -211,8 +330,17 @@ internal fun WelcomeContent(
                 .browseBackdrop()
         )
 
-        when (hasProviders) {
-            false -> WelcomeStartCard(
+        when {
+            isOfflineError -> WelcomeOfflineCard(
+                onRetry = onRetry,
+                onNavigateToSetup = onNavigateToSetup,
+                onNavigateToHome = onNavigateToHome,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(32.dp)
+            )
+
+            hasProviders == false && !isBootstrapping -> WelcomeStartCard(
                 dontAskAgain = dontAskAgain,
                 onDontAskAgainChanged = onDontAskAgainChanged,
                 onNavigateToHome = onNavigateToHome,
@@ -228,6 +356,116 @@ internal fun WelcomeContent(
                     .align(Alignment.Center)
                     .padding(32.dp)
             )
+        }
+    }
+}
+
+@Composable
+private fun WelcomeOfflineCard(
+    onRetry: () -> Unit,
+    onNavigateToSetup: () -> Unit,
+    onNavigateToHome: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val onOpenNetworkSettings: () -> Unit = {
+        val opened = runCatching {
+            context.startActivity(Intent(android.provider.Settings.ACTION_WIFI_SETTINGS).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            })
+            true
+        }.getOrDefault(false)
+
+        if (!opened) {
+            runCatching {
+                context.startActivity(Intent(android.provider.Settings.ACTION_WIRELESS_SETTINGS).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                })
+            }
+        }
+    }
+
+    Surface(
+        modifier = modifier
+            .widthIn(max = 720.dp)
+            .fillMaxWidth(),
+        shape = BrowseShapes.Hero,
+        colors = SurfaceDefaults.colors(containerColor = AppColors.Surface.copy(alpha = 0.95f))
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = if (isPortraitLayout()) 20.dp else 40.dp, vertical = 34.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(18.dp)
+        ) {
+            StatusPill(
+                label = stringResource(R.string.welcome_offline_title),
+                containerColor = AppColors.Warning
+            )
+            Text(
+                text = stringResource(R.string.welcome_offline_title),
+                style = MaterialTheme.typography.headlineMedium,
+                color = AppColors.TextPrimary,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = stringResource(R.string.welcome_offline_subtitle),
+                style = MaterialTheme.typography.bodyLarge,
+                color = AppColors.TextSecondary,
+                textAlign = TextAlign.Center
+            )
+            AdaptiveRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                TvButton(
+                    onClick = onRetry,
+                    modifier = if (isPortraitLayout()) Modifier.fillMaxWidth() else Modifier.weight(1f)
+                ) {
+                    Text(text = stringResource(R.string.welcome_action_retry))
+                }
+                TvButton(
+                    onClick = onOpenNetworkSettings,
+                    modifier = if (isPortraitLayout()) Modifier.fillMaxWidth() else Modifier.weight(1f),
+                    colors = ButtonDefaults.colors(
+                        containerColor = AppColors.SurfaceElevated,
+                        focusedContainerColor = Color.White,
+                        contentColor = AppColors.TextPrimary
+                    )
+                ) {
+                    Text(text = stringResource(R.string.welcome_action_network_settings))
+                }
+            }
+            AdaptiveRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                TvButton(
+                    onClick = onNavigateToSetup,
+                    modifier = if (isPortraitLayout()) Modifier.fillMaxWidth() else Modifier.weight(1f),
+                    colors = ButtonDefaults.colors(
+                        containerColor = Color.Transparent,
+                        focusedContainerColor = AppColors.SurfaceElevated,
+                        contentColor = AppColors.TextSecondary,
+                        focusedContentColor = AppColors.TextPrimary
+                    )
+                ) {
+                    Text(text = stringResource(R.string.welcome_action_manual_setup))
+                }
+                TvButton(
+                    onClick = onNavigateToHome,
+                    modifier = if (isPortraitLayout()) Modifier.fillMaxWidth() else Modifier.weight(1f),
+                    colors = ButtonDefaults.colors(
+                        containerColor = Color.Transparent,
+                        focusedContainerColor = AppColors.SurfaceElevated,
+                        contentColor = AppColors.TextSecondary,
+                        focusedContentColor = AppColors.TextPrimary
+                    )
+                ) {
+                    Text(text = stringResource(R.string.welcome_setup_later))
+                }
+            }
         }
     }
 }

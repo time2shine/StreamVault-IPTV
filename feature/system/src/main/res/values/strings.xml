@@ -12,4 +12,9 @@
   <string name="sync_items_indexed_format">%1$d items prepared</string>
   <string name="welcome_tagline">Premium IPTV for the living room</string>
   <string name="welcome_subtitle">Lean back into live channels, catch-up viewing, movies, and series with a first-party Android TV experience.</string>
+  <string name="welcome_offline_title">No Internet Connection</string>
+  <string name="welcome_offline_subtitle">Connect your TV to the internet to load your channels and movies.</string>
+  <string name="welcome_action_retry">Retry Connection</string>
+  <string name="welcome_action_network_settings">Network Settings</string>
+  <string name="welcome_action_manual_setup">Manual Setup</string>
 </resources>

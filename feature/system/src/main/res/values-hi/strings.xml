@@ -12,4 +12,9 @@
   <string name="welcome_tagline">लिविंग रूम के लिए प्रीमियम IPTV</string>
   <string name="welcome_subtitle">फर्स्ट-पार्टी Android TV अनुभव के साथ लाइव चैनल, कैच-अप, फ़िल्में और सीरीज़ आराम से देखें।</string>
 <string name="welcome_dont_ask_again">मुझसे दोबारा न पूछें</string>
+  <string name="welcome_offline_title">कोई इंटरनेट कनेक्शन नहीं है</string>
+  <string name="welcome_offline_subtitle">अपने चैनल और फिल्में लोड करने के लिए अपने टीवी को इंटरनेट से कनेक्ट करें।</string>
+  <string name="welcome_action_retry">पुनः प्रयास करें</string>
+  <string name="welcome_action_network_settings">नेटवर्क सेटिंग्स</string>
+  <string name="welcome_action_manual_setup">मैन्युअल सेटअप</string>
 </resources>

@@ -12,4 +12,9 @@
   <string name="welcome_tagline">Premium IPTV για το σαλόνι</string>
   <string name="welcome_subtitle">Χαλαρώστε με ζωντανά κανάλια, catch-up προβολή, ταινίες και σειρές με μια εμπειρία Android TV πρώτης κατηγορίας.</string>
 <string name="welcome_dont_ask_again">Μη με ρωτήσεις ξανά</string>
+  <string name="welcome_offline_title">Χωρίς σύνδεση στο διαδίκτυο</string>
+  <string name="welcome_offline_subtitle">Συνδέστε την τηλεόρασή σας στο διαδίκτυο για να φορτώσετε τα κανάλια και τις ταινίες σας.</string>
+  <string name="welcome_action_retry">Επανάληψη σύνδεσης</string>
+  <string name="welcome_action_network_settings">Ρυθμίσεις δικτύου</string>
+  <string name="welcome_action_manual_setup">Μη αυτόματη ρύθμιση</string>
 </resources>

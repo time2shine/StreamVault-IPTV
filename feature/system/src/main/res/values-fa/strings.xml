@@ -12,4 +12,9 @@
   <string name="welcome_tagline">IPTV ویژه برای اتاق نشیمن</string>
   <string name="welcome_subtitle">با یک تجربه بومی Android TV به کانال‌های زنده، تماشای تأخیری، فیلم‌ها و سریال‌ها تکیه دهید.</string>
 <string name="welcome_dont_ask_again">دیگر از من نپرس</string>
+  <string name="welcome_offline_title">اتصال اینترنت وجود ندارد</string>
+  <string name="welcome_offline_subtitle">برای بارگیری کانال‌ها و فیلم‌ها، تلویزیون خود را به اینترنت متصل کنید.</string>
+  <string name="welcome_action_retry">تلاش مجدد برای اتصال</string>
+  <string name="welcome_action_network_settings">تنظیمات شبکه</string>
+  <string name="welcome_action_manual_setup">راه‌اندازی دستی</string>
 </resources>

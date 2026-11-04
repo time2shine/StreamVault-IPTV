@@ -12,4 +12,9 @@
   <string name="welcome_setup_later">Configurați mai târziu</string>
   <string name="welcome_loading_subtitle">Se deschide ecranul potrivit pentru acest dispozitiv.</string>
 <string name="welcome_dont_ask_again">Nu mă mai întreba</string>
+  <string name="welcome_offline_title">Fără conexiune la internet</string>
+  <string name="welcome_offline_subtitle">Conectați televizorul la internet pentru a încărca canalele și filmele.</string>
+  <string name="welcome_action_retry">Reîncearcă conexiunea</string>
+  <string name="welcome_action_network_settings">Setări de rețea</string>
+  <string name="welcome_action_manual_setup">Configurare manuală</string>
 </resources>

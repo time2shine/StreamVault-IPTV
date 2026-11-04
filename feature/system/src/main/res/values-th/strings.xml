@@ -12,4 +12,9 @@
   <string name="welcome_tagline">IPTV ระดับพรีเมียมสำหรับห้องนั่งเล่น</string>
   <string name="welcome_subtitle">เอนหลังรับชมช่องสด รายการย้อนหลัง ภาพยนตร์ และซีรีส์ด้วยประสบการณ์ Android TV จากทีมผู้พัฒนาโดยตรง</string>
 <string name="welcome_dont_ask_again">ไม่ต้องถามฉันอีก</string>
+  <string name="welcome_offline_title">ไม่มีการเชื่อมต่ออินเทอร์เน็ต</string>
+  <string name="welcome_offline_subtitle">เชื่อมต่อทีวีของคุณกับอินเทอร์เน็ตเพื่อโหลดช่องและภาพยนตร์ของคุณ</string>
+  <string name="welcome_action_retry">ลองเชื่อมต่ออีกครั้ง</string>
+  <string name="welcome_action_network_settings">การตั้งค่าเครือข่าย</string>
+  <string name="welcome_action_manual_setup">ตั้งค่าด้วยตนเอง</string>
 </resources>

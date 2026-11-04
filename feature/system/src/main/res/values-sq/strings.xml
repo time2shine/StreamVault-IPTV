@@ -12,4 +12,9 @@
   <string name="welcome_tagline">IPTV premium për dhomën e ndenjes</string>
   <string name="welcome_subtitle">Shijo kanale live, shikim me vonesë, filma dhe seriale me një përvojë origjinale Android TV.</string>
 <string name="welcome_dont_ask_again">Mos më pyet përsëri</string>
+  <string name="welcome_offline_title">Nuk ka lidhje me internetin</string>
+  <string name="welcome_offline_subtitle">Lidhni televizorin me internetin për të ngarkuar kanalet dhe filmat tuaj.</string>
+  <string name="welcome_action_retry">Riprovo lidhjen</string>
+  <string name="welcome_action_network_settings">Cilësimet e rrjetit</string>
+  <string name="welcome_action_manual_setup">Konfigurim manual</string>
 </resources>

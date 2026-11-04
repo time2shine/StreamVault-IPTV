@@ -12,4 +12,9 @@
   <string name="welcome_setup_later">Configura più tardi</string>
   <string name="welcome_loading_subtitle">Apertura della schermata giusta per questo dispositivo.</string>
 <string name="welcome_dont_ask_again">Non chiedermelo più</string>
+  <string name="welcome_offline_title">Nessuna connessione Internet</string>
+  <string name="welcome_offline_subtitle">Collega la TV a Internet per caricare i tuoi canali e film.</string>
+  <string name="welcome_action_retry">Riprova connessione</string>
+  <string name="welcome_action_network_settings">Impostazioni di rete</string>
+  <string name="welcome_action_manual_setup">Configurazione manuale</string>
 </resources>

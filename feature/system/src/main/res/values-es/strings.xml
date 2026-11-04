@@ -12,4 +12,9 @@
   <string name="welcome_subtitle">Vuelve a disfrutar de canales en vivo, ponte al día, películas y series con una experiencia de Android TV propia.</string>
   <string name="welcome_loading_subtitle">Abriendo la pantalla adecuada para este dispositivo.</string>
 <string name="welcome_dont_ask_again">No volver a preguntarme</string>
+  <string name="welcome_offline_title">Sin conexión a Internet</string>
+  <string name="welcome_offline_subtitle">Conecta tu televisor a Internet para cargar tus canales y películas.</string>
+  <string name="welcome_action_retry">Reintentar conexión</string>
+  <string name="welcome_action_network_settings">Configuración de red</string>
+  <string name="welcome_action_manual_setup">Configuración manual</string>
 </resources>

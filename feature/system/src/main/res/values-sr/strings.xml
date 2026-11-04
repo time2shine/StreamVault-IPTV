@@ -12,4 +12,9 @@
   <string name="welcome_tagline">Премијум IPTV за дневну собу</string>
   <string name="welcome_subtitle">Завалите се и уживајте у каналима уживо, гледању уназад, филмовима и серијама уз изворно Android TV искуство.</string>
 <string name="welcome_dont_ask_again">Не питај ме поново</string>
+  <string name="welcome_offline_title">Нема интернет везе</string>
+  <string name="welcome_offline_subtitle">Повежите телевизор са интернетом да бисте учитали канале и филмове.</string>
+  <string name="welcome_action_retry">Покушај поново</string>
+  <string name="welcome_action_network_settings">Подешавања мреже</string>
+  <string name="welcome_action_manual_setup">Ручно подешавање</string>
 </resources>

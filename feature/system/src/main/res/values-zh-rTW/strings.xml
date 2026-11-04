@@ -12,4 +12,9 @@
   <string name="welcome_tagline">客廳裡的頂級 IPTV</string>
   <string name="welcome_subtitle">輕鬆觀看直播頻道、回看、電影和劇集，享受原生 Android TV 體驗。</string>
 <string name="welcome_dont_ask_again">不要再詢問</string>
+  <string name="welcome_offline_title">無網路連線</string>
+  <string name="welcome_offline_subtitle">請將電視連接至網際網路以載入頻道與電影。</string>
+  <string name="welcome_action_retry">重試連線</string>
+  <string name="welcome_action_network_settings">網路設定</string>
+  <string name="welcome_action_manual_setup">手動設定</string>
 </resources>

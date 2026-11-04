@@ -12,4 +12,9 @@
   <string name="welcome_tagline">Premium IPTV olohuoneeseen</string>
   <string name="welcome_subtitle">Nojaa takaisin live-kanaviin, katseluhetkiin, elokuviin ja sarjoihin ensimmäisen osapuolen Android TV -kokemuksella.</string>
 <string name="welcome_dont_ask_again">Älä kysy uudelleen</string>
+  <string name="welcome_offline_title">Ei internet-yhteyttä</string>
+  <string name="welcome_offline_subtitle">Yhdistä televisiosi internetiin ladataksesi kanavat ja elokuvat.</string>
+  <string name="welcome_action_retry">Yritä yhteyttä uudelleen</string>
+  <string name="welcome_action_network_settings">Verkkoasetukset</string>
+  <string name="welcome_action_manual_setup">Manuaalinen määritys</string>
 </resources>

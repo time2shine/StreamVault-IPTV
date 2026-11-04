@@ -12,4 +12,9 @@
   <string name="welcome_setup_later">Настроить позже</string>
   <string name="welcome_loading_subtitle">Открываем подходящий экран для этого устройства.</string>
 <string name="welcome_dont_ask_again">Больше не спрашивать</string>
+  <string name="welcome_offline_title">Нет подключения к Интернету</string>
+  <string name="welcome_offline_subtitle">Подключите телевизор к Интернету, чтобы загрузить каналы и фильмы.</string>
+  <string name="welcome_action_retry">Повторить попытку</string>
+  <string name="welcome_action_network_settings">Настройки сети</string>
+  <string name="welcome_action_manual_setup">Ручная настройка</string>
 </resources>

@@ -12,4 +12,9 @@
   <string name="welcome_setup_later">稍后设置</string>
   <string name="welcome_loading_subtitle">正在为此设备打开合适的屏幕。</string>
 <string name="welcome_dont_ask_again">不再询问</string>
+  <string name="welcome_offline_title">无网络连接</string>
+  <string name="welcome_offline_subtitle">请将电视连接到互联网以加载频道和电影。</string>
+  <string name="welcome_action_retry">重试连接</string>
+  <string name="welcome_action_network_settings">网络设置</string>
+  <string name="welcome_action_manual_setup">手动设置</string>
 </resources>

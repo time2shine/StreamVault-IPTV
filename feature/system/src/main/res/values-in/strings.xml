@@ -12,4 +12,9 @@
   <string name="welcome_setup_later">Siapkan nanti</string>
   <string name="welcome_loading_subtitle">Membuka layar yang tepat untuk perangkat ini.</string>
 <string name="welcome_dont_ask_again">Jangan tanya saya lagi</string>
+  <string name="welcome_offline_title">Tidak Ada Koneksi Internet</string>
+  <string name="welcome_offline_subtitle">Hubungkan TV Anda ke internet untuk memuat saluran dan film Anda.</string>
+  <string name="welcome_action_retry">Coba Lagi Koneksi</string>
+  <string name="welcome_action_network_settings">Pengaturan Jaringan</string>
+  <string name="welcome_action_manual_setup">Pengaturan Manual</string>
 </resources>

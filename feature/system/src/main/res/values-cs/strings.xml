@@ -12,4 +12,9 @@
   <string name="welcome_setup_later">Nastavit později</string>
   <string name="welcome_loading_subtitle">Otevírá se správná obrazovka pro toto zařízení.</string>
 <string name="welcome_dont_ask_again">Už se mě znovu neptej</string>
+  <string name="welcome_offline_title">Žádné připojení k internetu</string>
+  <string name="welcome_offline_subtitle">Připojte televizi k internetu pro načtení kanálů a filmů.</string>
+  <string name="welcome_action_retry">Zkusit znovu</string>
+  <string name="welcome_action_network_settings">Nastavení sítě</string>
+  <string name="welcome_action_manual_setup">Ruční nastavení</string>
 </resources>

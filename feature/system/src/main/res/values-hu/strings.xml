@@ -12,4 +12,9 @@
   <string name="welcome_setup_later">Beállítás később</string>
   <string name="welcome_loading_subtitle">A megfelelő képernyő megnyitása ehhez az eszközhöz.</string>
 <string name="welcome_dont_ask_again">Ne kérdezz meg újra</string>
+  <string name="welcome_offline_title">Nincs internetkapcsolat</string>
+  <string name="welcome_offline_subtitle">A csatornák és filmek betöltéséhez csatlakoztassa a tévét az internethez.</string>
+  <string name="welcome_action_retry">Kapcsolódás újból</string>
+  <string name="welcome_action_network_settings">Hálózati beállítások</string>
+  <string name="welcome_action_manual_setup">Kézi beállítás</string>
 </resources>

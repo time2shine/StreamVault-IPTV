@@ -12,4 +12,9 @@
   <string name="welcome_setup_later">Später einrichten</string>
   <string name="welcome_loading_subtitle">Der passende Bildschirm für dieses Gerät wird geöffnet.</string>
 <string name="welcome_dont_ask_again">Nicht erneut fragen</string>
+  <string name="welcome_offline_title">Keine Internetverbindung</string>
+  <string name="welcome_offline_subtitle">Verbinden Sie Ihren Fernseher mit dem Internet, um Sender und Filme zu laden.</string>
+  <string name="welcome_action_retry">Verbindung wiederholen</string>
+  <string name="welcome_action_network_settings">Netzwerkeinstellungen</string>
+  <string name="welcome_action_manual_setup">Manuelle Einrichtung</string>
 </resources>

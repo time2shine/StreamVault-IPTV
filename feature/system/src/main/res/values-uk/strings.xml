@@ -12,4 +12,9 @@
   <string name="welcome_tagline">Преміум IPTV для вітальні</string>
   <string name="welcome_subtitle">Відпочивайте, переглядаючи прямі канали, архів, фільми та серіали в нативному досвіді Android TV.</string>
 <string name="welcome_dont_ask_again">Не запитувати знову</string>
+  <string name="welcome_offline_title">Немає підключення до Інтернету</string>
+  <string name="welcome_offline_subtitle">Підключіть телевізор до Інтернету, щоб завантажити канали та фільми.</string>
+  <string name="welcome_action_retry">Повторити спробу</string>
+  <string name="welcome_action_network_settings">Налаштування мережі</string>
+  <string name="welcome_action_manual_setup">Ручне налаштування</string>
 </resources>

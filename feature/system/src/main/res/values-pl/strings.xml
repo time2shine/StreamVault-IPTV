@@ -12,4 +12,9 @@
   <string name="welcome_tagline">Premium IPTV do salonu</string>
   <string name="welcome_subtitle">Oglądaj kanały na żywo, catch-up, filmy i seriale w natywnym doświadczeniu Android TV.</string>
 <string name="welcome_dont_ask_again">Nie pytaj mnie ponownie</string>
+  <string name="welcome_offline_title">Brak połączenia z internetem</string>
+  <string name="welcome_offline_subtitle">Połącz telewizor z internetem, aby załadować kanały i filmy.</string>
+  <string name="welcome_action_retry">Ponów próbę połączenia</string>
+  <string name="welcome_action_network_settings">Ustawienia sieci</string>
+  <string name="welcome_action_manual_setup">Konfiguracja ręczna</string>
 </resources>

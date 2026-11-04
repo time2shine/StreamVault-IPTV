@@ -12,4 +12,9 @@
   <string name="welcome_tagline">Премиум IPTV за всекидневната</string>
   <string name="welcome_subtitle">Отпуснете се с канали на живо, отложено гледане, филми и сериали с първокласно изживяване за Android TV.</string>
 <string name="welcome_dont_ask_again">Не ме питай отново</string>
+  <string name="welcome_offline_title">Няма интернет връзка</string>
+  <string name="welcome_offline_subtitle">Свържете телевизора с интернет, за да заредите каналите и филмите си.</string>
+  <string name="welcome_action_retry">Опитай пак</string>
+  <string name="welcome_action_network_settings">Настройки на мрежата</string>
+  <string name="welcome_action_manual_setup">Ръчна настройка</string>
 </resources>

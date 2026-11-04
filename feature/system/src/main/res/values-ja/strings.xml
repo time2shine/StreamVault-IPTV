@@ -12,4 +12,9 @@
   <string name="welcome_setup_later">後で設定</string>
   <string name="welcome_loading_subtitle">このデバイスに適した画面を開いています。</string>
 <string name="welcome_dont_ask_again">今後確認しない</string>
+  <string name="welcome_offline_title">インターネット接続がありません</string>
+  <string name="welcome_offline_subtitle">チャンネルと映画を読み込むには、テレビをインターネットに接続してください。</string>
+  <string name="welcome_action_retry">再試行</string>
+  <string name="welcome_action_network_settings">ネットワーク設定</string>
+  <string name="welcome_action_manual_setup">手動設定</string>
 </resources>

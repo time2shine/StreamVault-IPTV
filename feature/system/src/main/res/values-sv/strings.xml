@@ -12,4 +12,9 @@
   <string name="welcome_setup_later">Ställ in senare</string>
   <string name="welcome_loading_subtitle">Öppnar rätt skärm för den här enheten.</string>
 <string name="welcome_dont_ask_again">Fråga mig inte igen</string>
+  <string name="welcome_offline_title">Ingen internetanslutning</string>
+  <string name="welcome_offline_subtitle">Anslut din TV till internet för att ladda dina kanaler och filmer.</string>
+  <string name="welcome_action_retry">Försök igen</string>
+  <string name="welcome_action_network_settings">Nätverksinställningar</string>
+  <string name="welcome_action_manual_setup">Manuell konfiguration</string>
 </resources>

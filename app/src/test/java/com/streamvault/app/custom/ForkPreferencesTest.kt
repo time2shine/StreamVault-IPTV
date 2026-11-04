@@ -47,13 +47,16 @@ class ForkPreferencesTest {
     }
 
     @Test
-    fun `first launch seeds bootstrap Xtream provider and marks as seeded`() {
+    fun `first launch provides bootstrap Xtream config and marks as seeded upon completion`() {
         val config = AppSystemWelcomeAdapter.resolveDevProviderConfig(context)
 
         assertThat(config.xtreamServer).isEqualTo(ForkConfig.DEFAULT_XTREAM_URL)
         assertThat(config.xtreamUsername).isEqualTo(ForkConfig.DEFAULT_XTREAM_USERNAME)
         assertThat(config.xtreamPassword).isEqualTo(ForkConfig.DEFAULT_XTREAM_PASSWORD)
         assertThat(config.xtreamName).isEqualTo(ForkConfig.DEFAULT_XTREAM_NAME)
+        assertThat(storedSeeded).isFalse()
+
+        ForkPreferences.setHasEverSeededDefaultProvider(context, true)
         assertThat(storedSeeded).isTrue()
     }
 

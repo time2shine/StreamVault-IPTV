@@ -12,4 +12,9 @@
   <string name="welcome_tagline">IPTV premium untuk ruang tamu</string>
   <string name="welcome_subtitle">Bersantai menikmati saluran langsung, tontonan semula, filem dan siri dengan pengalaman Android TV pihak pertama.</string>
 <string name="welcome_dont_ask_again">Jangan tanya saya lagi</string>
+  <string name="welcome_offline_title">Tiada Sambungan Internet</string>
+  <string name="welcome_offline_subtitle">Sambungkan TV anda ke internet untuk memuatkan saluran dan filem anda.</string>
+  <string name="welcome_action_retry">Cuba Sambung Semula</string>
+  <string name="welcome_action_network_settings">Tetapan Rangkaian</string>
+  <string name="welcome_action_manual_setup">Persediaan Manual</string>
 </resources>

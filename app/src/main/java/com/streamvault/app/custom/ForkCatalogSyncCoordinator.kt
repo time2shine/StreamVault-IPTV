@@ -55,16 +55,11 @@ class ForkCatalogSyncCoordinator @Inject constructor(
         if (!maintenanceStarted.compareAndSet(false, true)) return
         logger.info("Starting fork catalog sync maintenance")
 
-        // 1. Initial check after app boot: if providers are empty (fresh install), bootstrap immediately without waiting
+        // 1. Initial check after app boot: delay slightly to let WelcomeViewModel handle the user-facing bootstrap.
+        // If still empty after delay (or on recurring launch), checkAndTriggerSync runs in the background.
         scope.launch {
-            val providers = providerRepository.getProviders().first()
-            if (providers.isEmpty()) {
-                logger.info("No providers configured on boot: bootstrapping default Xtream provider immediately")
-                checkAndTriggerSync(isStartupCheck = true)
-            } else {
-                delay(ForkConfig.INITIAL_BACKGROUND_SYNC_DELAY_MILLIS)
-                checkAndTriggerSync(isStartupCheck = true)
-            }
+            delay(ForkConfig.INITIAL_BACKGROUND_SYNC_DELAY_MILLIS)
+            checkAndTriggerSync(isStartupCheck = true)
         }
 
         // 2. Periodic hourly check for daily sync if app stays open
@@ -381,10 +376,12 @@ class ForkCatalogSyncCoordinator @Inject constructor(
             when (loginResult) {
                 is ValidateAndAddProviderResult.Success -> {
                     providerRepository.setActiveProvider(loginResult.provider.id)
+                    ForkPreferences.setHasEverSeededDefaultProvider(context, true)
                     return loginResult.provider
                 }
                 is ValidateAndAddProviderResult.SavedWithWarning -> {
                     providerRepository.setActiveProvider(loginResult.provider.id)
+                    ForkPreferences.setHasEverSeededDefaultProvider(context, true)
                     return loginResult.provider
                 }
                 else -> return null

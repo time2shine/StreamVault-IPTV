@@ -12,4 +12,9 @@
   <string name="welcome_subtitle">Profitez des chaînes en direct, du visionnage de rattrapage, des films et des séries avec une expérience Android TV propriétaire.</string>
   <string name="welcome_setup_later">Configurer plus tard</string>
 <string name="welcome_dont_ask_again">Ne plus me demander</string>
+  <string name="welcome_offline_title">Aucune connexion Internet</string>
+  <string name="welcome_offline_subtitle">Connectez votre téléviseur à Internet pour charger vos chaînes et vos films.</string>
+  <string name="welcome_action_retry">Réessayer la connexion</string>
+  <string name="welcome_action_network_settings">Paramètres réseau</string>
+  <string name="welcome_action_manual_setup">Configuration manuelle</string>
 </resources>
