@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -67,26 +68,40 @@ fun CatalogShelvesSkeleton(
             .fillMaxSize()
             .padding(top = 8.dp, bottom = 48.dp)
     ) {
-        // Status header banner
-        Row(
+        // Status header banner with spinner and progress bar
+        Column(
             modifier = Modifier
                 .padding(horizontal = 24.dp, vertical = 8.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .background(SurfaceHighlight.copy(alpha = 0.4f))
-                .padding(horizontal = 14.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                .padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(16.dp),
-                color = Primary,
-                strokeWidth = 2.dp
-            )
-            Text(
-                text = statusTitle,
-                color = TextSecondary,
-                fontSize = 13.sp
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    color = Primary,
+                    strokeWidth = 2.dp
+                )
+                Text(
+                    text = statusTitle,
+                    color = TextSecondary,
+                    fontSize = 13.sp
+                )
+            }
+            if (isSyncing) {
+                LinearProgressIndicator(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(3.dp)
+                        .clip(RoundedCornerShape(2.dp)),
+                    color = Primary,
+                    trackColor = SurfaceHighlight.copy(alpha = 0.3f)
+                )
+            }
         }
 
         LazyColumn(

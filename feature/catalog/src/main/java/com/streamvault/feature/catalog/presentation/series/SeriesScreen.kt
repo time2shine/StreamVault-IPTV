@@ -1,6 +1,7 @@
 package com.streamvault.feature.catalog.presentation.series
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,10 +36,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.streamvault.core.navigation.AppDestination
@@ -79,8 +82,16 @@ fun SeriesScreen(
         Box(modifier = Modifier.fillMaxSize()) {
             when {
                 uiState.isLoading && uiState.shelves.isEmpty() -> {
+                    val baseTitle = stringResource(
+                        if (uiState.isSyncing) R.string.movies_syncing_title else R.string.series_loading
+                    )
+                    val title = if (uiState.isSyncing && uiState.loadedCount > 0) {
+                        "$baseTitle (${stringResource(R.string.library_saved_items_count, uiState.loadedCount)})"
+                    } else {
+                        baseTitle
+                    }
                     CatalogShelvesSkeleton(
-                        statusTitle = stringResource(R.string.series_loading),
+                        statusTitle = title,
                         isSyncing = uiState.isSyncing
                     )
                 }
@@ -88,7 +99,10 @@ fun SeriesScreen(
                     NoProvidersContent()
                 }
                 uiState.errorMessage != null && uiState.shelves.isEmpty() -> {
-                    ErrorContent(message = uiState.errorMessage ?: "")
+                    ErrorContent(
+                        message = uiState.errorMessage ?: "",
+                        onRetry = viewModel::refresh
+                    )
                 }
                 uiState.shelves.isEmpty() && !uiState.isLoading -> {
                     NoSeriesContent(onRefresh = viewModel::refresh)
@@ -131,6 +145,36 @@ private fun SeriesShelvesContent(
         contentPadding = PaddingValues(top = 8.dp, bottom = 48.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // Active background sync banner
+        if (uiState.isSyncing) {
+            item(key = "row_syncing_banner") {
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 24.dp, vertical = 4.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(com.streamvault.core.ui.design.browse.SurfaceHighlight.copy(alpha = 0.4f))
+                        .padding(horizontal = 14.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(14.dp),
+                        color = com.streamvault.core.ui.design.browse.Primary,
+                        strokeWidth = 2.dp
+                    )
+                    Text(
+                        text = if (uiState.loadedCount > 0) {
+                            stringResource(R.string.movies_syncing_title) + " (" + stringResource(R.string.library_saved_items_count, uiState.loadedCount) + ")"
+                        } else {
+                            stringResource(R.string.movies_syncing_title)
+                        },
+                        color = com.streamvault.core.ui.design.browse.TextSecondary,
+                        fontSize = 12.sp
+                    )
+                }
+            }
+        }
+
         // 1. Continue Watching
         if (uiState.continueWatching.isNotEmpty()) {
             item(key = "row_continue_watching") {
@@ -309,15 +353,30 @@ private fun NoProvidersContent() {
 }
 
 @Composable
-private fun ErrorContent(message: String) {
+private fun ErrorContent(message: String, onRetry: () -> Unit) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        AppMessageState(
-            title = stringResource(R.string.settings_status_error),
-            subtitle = message
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(horizontal = 32.dp)
+        ) {
+            AppMessageState(
+                title = stringResource(R.string.settings_status_error),
+                subtitle = message
+            )
+            androidx.tv.material3.Button(
+                onClick = onRetry,
+                colors = androidx.tv.material3.ButtonDefaults.colors(
+                    containerColor = com.streamvault.core.ui.design.browse.Primary,
+                    contentColor = Color.White
+                )
+            ) {
+                Text(text = stringResource(R.string.movies_sync_action))
+            }
+        }
     }
 }
 

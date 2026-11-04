@@ -2,6 +2,7 @@ package com.streamvault.feature.catalog.presentation.movies
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.streamvault.data.sync.ProviderSyncCommands
 import com.streamvault.data.sync.ProviderSyncStateSource
 import com.streamvault.domain.model.ContentType
 import com.streamvault.domain.model.Movie
@@ -40,6 +41,7 @@ data class MoviesUiState(
     val isLoading: Boolean = false,
     val hasProviders: Boolean = true,
     val isSyncing: Boolean = false,
+    val loadedCount: Int = 0,
     val errorMessage: String? = null,
     val userMessage: String? = null,
     val continueWatching: List<PlaybackHistory> = emptyList(),
@@ -62,7 +64,8 @@ class MoviesViewModel @Inject constructor(
     private val providerRepository: ProviderRepository,
     private val movieRepository: MovieRepository,
     private val playbackHistoryRepository: PlaybackHistoryRepository,
-    private val syncManager: ProviderSyncStateSource? = null
+    private val syncManager: ProviderSyncStateSource? = null,
+    private val syncCommands: ProviderSyncCommands? = null
 ) : ViewModel() {
 
     companion object {
@@ -118,11 +121,20 @@ class MoviesViewModel @Inject constructor(
                         )
                     }
 
-                    // Launch concurrent loaders for history, sync state, and movie shelves
+                    // Launch concurrent loaders for history, sync state, library count, and movie shelves
                     launch { observeHistory(provider.id) }
                     launch { observeSyncState(provider.id) }
+                    launch { observeLibraryCount(provider.id) }
                     launch { loadMovieShelves(provider.id) }
                 }
+        }
+    }
+
+    private suspend fun observeLibraryCount(providerId: Long) {
+        movieRepository.getLibraryCount(providerId).collectLatest { count ->
+            _uiState.update { current ->
+                current.copy(loadedCount = count)
+            }
         }
     }
 
@@ -149,9 +161,26 @@ class MoviesViewModel @Inject constructor(
     fun refresh() {
         if (activeProviderId > 0L) {
             viewModelScope.launch {
-                _uiState.update { it.copy(isLoading = true, isSyncing = true) }
-                runCatching {
-                    providerRepository.refreshProviderData(activeProviderId, force = true)
+                _uiState.update { it.copy(isLoading = true, isSyncing = true, errorMessage = null) }
+                launch(Dispatchers.IO) {
+                    val result = runCatching {
+                        syncCommands?.processQueuedXtreamIndexJobs(
+                            providerId = activeProviderId,
+                            section = ContentType.MOVIE,
+                            force = true
+                        ) ?: providerRepository.refreshProviderData(activeProviderId, force = true)
+                    }.getOrNull()
+
+                    val count = runCatching { movieRepository.getLibraryCount(activeProviderId).first() }.getOrDefault(0)
+                    if (result is com.streamvault.domain.model.Result.Error && count == 0) {
+                        _uiState.update { current ->
+                            current.copy(
+                                isLoading = false,
+                                isSyncing = false,
+                                errorMessage = result.message
+                            )
+                        }
+                    }
                 }
                 loadMovieShelves(activeProviderId)
             }
@@ -162,26 +191,41 @@ class MoviesViewModel @Inject constructor(
         loadShelvesJob?.cancel()
         loadShelvesJob = viewModelScope.launch {
             try {
-                // If library count is 0, trigger background catalog sync so movies start loading immediately
+                // Eagerly trigger VOD indexing if library is currently empty
                 val libraryCount = runCatching { movieRepository.getLibraryCount(providerId).first() }.getOrDefault(0)
-                val initialSyncActive = syncManager?.currentSyncState(providerId)?.isSyncing == true
 
-                if (libraryCount == 0 && !initialSyncTriggered && !initialSyncActive) {
+                if (libraryCount == 0 && !initialSyncTriggered) {
                     initialSyncTriggered = true
                     isInitialSyncPending = true
-                    _uiState.update { it.copy(isLoading = true, isSyncing = true) }
-                    launch {
-                        runCatching {
-                            providerRepository.refreshProviderData(providerId, force = false)
-                        }
+                    _uiState.update { it.copy(isLoading = true, isSyncing = true, errorMessage = null) }
+                    launch(Dispatchers.IO) {
+                        val result = runCatching {
+                            syncCommands?.processQueuedXtreamIndexJobs(
+                                providerId = providerId,
+                                section = ContentType.MOVIE,
+                                force = true
+                            ) ?: providerRepository.refreshProviderData(providerId, force = true)
+                        }.getOrNull()
+
                         isInitialSyncPending = false
                         val active = syncManager?.currentSyncState(providerId)?.isSyncing == true
                         val count = runCatching { movieRepository.getLibraryCount(providerId).first() }.getOrDefault(0)
-                        _uiState.update { current ->
-                            current.copy(
-                                isLoading = current.shelves.isEmpty() && (active || (count == 0 && isInitialSyncPending)),
-                                isSyncing = active
-                            )
+
+                        if (result is com.streamvault.domain.model.Result.Error && count == 0) {
+                            _uiState.update { current ->
+                                current.copy(
+                                    isLoading = false,
+                                    isSyncing = false,
+                                    errorMessage = result.message
+                                )
+                            }
+                        } else {
+                            _uiState.update { current ->
+                                current.copy(
+                                    isLoading = current.shelves.isEmpty() && (active || isInitialSyncPending),
+                                    isSyncing = active || isInitialSyncPending
+                                )
+                            }
                         }
                     }
                 }
