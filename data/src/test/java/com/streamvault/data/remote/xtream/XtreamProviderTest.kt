@@ -898,6 +898,109 @@ class XtreamProviderTest {
     }
 
     @Test
+    fun `getVodStreams prefers streamIcon for posterUrl and maps coverBig to backdropUrl`() = runBlocking {
+        val provider = XtreamProvider(
+            providerId = 42,
+            api = FakeXtreamApiService(
+                vodStreams = listOf(
+                    XtreamStream(
+                        streamId = 101,
+                        name = "Inception",
+                        streamIcon = "https://image.tmdb.org/t/p/w500/poster.jpg",
+                        coverBig = "https://image.tmdb.org/t/p/w1280/backdrop.jpg"
+                    )
+                )
+            ),
+            serverUrl = "https://example.com",
+            username = "user",
+            password = "pass"
+        )
+
+        val movie = provider.getVodStreams().getOrNull().orEmpty().single()
+
+        assertThat(movie.posterUrl).isEqualTo("https://image.tmdb.org/t/p/w500/poster.jpg")
+        assertThat(movie.backdropUrl).isEqualTo("https://image.tmdb.org/t/p/w1280/backdrop.jpg")
+    }
+
+    @Test
+    fun `getVodStreams falls back to coverBig for posterUrl when streamIcon is absent`() = runBlocking {
+        val provider = XtreamProvider(
+            providerId = 42,
+            api = FakeXtreamApiService(
+                vodStreams = listOf(
+                    XtreamStream(
+                        streamId = 102,
+                        name = "Interstellar",
+                        streamIcon = null,
+                        coverBig = "https://image.tmdb.org/t/p/w1280/backdrop.jpg"
+                    )
+                )
+            ),
+            serverUrl = "https://example.com",
+            username = "user",
+            password = "pass"
+        )
+
+        val movie = provider.getVodStreams().getOrNull().orEmpty().single()
+
+        assertThat(movie.posterUrl).isEqualTo("https://image.tmdb.org/t/p/w1280/backdrop.jpg")
+        assertThat(movie.backdropUrl).isEqualTo("https://image.tmdb.org/t/p/w1280/backdrop.jpg")
+    }
+
+    @Test
+    fun `getSeriesList prefers portrait cover for posterUrl and maps backdropPath to backdropUrl`() = runBlocking {
+        val provider = XtreamProvider(
+            providerId = 42,
+            api = FakeXtreamApiService(
+                seriesList = listOf(
+                    XtreamSeriesItem(
+                        seriesId = 201,
+                        name = "Breaking Bad",
+                        cover = "https://image.tmdb.org/t/p/w500/series_poster.jpg",
+                        coverBig = "https://image.tmdb.org/t/p/w1280/series_cover_big.jpg",
+                        backdropPath = listOf("https://image.tmdb.org/t/p/w1280/series_backdrop.jpg")
+                    )
+                )
+            ),
+            serverUrl = "https://example.com",
+            username = "user",
+            password = "pass"
+        )
+
+        val series = provider.getSeriesList().getOrNull().orEmpty().single()
+
+        assertThat(series.posterUrl).isEqualTo("https://image.tmdb.org/t/p/w500/series_poster.jpg")
+        assertThat(series.backdropUrl).isEqualTo("https://image.tmdb.org/t/p/w1280/series_backdrop.jpg")
+    }
+
+    @Test
+    fun `getVodInfo resolves posterUrl and backdropUrl with robust fallbacks`() = runBlocking {
+        val provider = XtreamProvider(
+            providerId = 42,
+            api = FakeXtreamApiService(
+                vodInfo = XtreamVodInfoResponse(
+                    info = XtreamVodInfo(
+                        movieImage = "https://image.tmdb.org/t/p/w500/matrix_poster.jpg",
+                        backdropPath = listOf("https://image.tmdb.org/t/p/w1280/matrix_backdrop.jpg")
+                    ),
+                    movieData = XtreamVodMovieData(
+                        streamId = 55,
+                        name = "The Matrix"
+                    )
+                )
+            ),
+            serverUrl = "https://example.com",
+            username = "user",
+            password = "pass"
+        )
+
+        val movie = provider.getVodInfo(55).getOrNull()
+
+        assertThat(movie?.posterUrl).isEqualTo("https://image.tmdb.org/t/p/w500/matrix_poster.jpg")
+        assertThat(movie?.backdropUrl).isEqualTo("https://image.tmdb.org/t/p/w1280/matrix_backdrop.jpg")
+    }
+
+    @Test
     fun `getSeriesInfo falls back to legacy series query parameter when primary payload is empty`() = runBlocking {
         val requestedEndpoints = mutableListOf<String>()
         val provider = XtreamProvider(

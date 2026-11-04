@@ -295,12 +295,16 @@ class XtreamProvider(
             val category = resolveXtreamCategory(ContentType.MOVIE, movieData.categoryId, null)
             val normalizedContainerExtension = normalizeContainerExtension(movieData.containerExtension)
             val sanitizedDirectSource = sanitizeAssetValue(movieData.directSource)
+            val resolvedPosterUrl = sanitizeAssetValue(info?.movieImage)
+                ?: firstUsableAsset(info?.backdropPath)
+            val resolvedBackdropUrl = firstUsableAsset(info?.backdropPath)
+                ?: sanitizeAssetValue(info?.movieImage)
             Result.success(
                 Movie(
                     id = movieData.streamId,
                     name = decodeXtreamNullableText(movieData.name, XtreamTextDecodeMode.RAW)?.ifBlank { null } ?: "Movie ${movieData.streamId}",
-                    posterUrl = sanitizeAssetValue(info?.movieImage),
-                    backdropUrl = firstUsableAsset(info?.backdropPath),
+                    posterUrl = resolvedPosterUrl,
+                    backdropUrl = resolvedBackdropUrl,
                     categoryId = category.id,
                     categoryName = category.name,
                     containerExtension = normalizedContainerExtension,
@@ -968,10 +972,13 @@ class XtreamProvider(
         val resolvedName = decodeXtreamNullableText(name, XtreamTextDecodeMode.RAW)?.ifBlank { null } ?: "Movie $streamId"
         val normalizedContainerExtension = normalizeContainerExtension(containerExtension)
         val sanitizedDirectSource = sanitizeAssetValue(directSource)
+        val resolvedPosterUrl = sanitizeAssetValue(streamIcon) ?: sanitizeAssetValue(coverBig)
+        val resolvedBackdropUrl = sanitizeAssetValue(coverBig) ?: sanitizeAssetValue(streamIcon)
         return Movie(
             id = 0,
             name = resolvedName,
-            posterUrl = sanitizeAssetValue(coverBig) ?: sanitizeAssetValue(streamIcon),
+            posterUrl = resolvedPosterUrl,
+            backdropUrl = resolvedBackdropUrl,
             categoryId = category.id,
             categoryName = category.name,
             containerExtension = normalizedContainerExtension,
@@ -1020,11 +1027,18 @@ class XtreamProvider(
         val resolvedSeriesId = seriesId.takeIf { it > 0 } ?: fallbackSeriesId ?: return null
         val category = resolveXtreamCategory(ContentType.SERIES, categoryId, categoryName)
         val resolvedName = decodeXtreamNullableText(name, XtreamTextDecodeMode.RAW)?.ifBlank { null } ?: "Series $resolvedSeriesId"
+        val resolvedPosterUrl = sanitizeAssetValue(cover)
+            ?: sanitizeAssetValue(movieImage)
+            ?: sanitizeAssetValue(coverBig)
+        val resolvedBackdropUrl = firstUsableAsset(backdropPath)
+            ?: sanitizeAssetValue(coverBig)
+            ?: sanitizeAssetValue(movieImage)
+            ?: sanitizeAssetValue(cover)
         return Series(
             id = 0,
             name = resolvedName,
-            posterUrl = sanitizeAssetValue(coverBig) ?: sanitizeAssetValue(movieImage) ?: sanitizeAssetValue(cover),
-            backdropUrl = firstUsableAsset(backdropPath),
+            posterUrl = resolvedPosterUrl,
+            backdropUrl = resolvedBackdropUrl,
             categoryId = category.id,
             categoryName = category.name,
             plot = decodeXtreamNullableText(plot, XtreamTextDecodeMode.METADATA)

@@ -365,7 +365,7 @@ fun LiveChannelRowSurface(
 @Composable
 fun MoviePosterCard(movie: Movie, modifier: Modifier = Modifier) {
     PosterCard(
-        imageUrl = movie.posterUrl,
+        imageUrl = movie.posterUrl ?: movie.backdropUrl,
         title = movie.displayTitle,
         subtitle = movie.year,
         modifier = modifier
@@ -375,7 +375,7 @@ fun MoviePosterCard(movie: Movie, modifier: Modifier = Modifier) {
 @Composable
 fun SeriesPosterCard(series: Series, modifier: Modifier = Modifier) {
     PosterCard(
-        imageUrl = series.posterUrl,
+        imageUrl = series.posterUrl ?: series.backdropUrl,
         title = series.displayTitle,
         subtitle = series.releaseDate ?: series.genre,
         modifier = modifier

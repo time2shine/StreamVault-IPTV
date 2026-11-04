@@ -3,6 +3,7 @@ package com.streamvault.app.di
 import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import com.streamvault.app.BuildConfig
 import com.streamvault.data.local.StreamVaultDatabase
@@ -43,6 +44,15 @@ object DatabaseModule {
                 }
             )
             .addMigrations(*StreamVaultDatabaseMigrationRegistry.all.toTypedArray())
+            .addCallback(object : RoomDatabase.Callback() {
+                override fun onOpen(db: SupportSQLiteDatabase) {
+                    super.onOpen(db)
+                    try {
+                        db.execSQL("UPDATE xtream_index_jobs SET state = 'STALE' WHERE section IN ('MOVIE', 'SERIES') AND state = 'ACTIVE'")
+                    } catch (_: Exception) {
+                    }
+                }
+            })
             // NOTE: fallbackToDestructiveMigration() intentionally removed.
             // All future schema changes MUST add a corresponding Migration in StreamVaultDatabase.
             .build()
