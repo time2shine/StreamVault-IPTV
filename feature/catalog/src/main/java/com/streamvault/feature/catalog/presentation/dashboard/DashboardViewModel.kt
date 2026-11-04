@@ -56,6 +56,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import com.streamvault.domain.util.AdultContentVisibilityPolicy
@@ -166,6 +167,19 @@ class DashboardViewModel @Inject constructor(
             .flatMapLatest { (activeSource, activeProvider) ->
                 flow {
                     if (activeSource == null && activeProvider == null) {
+                        val available = providerRepository.getProviders().first().firstOrNull()
+                        if (available != null) {
+                            if (providerRepository.setActiveProvider(available.id) is com.streamvault.domain.model.Result.Success) {
+                                return@flow
+                            }
+                            emit(DashboardUiState(isLoading = true))
+                            for (attempt in 1..10) {
+                                kotlinx.coroutines.delay(1000L)
+                                if (providerRepository.setActiveProvider(available.id) is com.streamvault.domain.model.Result.Success) {
+                                    return@flow
+                                }
+                            }
+                        }
                         emit(DashboardUiState(isLoading = false))
                         return@flow
                     }

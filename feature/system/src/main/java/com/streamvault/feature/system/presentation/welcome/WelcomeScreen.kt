@@ -109,25 +109,64 @@ class WelcomeViewModel @Inject constructor(
             _dontAskAgainAtStartup.value = savedPreference
         }
         viewModelScope.launch {
-            val existing = providerRepository.getProviders().first()
-            if (existing.isNotEmpty()) {
+            val active = runCatching { providerRepository.getActiveProvider().first() }.getOrNull()
+            if (active != null) {
                 _hasProviders.value = true
                 _isBootstrapping.value = false
                 _isOfflineError.value = false
                 acceptingProgress.value = false
-            } else {
-                startBootstrap()
+                return@launch
             }
-            providerRepository.getProviders()
-                .map { it.isNotEmpty() }
-                .collect { has ->
-                    if (has) {
+
+            val existing = runCatching { providerRepository.getProviders().first() }.getOrNull().orEmpty()
+            if (existing.isNotEmpty()) {
+                val activated = runCatching { providerRepository.setActiveProvider(existing.first().id) }.getOrNull()
+                if (activated is com.streamvault.domain.model.Result.Success) {
+                    _hasProviders.value = true
+                    _isBootstrapping.value = false
+                    _isOfflineError.value = false
+                    acceptingProgress.value = false
+                    return@launch
+                }
+            }
+
+            startBootstrap()
+        }
+        viewModelScope.launch {
+            runCatching {
+                providerRepository.getActiveProvider()
+                    .filterNotNull()
+                    .collect {
                         _hasProviders.value = true
                         _isOfflineError.value = false
                         _isBootstrapping.value = false
                         acceptingProgress.value = false
                     }
-                }
+            }
+        }
+        viewModelScope.launch {
+            runCatching {
+                providerRepository.getProviders()
+                    .collect { providers ->
+                        if (providers.isNotEmpty()) {
+                            val active = runCatching { providerRepository.getActiveProvider().first() }.getOrNull()
+                            if (active != null) {
+                                _hasProviders.value = true
+                                _isOfflineError.value = false
+                                _isBootstrapping.value = false
+                                acceptingProgress.value = false
+                            } else {
+                                val activated = runCatching { providerRepository.setActiveProvider(providers.first().id) }.getOrNull()
+                                if (activated is com.streamvault.domain.model.Result.Success) {
+                                    _hasProviders.value = true
+                                    _isOfflineError.value = false
+                                    _isBootstrapping.value = false
+                                    acceptingProgress.value = false
+                                }
+                            }
+                        }
+                    }
+            }
         }
     }
 
@@ -151,12 +190,25 @@ class WelcomeViewModel @Inject constructor(
 
     private fun startBootstrap() {
         viewModelScope.launch {
-            if (providerRepository.getProviders().first().isNotEmpty()) {
+            val active = runCatching { providerRepository.getActiveProvider().first() }.getOrNull()
+            if (active != null) {
                 _hasProviders.value = true
                 _isBootstrapping.value = false
                 _isOfflineError.value = false
                 acceptingProgress.value = false
                 return@launch
+            }
+
+            val existing = runCatching { providerRepository.getProviders().first() }.getOrNull().orEmpty()
+            if (existing.isNotEmpty()) {
+                val activated = runCatching { providerRepository.setActiveProvider(existing.first().id) }.getOrNull()
+                if (activated is com.streamvault.domain.model.Result.Success) {
+                    _hasProviders.value = true
+                    _isBootstrapping.value = false
+                    _isOfflineError.value = false
+                    acceptingProgress.value = false
+                    return@launch
+                }
             }
 
             val devConfig = welcomePort.devProviderConfig
@@ -182,16 +234,16 @@ class WelcomeViewModel @Inject constructor(
                 }.getOrNull()
 
                 when (result) {
-                    is ValidateAndAddProviderResult.Success -> {
-                        runCatching { providerRepository.setActiveProvider(result.provider.id) }
-                        welcomePort.markDefaultProviderSeeded()
-                        _isBootstrapping.value = false
-                        _isOfflineError.value = false
-                        _hasProviders.value = true
-                        acceptingProgress.value = false
-                    }
+                    is ValidateAndAddProviderResult.Success,
                     is ValidateAndAddProviderResult.SavedWithWarning -> {
-                        runCatching { providerRepository.setActiveProvider(result.provider.id) }
+                        val providerId = if (result is ValidateAndAddProviderResult.Success) result.provider.id else (result as ValidateAndAddProviderResult.SavedWithWarning).provider.id
+                        var activated = runCatching { providerRepository.setActiveProvider(providerId) }.getOrNull() is com.streamvault.domain.model.Result.Success
+                        var attempts = 0
+                        while (!activated && attempts < 10) {
+                            kotlinx.coroutines.delay(500L)
+                            activated = runCatching { providerRepository.setActiveProvider(providerId) }.getOrNull() is com.streamvault.domain.model.Result.Success
+                            attempts++
+                        }
                         welcomePort.markDefaultProviderSeeded()
                         _isBootstrapping.value = false
                         _isOfflineError.value = false
@@ -203,7 +255,8 @@ class WelcomeViewModel @Inject constructor(
                     is ValidateAndAddProviderResult.VerificationInconclusive,
                     is ValidateAndAddProviderResult.TransportConsentRequired,
                     null -> {
-                        val has = providerRepository.getProviders().first().isNotEmpty()
+                        val currentlyActive = runCatching { providerRepository.getActiveProvider().first() }.getOrNull()
+                        val has = currentlyActive != null
                         _isBootstrapping.value = false
                         _hasProviders.value = has
                         if (!has) {
@@ -231,16 +284,16 @@ class WelcomeViewModel @Inject constructor(
                 }.getOrNull()
 
                 when (result) {
-                    is ValidateAndAddProviderResult.Success -> {
-                        runCatching { providerRepository.setActiveProvider(result.provider.id) }
-                        welcomePort.markDefaultProviderSeeded()
-                        _isBootstrapping.value = false
-                        _isOfflineError.value = false
-                        _hasProviders.value = true
-                        acceptingProgress.value = false
-                    }
+                    is ValidateAndAddProviderResult.Success,
                     is ValidateAndAddProviderResult.SavedWithWarning -> {
-                        runCatching { providerRepository.setActiveProvider(result.provider.id) }
+                        val providerId = if (result is ValidateAndAddProviderResult.Success) result.provider.id else (result as ValidateAndAddProviderResult.SavedWithWarning).provider.id
+                        var activated = runCatching { providerRepository.setActiveProvider(providerId) }.getOrNull() is com.streamvault.domain.model.Result.Success
+                        var attempts = 0
+                        while (!activated && attempts < 10) {
+                            kotlinx.coroutines.delay(500L)
+                            activated = runCatching { providerRepository.setActiveProvider(providerId) }.getOrNull() is com.streamvault.domain.model.Result.Success
+                            attempts++
+                        }
                         welcomePort.markDefaultProviderSeeded()
                         _isBootstrapping.value = false
                         _isOfflineError.value = false
@@ -252,7 +305,8 @@ class WelcomeViewModel @Inject constructor(
                     is ValidateAndAddProviderResult.VerificationInconclusive,
                     is ValidateAndAddProviderResult.TransportConsentRequired,
                     null -> {
-                        val has = providerRepository.getProviders().first().isNotEmpty()
+                        val currentlyActive = runCatching { providerRepository.getActiveProvider().first() }.getOrNull()
+                        val has = currentlyActive != null
                         _isBootstrapping.value = false
                         _hasProviders.value = has
                         if (!has) {

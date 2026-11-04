@@ -31,6 +31,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verifyBlocking
 import org.mockito.kotlin.whenever
+import org.mockito.kotlin.wheneverBlocking
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class WelcomeViewModelTest {
@@ -239,15 +240,21 @@ class WelcomeViewModelTest {
         repository: ProviderRepository,
         validateAndAddProvider: ValidateAndAddProvider,
         devProviderConfig: WelcomeDevProviderConfig = WelcomeDevProviderConfig(),
-    ) = WelcomeViewModel(
-        providerRepository = repository,
-        validateAndAddProvider = validateAndAddProvider,
-        welcomePort = TestSystemWelcomePort(devProviderConfig),
-    )
+    ): WelcomeViewModel {
+        whenever(repository.getActiveProvider()).thenReturn(MutableStateFlow(null))
+        wheneverBlocking { repository.setActiveProvider(any()) }.thenReturn(com.streamvault.domain.model.Result.Success(Unit))
+        return WelcomeViewModel(
+            providerRepository = repository,
+            validateAndAddProvider = validateAndAddProvider,
+            welcomePort = TestSystemWelcomePort(devProviderConfig),
+        )
+    }
 
     private fun emptyProviderRepository(): ProviderRepository {
         val repository = mock<ProviderRepository>()
         whenever(repository.getProviders()).thenReturn(MutableStateFlow(emptyList()))
+        whenever(repository.getActiveProvider()).thenReturn(MutableStateFlow(null))
+        wheneverBlocking { repository.setActiveProvider(any()) }.thenReturn(com.streamvault.domain.model.Result.Success(Unit))
         return repository
     }
 

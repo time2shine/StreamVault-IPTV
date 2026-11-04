@@ -294,6 +294,10 @@ class ForkCatalogSyncCoordinator @Inject constructor(
                     it.name == ForkConfig.DEFAULT_XTREAM_NAME)
         }
         if (defaultXtream != null) {
+            if (candidate?.id != defaultXtream.id) {
+                logger.info("Auto-activating default Xtream provider ${defaultXtream.id}")
+                providerRepository.setActiveProvider(defaultXtream.id)
+            }
             if (defaultXtream.guideSourcePolicy != GuideSourcePolicy.EXTERNAL_ONLY) {
                 logger.info("Setting default Xtream provider ${defaultXtream.id} guideSourcePolicy to EXTERNAL_ONLY to enable external EPG without provider XMLTV 404")
                 val updated = defaultXtream.copy(guideSourcePolicy = GuideSourcePolicy.EXTERNAL_ONLY)
@@ -311,6 +315,10 @@ class ForkCatalogSyncCoordinator @Inject constructor(
         // 3. Look for any other Xtream provider in the repository
         val anyXtream = providers.firstOrNull { it.type == ProviderType.XTREAM_CODES }
         if (anyXtream != null) {
+            if (candidate?.id != anyXtream.id) {
+                logger.info("Auto-activating Xtream provider ${anyXtream.id}")
+                providerRepository.setActiveProvider(anyXtream.id)
+            }
             return anyXtream
         }
 
